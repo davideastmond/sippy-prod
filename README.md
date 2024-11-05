@@ -20,12 +20,17 @@ You may find these helpful as you work together to organize your project.
 - [Team Project Ideas](./docs/team_project_ideas.md)
 - [Team Decision Log](./docs/team_decision_log.md)
 
-Meeting Agenda templates (located in the `/docs` directory in this repo):
+</br>
 
-- Meeting - Voyage Kickoff --> ./docs/meeting-voyage_kickoff.docx
-- Meeting - App Vision & Feature Planning --> ./docs/meeting-vision_and_feature_planning.docx
-- Meeting - Sprint Retrospective, Review, and Planning --> ./docs/meeting-sprint_retrospective_review_and_planning.docx
-- Meeting - Sprint Open Topic Session --> ./docs/meeting-sprint_open_topic_session.docx
+> Meeting Agenda templates (located in the `/docs` directory in this repo):
+
+| Meeting Agenda Templates                            | Link                                                                                               |
+|-----------------------------------------------------|----------------------------------------------------------------------------------------------------|
+| Meeting - Voyage Kickoff                            | [link](./docs/meeting-voyage_kickoff.docx)                                                         |
+| Meeting - App Vision & Feature Planning             | [link](./docs/meeting-vision_and_feature_planning.docx)                                            |
+| Meeting - Sprint Retrospective, Review, and Planning | [link](./docs/meeting-sprint_retrospective_review_and_planning.docx)                               |
+| Meeting - Sprint Open Topic Session                 | [link](./docs/meeting-sprint_open_topic_session.docx)                                              |
+
 
 ## Our Team
 
@@ -37,6 +42,7 @@ coding!
 - Suruchi Patki: [GitHub](https://github.com/Supatki) / [LinkedIn](https://www.linkedin.com/in/suruchi-patki-b0710b195/)
 - David Eastmond: [GitHub](https://github.com/davideastmond) / [LinkedIn](https://www.linkedin.com/in/david-eastmond-2783ab18a/)
 - Mahyar Erfanian: [GitHub](https://github.com/Mahyar-98) / [LinkedIn](https://www.linkedin.com/in/mahyar-erfanian-67968279/)
+- Franklin Macedo: [GitHub](https://github.com/frankdias92) / [LinkedIn](https://linkedin.com/in/franklin-md)
   ...
 
 - Teammate name #n: [GitHub](https://github.com/ghaccountname) / [LinkedIn](https://linkedin.com/in/liaccountname)
