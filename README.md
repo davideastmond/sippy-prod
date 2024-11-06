@@ -43,6 +43,8 @@ coding!
 - David Eastmond: [GitHub](https://github.com/davideastmond) / [LinkedIn](https://www.linkedin.com/in/david-eastmond-2783ab18a/)
 - Mahyar Erfanian: [GitHub](https://github.com/Mahyar-98) / [LinkedIn](https://www.linkedin.com/in/mahyar-erfanian-67968279/)
 - Franklin Macedo: [GitHub](https://github.com/frankdias92) / [LinkedIn](https://linkedin.com/in/franklin-md)
+- Nandor Nagy: [GitHub](https://github.com/n3ndor) / [LinkedIn](https://www.linkedin.com/in/nandornagylinked/)
+  <br>
   ...
 
 - Teammate name #n: [GitHub](https://github.com/ghaccountname) / [LinkedIn](https://linkedin.com/in/liaccountname)
