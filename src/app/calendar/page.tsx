@@ -1,3 +1,5 @@
+'use client'
+
 import { AppointmentUserForm } from "@/components/appointmentCalendar/AppointmentUserForm";
 
 
