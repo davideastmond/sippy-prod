@@ -35,7 +35,7 @@ export default function Dashboard() {
   }
   
   return (
-    <div>
+    <div className="flex w-full h-full">
       <Home />
 
       <button onClick={handleRegister}>test new user</button>
