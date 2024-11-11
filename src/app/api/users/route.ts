@@ -1,6 +1,5 @@
 import { prisma } from "lib/prisma";
 import { NextResponse } from "next/server";
-// import { NextApiRequest, NextApiResponse } from "next";
 
 export async function POST(req: Request) {
   try {
@@ -19,6 +18,6 @@ export async function POST(req: Request) {
     return NextResponse.json(user, { status: 201 });
   } catch (error) {
     console.log(error)
-    return NextResponse.json({ error: "Erro ao criar usuário" }, { status: 500 });
+    return NextResponse.json({ error: "Something wrong here" }, { status: 500 });
   }
 }
