@@ -13,6 +13,7 @@ export function ButtonText({ text, onClick, color, ...rest }: ButtonTextProps) {
         ${color === 'Green' ? 'bg-simmpy-green text-white' : 'bg-simmpy-yellow text-simmpy-gray-800' }
       `}
       onClick={onClick}
+      type="submit"
       {...rest}
     >
       {text}

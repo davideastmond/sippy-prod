@@ -1,10 +1,9 @@
-import { useRouter } from "next/router";
+'use client'
 
+import { useRouter } from "next/navigation"
 
 export function Appointment() {
-
   const router = useRouter()
-  
 
   return (
     <div className="flex flex-col w-full h-60 px-28">
