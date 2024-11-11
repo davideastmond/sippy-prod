@@ -1,6 +1,7 @@
 import { ButtonText } from "../buttonText"
 import { InputText } from "../inputText"
 import { TextLabel } from "../textLabel"
+import { WrapperContainer } from "../wrapperConteiner"
 
 export function AppointmentUserForm() {
 
@@ -9,10 +10,12 @@ export function AppointmentUserForm() {
       <form 
         className="flex p-6 w-[510px] flex-col gap-4 bg-simmpy-gray-600 rounded-md"
       >
-        <TextLabel text="Name" fontSize="Text-18" color="Gray-200"/>
-        <InputText text="Name"/>
+        <WrapperContainer>
+          <TextLabel text="Name" fontSize="Text-18" color="Gray-100"/>
+          <InputText text="Name"/>
+        </WrapperContainer>
 
-        <ButtonText text="Next"/>
+        <ButtonText text="Next" color="Green" />
       </form>
     </div>
   )
