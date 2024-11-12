@@ -1,8 +1,15 @@
 import React from 'react'
+import { Appointment } from '../appointmentCalendar/Appointment'
 
 const Home = () => {
   return (
-    <div>Home Page Content / Dashboard / Landing page / Welcome </div>
+    <div>
+      <div>
+        Home Page Content / Dashboard / Landing page / Welcome 
+      </div>
+      
+      <Appointment />
+    </div>
   )
 }
 
