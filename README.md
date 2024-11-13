@@ -19,6 +19,8 @@ Welcome to the `voyage-tasks` project! This README serves as the central guide f
 
 <img src='public/assets/images/coverSippy.png' with='auto' />
 
+preview on [figma](https://www.figma.com/proto/WXv61LBeFxIKHLu8qH2EVp/Sippy?node-id=229-2860&node-type=frame&t=g7scVLUxAPK4Gljo-1&scaling=min-zoom&content-scaling=fixed&page-id=1%3A37893&starting-point-node-id=223%3A1089)
+
 The `voyage-tasks` project is developed by a collaborative team within the Chingu Community. This project aims to streamline task management with features for scheduling appointments, tracking progress, and managing user information. The project is structured using Docker and Prisma for database management, with a backend API developed in Next.js to handle user requests and appointments.
 
 For more insights into writing a great README, refer to this article by an experienced Chingu member: [Keys to a well-written README](https://tinyurl.com/yk3wubft).
