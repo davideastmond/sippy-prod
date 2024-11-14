@@ -7,7 +7,7 @@ export default function AuthProviderSignIn() {
   const handleSignIn = async (provider: string) => {
     try {
       await signIn(provider, {
-        callbackUrl: "/loggedin",
+        callbackUrl: "/dashboard",
       });
     } catch (error) {
       console.error("An error occurred while signing in: ", error);
