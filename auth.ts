@@ -9,6 +9,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
   session: {
     strategy: "jwt",
   },
+
   callbacks: {
     async signIn({ user, account, profile }) {
       if (!account) {
@@ -35,7 +36,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         await prisma.user.create({
           data: {
             email: profile?.email!,
-            name: getName(account.provider as any, profile),
+            name: getNameFromProfile(account.provider as any, profile),
             isAdmin: false,
           },
         });
@@ -48,10 +49,14 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       if (!token.email) throw new Error("No email found in token");
 
       const existingUser = await prisma.user.findUnique({
-        where: { email: token?.email },
+        where: { email: token.email },
       });
 
-      token = { ...token, id: existingUser?.id };
+      token = {
+        ...token,
+        id: existingUser?.id,
+        isAdmin: existingUser?.isAdmin,
+      };
       return token;
     },
 
@@ -61,7 +66,8 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         user: {
           id: token.id,
           email: token.email,
-          name: `${token.firstName} ${token.lastName}`,
+          name: `${token.name}`,
+          isAdmin: token.isAdmin,
         },
       } as any;
 
@@ -70,7 +76,10 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
   },
 });
 
-function getName(provider: "google" | "github", profile: Profile): string {
+function getNameFromProfile(
+  provider: "google" | "github",
+  profile: Profile
+): string {
   if (provider === "google") {
     return `${profile.given_name} ${profile.family_name}`;
   }
