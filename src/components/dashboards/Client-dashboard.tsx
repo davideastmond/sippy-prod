@@ -12,10 +12,11 @@ export default function ClientDashboard() {
     }
   }, [session?.user.isAdmin]);
 
-  if (status === "unauthenticated") {
-    router.replace("/signup");
-    return null;
-  }
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.replace("/signup");
+    }
+  }, [status]);
 
   return (
     <>
