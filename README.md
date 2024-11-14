@@ -24,12 +24,28 @@ You may find these helpful as you work together to organize your project.
 
 > Meeting Agenda templates (located in the `/docs` directory in this repo):
 
-| Meeting Agenda Templates                             | Link                                                              |
-| ---------------------------------------------------- | ----------------------------------------------------------------- |
+| Meeting Agenda Templates                             | Link                                                                 |
+| ---------------------------------------------------- | -------------------------------------------------------------------- |
 | Meeting - Voyage Kickoff                             | [link](./docs/meeting-voyage_kickoff.docx)                           |
 | Meeting - App Vision & Feature Planning              | [link](./docs/meeting-vision_and_feature_planning.docx)              |
 | Meeting - Sprint Retrospective, Review, and Planning | [link](./docs/meeting-sprint_retrospective_review_and_planning.docx) |
 | Meeting - Sprint Open Topic Session                  | [link](./docs/meeting-sprint_open_topic_session.docx)                |
+
+## oAuth
+
+### Google
+
+1. Sign up for Google Cloud and navigate to your console https://console.cloud.google.com/
+2. Create an oAuth consent screen
+3. The Callback url for dev is `http://localhost:3000/api/auth/callback/google`
+4. Copy your Google clientID and secret to the `.env`
+
+### Github
+
+1. Sign up for Github oAuth in Settings / Developer Settings
+2. Enter relavent app details
+3. The Callback url for dev is `http://localhost:3000/api/auth/callback/github`
+4. Generate a secret and copy and paste ID and secret to appropriate `.env` variable
 
 ## Our Team
 
@@ -43,4 +59,4 @@ coding!
 - Mahyar Erfanian: [GitHub](https://github.com/Mahyar-98) / [LinkedIn](https://www.linkedin.com/in/mahyar-erfanian-67968279/)
 - Franklin Macedo: [GitHub](https://github.com/frankdias92) / [LinkedIn](https://linkedin.com/in/franklin-md)
 - Nandor Nagy: [GitHub](https://github.com/n3ndor) / [LinkedIn](https://www.linkedin.com/in/nandornagylinked/)
-- Eoin McDonnell  [GitHub](https://github.com/oldmcdonnell) / [LinkedIn](https://www.linkedin.com/in/mcdonnell-eoin/)...
+- Eoin McDonnell [GitHub](https://github.com/oldmcdonnell) / [LinkedIn](https://www.linkedin.com/in/mcdonnell-eoin/)...
