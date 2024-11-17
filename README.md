@@ -96,6 +96,11 @@ Follow these steps to set up and run the application locally:
 
 ## oAuth
 
+### Create an auth secret
+
+In `.env` create a environment variable called `AUTH_SECRET` and assign some string (any string) to it.
+This is used by NextAuth to generate a token.
+
 ### Google
 
 1. Sign up for Google Cloud and navigate to your console https://console.cloud.google.com/
