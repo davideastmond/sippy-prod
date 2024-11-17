@@ -1,5 +1,6 @@
 // This component can be used for both sign up and sign in pages.
 "use client";
+// https://github.com/free-icons/free-icons
 
 import { signIn } from "next-auth/react";
 import Image from "next/image";
