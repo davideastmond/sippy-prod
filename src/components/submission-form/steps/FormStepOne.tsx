@@ -1,12 +1,13 @@
 import { InputText } from "@/components/inputText";
 import { TextLabel } from "@/components/textLabel";
+import { FormSchemaUserFormData } from "../definitions/types";
 
 /* 
   name and e-mail are collected here
 */
 interface FormStepOneProps {
-  formData: { name: string; email: string };
-  setFormData: { (data: { name: string; email: string }): void };
+  formData: Partial<FormSchemaUserFormData>;
+  setFormData: { (data: Partial<FormSchemaUserFormData>): void };
   errors: { email?: string; name?: string };
 }
 export const FormStepOne = ({
@@ -20,7 +21,7 @@ export const FormStepOne = ({
       {/* The e-mail field should be pre-populated with oAuth data */}
       <InputText
         text="E-mail Address"
-        value={formData.email}
+        value={formData.email!}
         disalbed
         onChange={(event) =>
           setFormData({ ...formData, email: event.target.value })
@@ -31,7 +32,7 @@ export const FormStepOne = ({
       <TextLabel text="Full Name" fontSize="Text-18" color="Gray-100" />
       <InputText
         text="Full Name"
-        value={formData.name}
+        value={formData.name!}
         onChange={(event) =>
           setFormData({ ...formData, name: event.target.value })
         }
