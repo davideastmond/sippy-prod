@@ -1,5 +1,6 @@
 import { TimeSlot } from "@/types/time-slot";
 import { Radio, RadioGroup, RadioProps, cn } from "@nextui-org/react";
+import { getTimeSlotHours } from "lib/utils/time-slot";
 import { useState } from "react";
 
 interface TimeSlotPickerProps {
@@ -22,9 +23,15 @@ export const TimeSlotPicker = ({ value, onChange }: TimeSlotPickerProps) => {
       value={selected}
       onValueChange={handleTimeSlotChange}
     >
-      <CustomRadio value={TimeSlot.Morning}>8:00 - 11:00</CustomRadio>
-      <CustomRadio value={TimeSlot.Afternoon}>11:00 - 14:00</CustomRadio>
-      <CustomRadio value={TimeSlot.Evening}>14:00 - 17:00</CustomRadio>
+      <CustomRadio value={TimeSlot.Morning}>
+        {getTimeSlotHours(TimeSlot.Morning)}
+      </CustomRadio>
+      <CustomRadio value={TimeSlot.Daytime}>
+        {getTimeSlotHours(TimeSlot.Daytime)}
+      </CustomRadio>
+      <CustomRadio value={TimeSlot.Evening}>
+        {getTimeSlotHours(TimeSlot.Evening)}
+      </CustomRadio>
     </RadioGroup>
   );
 };
