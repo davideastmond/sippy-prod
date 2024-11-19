@@ -1,7 +1,7 @@
 /* Confirm and submit screen */
 
 import { TextLabel } from "@/components/textLabel";
-import { TimeSlot } from "@/types/time-slot";
+import { getTimeSlotSummaryCaption } from "@/lib/utils/time-slot";
 import dayjs from "dayjs";
 import { FormSchemaUserFormData } from "../definitions/types";
 
@@ -43,7 +43,7 @@ export const ReviewSubmit = ({ formData }: ReviewSubmitProps) => {
           color="Gray-100"
         />
         <TextLabel
-          text={dayjs(formData.appointmentDate).format("MMMM D, YYYY")}
+          text={dayjs(formData.appointmentDate).format("dddd, MMMM D, YYYY")}
           fontSize="Text-14"
           color="Green"
         />
@@ -62,15 +62,4 @@ export const ReviewSubmit = ({ formData }: ReviewSubmitProps) => {
       </div>
     </>
   );
-};
-
-const getTimeSlotSummaryCaption = (timeSlot: TimeSlot) => {
-  switch (timeSlot) {
-    case TimeSlot.Morning:
-      return "Morning between 8:00 - 11:00";
-    case TimeSlot.Afternoon:
-      return "Afternoon between 11:00 - 14:00";
-    case TimeSlot.Evening:
-      return "Evening between 14:00 - 17:00";
-  }
 };
