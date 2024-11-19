@@ -1,5 +1,5 @@
 export enum TimeSlot {
   Morning = "MOR",
-  Afternoon = "AFT",
+  Daytime = "DAY",
   Evening = "EVE",
 }
