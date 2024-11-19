@@ -9,10 +9,10 @@ import { WrapperContainer } from "../wrapperContainer";
 import { HeaderStatus } from "./AppointmentHeaderStatus";
 import { formSchema } from "./definitions/form-schema";
 import { FormSchemaUserFormData } from "./definitions/types";
-import { ConfirmAndSubmit } from "./steps/ConfirmAndSubmit";
 import { FormStepOne } from "./steps/FormStepOne";
 import { FormStepThree } from "./steps/FormStepThree";
 import { FormStepTwo } from "./steps/FormStepTwo";
+import { ReviewSubmit } from "./steps/ReviewSubmit";
 
 const MAX_STEPS = 4;
 export function SubmissionForm() {
@@ -79,7 +79,7 @@ export function SubmissionForm() {
         setFormData={setFormData}
         errors={errors}
       />,
-      <ConfirmAndSubmit formData={formData} />,
+      <ReviewSubmit formData={formData} />,
     ];
 
     // These are just safety checks
