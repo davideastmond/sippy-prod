@@ -49,7 +49,7 @@ export const FormStepThree = ({
         fontSize="Text-18"
         color="Gray-100"
       />
-      <div className="flex">
+      <div className="flex justify-evenly">
         {/* Calendar needs to go here */}
         <Calendar
           aria-label="Select appointment date"
