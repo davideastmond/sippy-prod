@@ -57,12 +57,10 @@ export function SubmissionForm() {
       return;
     }
     setErrors({});
-    // Save to state or localStorage
-    // Progress to the next step
 
-    // This should be the button that was clicked and it should always be a submit event. The name should be either "next" or "back"
     const submitterButton = (event.nativeEvent as SubmitEvent)
       ?.submitter as HTMLButtonElement;
+
     navigateStep(submitterButton.name as "next" | "back");
   }
 
@@ -91,7 +89,11 @@ export function SubmissionForm() {
 
   const navigateStep = (direction: "next" | "back") => {
     if (direction === "next") {
-      if (currentStep === MAX_STEPS - 1) return;
+      if (currentStep === MAX_STEPS - 1) {
+        // Submit the form
+        console.log("Submit the form");
+        return;
+      }
       setCurrentStep((prev) => prev + 1);
       return;
     }
