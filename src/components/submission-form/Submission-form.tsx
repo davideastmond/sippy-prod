@@ -41,7 +41,6 @@ export function SubmissionForm() {
     event.preventDefault();
 
     const result = formSchema.safeParse(formData);
-    console.log(result);
     if (!result.success) {
       const fieldErrors: {
         email?: string;

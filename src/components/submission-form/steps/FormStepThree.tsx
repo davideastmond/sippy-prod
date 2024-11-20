@@ -86,7 +86,6 @@ export const FormStepThree = ({
 
 const toCalendarDateFromJSDate = (date?: Date): CalendarDate | null => {
   // formData.appointmentDate is a Date object but the NextUi calendar component requires a CalendarDate object
-  console.info("89 date", date);
   if (!date) return null;
 
   const convertedDayjsDate = dayjs(date);
