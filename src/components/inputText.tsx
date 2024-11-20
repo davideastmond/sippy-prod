@@ -6,6 +6,7 @@ interface InputTextProps {
   error?: string;
   preFix?: boolean;
   disalbed?: boolean;
+  maxLength?: number;
   onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
@@ -15,6 +16,7 @@ export function InputText({
   onChange,
   error,
   disalbed,
+  maxLength,
   preFix = false,
   ...rest
 }: InputTextProps) {
@@ -28,6 +30,7 @@ export function InputText({
         value={value}
         onChange={onChange}
         disabled={disalbed}
+        maxLength={maxLength}
         {...rest}
       />
       {preFix && (

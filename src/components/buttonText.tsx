@@ -2,6 +2,7 @@ interface ButtonTextProps {
   text: string;
   color: "Green" | "Yellow";
   name?: string;
+  disabled?: boolean;
   onClick?: () => void;
 }
 
@@ -10,6 +11,7 @@ export function ButtonText({
   onClick,
   color,
   name,
+  disabled,
   ...rest
 }: ButtonTextProps) {
   return (
@@ -24,6 +26,7 @@ export function ButtonText({
       onClick={onClick}
       name={name}
       type="submit"
+      disabled={disabled}
       {...rest}
     >
       {text}
