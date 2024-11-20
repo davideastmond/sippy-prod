@@ -27,10 +27,7 @@ export function InputText({
       <input
         placeholder={text}
         className={`flex w-full h-12 py-2 px-4 bg-simmpy-gray-800 font-lato text-lg rounded-md placeholder:text-simmpy-gray-200 text-white relative
-          ${preFix && "pl-[70px]"} ${
-          type === "number" &&
-          "[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-        }
+          ${preFix && "pl-[70px]"}
         `}
         value={value}
         onChange={onChange}
