@@ -1,6 +1,6 @@
+import { getTimeSlotHours } from "@/lib/utils/time-slot";
 import { TimeSlot } from "@/types/time-slot";
 import { Radio, RadioGroup, RadioProps, cn } from "@nextui-org/react";
-import { getTimeSlotHours } from "lib/utils/time-slot";
 import { useState } from "react";
 
 interface TimeSlotPickerProps {
