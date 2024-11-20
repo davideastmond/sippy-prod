@@ -54,7 +54,7 @@ export const FormStepThree = ({
         <Calendar
           aria-label="Select appointment date"
           value={appointmentDate}
-          minValue={today(getLocalTimeZone())}
+          minValue={today(getLocalTimeZone()).add({ days: 1 })}
           onChange={handleAppointmentDateChange}
           classNames={{
             base: cn("bg-simmpy-gray-800"),
