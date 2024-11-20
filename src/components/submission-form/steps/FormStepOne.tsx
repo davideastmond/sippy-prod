@@ -49,7 +49,7 @@ export const FormStepOne = ({
           text="Area code"
           value={formData.areaCode}
           maxLength={3}
-          type="number"
+          type="tel"
           onChange={(event) =>
             setFormData({
               ...formData,
@@ -63,7 +63,7 @@ export const FormStepOne = ({
           text="Phone number"
           value={formData.phoneNumber}
           maxLength={7}
-          type="number"
+          type="tel"
           onChange={(event) =>
             setFormData({
               ...formData,
