@@ -23,7 +23,7 @@ export const FormStepOne = ({
   return (
     <>
       <TextLabel text="E-mail Address" fontSize="Text-18" color="Gray-100" />
-      {/* The e-mail field should be pre-populated with oAuth data */}
+      {/* The e-mail field is auto-populated by the session user */}
       <InputText
         text="E-mail Address"
         value={formData.email!}
