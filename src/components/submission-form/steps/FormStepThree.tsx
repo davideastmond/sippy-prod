@@ -23,8 +23,7 @@ export const FormStepThree = ({
   setFormData,
 }: FormStepThreeProps) => {
   const [appointmentDate, setAppointmentDate] = useState(
-    toCalendarDateFromJSDate(formData.appointmentDate!) ||
-      today(getLocalTimeZone())
+    toCalendarDateFromJSDate(formData.appointmentDate!)
   );
 
   const handleAppointmentDateChange = (date: CalendarDate) => {
@@ -76,18 +75,16 @@ export const FormStepThree = ({
       <div className="flex">
         <Image alt="info" src={InfoIcon} width={16} />
         <p className="text-white">
-          Note that your appointment timeslot is not guaranteed. We will e-mail
-          you with a confirmed appointment time.
+          Note that your appointment date and time slot are not guaranteed. We
+          will e-mail you with a confirmed appointment details.
         </p>
       </div>
     </>
   );
 };
 
-const toCalendarDateFromJSDate = (date?: Date): CalendarDate | null => {
+const toCalendarDateFromJSDate = (date: Date): CalendarDate => {
   // formData.appointmentDate is a Date object but the NextUi calendar component requires a CalendarDate object
-  if (!date) return null;
-
   const convertedDayjsDate = dayjs(date);
 
   return new CalendarDate(
