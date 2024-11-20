@@ -22,13 +22,13 @@ export function SubmissionForm() {
   const [formData, setFormData] = useState<Partial<FormSchemaUserFormData>>({
     name: "",
     email: "",
-    // TODO: think about how structure the address - should it be nested or flat?
+    // TODO: Determine structure of address object
     address: {
       fullAddress: "",
     },
     appointmentDate: dayjs().add(1, "day").toDate(),
     timeSlot: TimeSlot.Morning,
-    areaCode: "", // Default LA area code
+    areaCode: "",
     phoneNumber: "",
   });
   const [errors, setErrors] = useState<{
@@ -172,7 +172,7 @@ export function SubmissionForm() {
           />
         )}
         <ButtonText
-          text={currentStep === 3 ? "Submit" : "Next"}
+          text={currentStep === MAX_STEPS - 1 ? "Submit" : "Next"}
           color="Green"
           name="next"
           disabled={isBusy}
