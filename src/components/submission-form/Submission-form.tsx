@@ -1,11 +1,13 @@
 "use client";
 
 import { TimeSlot } from "@/types/time-slot";
+import { ResidentRequestService } from "app/services/resident-request-service";
 import dayjs from "dayjs";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { ButtonText } from "../buttonText";
+import { TextLabel } from "../textLabel";
 import { WrapperContainer } from "../wrapperContainer";
 import { HeaderStatus } from "./AppointmentHeaderStatus";
 import { formSchema } from "./definitions/form-schema";
@@ -24,8 +26,10 @@ export function SubmissionForm() {
     address: {
       fullAddress: "",
     },
-    appointmentDate: dayjs().toDate(),
+    appointmentDate: dayjs().add(1, "day").toDate(),
     timeSlot: TimeSlot.Morning,
+    areaCode: "", // Default LA area code
+    phoneNumber: "",
   });
   const [errors, setErrors] = useState<{
     email?: string;
@@ -35,6 +39,9 @@ export function SubmissionForm() {
   const [currentStep, setCurrentStep] = useState(0);
 
   const { data: session, status } = useSession();
+  const [isBusy, setIsBusy] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
   const router = useRouter();
 
   async function handleSubmit(event: React.FormEvent) {
@@ -48,6 +55,8 @@ export function SubmissionForm() {
         address?: { fullAddress?: string };
         appointmentDate?: string;
         timeSlot?: string;
+        areaCode?: string;
+        phoneNumber?: string;
       } = {};
 
       for (const err of result.error.errors) {
@@ -86,11 +95,12 @@ export function SubmissionForm() {
     return steps[index];
   };
 
-  const navigateStep = (direction: "next" | "back") => {
+  const navigateStep = async (direction: "next" | "back") => {
     if (direction === "next") {
       if (currentStep === MAX_STEPS - 1) {
-        // TODO: Submit the form
-        console.log("Submit the form");
+        // This condition is the final submission
+        await submitResidentRequest();
+        setIsSubmitted(true); // Show the submission confirmation
         return;
       }
       setCurrentStep((prev) => prev + 1);
@@ -100,6 +110,17 @@ export function SubmissionForm() {
     // Back condition is the assumed fall-back
     if (currentStep === 0) return;
     setCurrentStep((prev) => prev - 1);
+  };
+
+  const submitResidentRequest = async () => {
+    try {
+      setIsBusy(true);
+      await ResidentRequestService.create(formData);
+      setIsBusy(false);
+    } catch (error: any) {
+      console.error(error);
+      setIsBusy(false);
+    }
   };
 
   // Grab the user's email from the session user
@@ -114,7 +135,25 @@ export function SubmissionForm() {
     return null;
   }
 
-  return (
+  return isSubmitted ? (
+    <div className="flex p-6 w-full flex-col gap-4 bg-simmpy-gray-600 rounded-md justify-center items-center">
+      <TextLabel
+        text="Thank you for your submission!"
+        fontSize="Text-20"
+        color="Gray-100"
+      />
+      <TextLabel
+        text="Please note that your appointment time slot is not guaranteed until you receive a confirmation email."
+        fontSize="Text-14"
+        color="Gray-100"
+      />
+      <ButtonText
+        text="Return to dashboard"
+        color="Green"
+        onClick={() => router.push("/dashboard")}
+      />
+    </div>
+  ) : (
     <div className="flex gap-2 flex-col flex-1 justify-center items-center">
       <HeaderStatus currentStage={currentStep} stages={[1, 2, 3, 4]} />
       <form
@@ -125,12 +164,18 @@ export function SubmissionForm() {
           {getFormComponentByStep(currentStep)}
         </WrapperContainer>
         {currentStep > 0 && (
-          <ButtonText text="Back" color="Yellow" name="back" />
+          <ButtonText
+            text="Back"
+            color="Yellow"
+            name="back"
+            disabled={isBusy}
+          />
         )}
         <ButtonText
           text={currentStep === 3 ? "Submit" : "Next"}
           color="Green"
           name="next"
+          disabled={isBusy}
         />
       </form>
     </div>
