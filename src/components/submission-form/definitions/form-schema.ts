@@ -20,13 +20,13 @@ export const formSchema = z.object({
       const areaCodeRegex = /^[2-9]\d{2}$/;
       return areaCodeRegex.test(value);
     },
-    { message: "Area code should be 3 digits" }
+    { message: "Enter a valid 3-digit area code" }
   ),
   phoneNumber: z.custom(
     (value: string) => {
       const phoneNumberRegEx = /^\d{7}$/;
       return phoneNumberRegEx.test(value);
     },
-    { message: "Phone number should be 7 digits" }
+    { message: "Enter a valid 7-digit phone number" }
   ),
 });
