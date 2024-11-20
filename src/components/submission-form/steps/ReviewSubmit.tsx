@@ -10,9 +10,10 @@ interface ReviewSubmitProps {
 }
 
 /* 
-  Summarize:
+  This is the review and confirm step where the user can review the information they have entered:
   - Full name
   - E-mail address
+  - Phone number
   - Address (TODO)
   - Appointment date and timeSlot
 */
@@ -27,6 +28,14 @@ export const ReviewSubmit = ({ formData }: ReviewSubmitProps) => {
       <div>
         <TextLabel text="E-mail Address:" fontSize="Text-14" color="Gray-100" />
         <TextLabel text={formData.email!} fontSize="Text-14" color="Green" />
+      </div>
+      <div>
+        <TextLabel text="Phone Number:" fontSize="Text-14" color="Gray-100" />
+        <TextLabel
+          text={`(${formData.areaCode})-${formData.phoneNumber}`}
+          fontSize="Text-14"
+          color="Green"
+        />
       </div>
       <div>
         <TextLabel text="Address:" fontSize="Text-14" color="Gray-100" />
