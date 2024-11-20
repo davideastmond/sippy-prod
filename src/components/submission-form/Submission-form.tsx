@@ -64,7 +64,7 @@ export function SubmissionForm() {
     navigateStep(submitterButton.name as "next" | "back");
   }
 
-  const getFormStepByIndex = (index: number): JSX.Element => {
+  const getFormComponentByStep = (index: number): JSX.Element => {
     const steps = [
       <FormStepOne
         formData={formData}
@@ -90,7 +90,7 @@ export function SubmissionForm() {
   const navigateStep = (direction: "next" | "back") => {
     if (direction === "next") {
       if (currentStep === MAX_STEPS - 1) {
-        // Submit the form
+        // Submit the formw
         console.log("Submit the form");
         return;
       }
@@ -122,7 +122,9 @@ export function SubmissionForm() {
         onSubmit={handleSubmit}
         className="flex p-6 w-full flex-col gap-4 bg-simmpy-gray-600 rounded-md"
       >
-        <WrapperContainer>{getFormStepByIndex(currentStep)}</WrapperContainer>
+        <WrapperContainer>
+          {getFormComponentByStep(currentStep)}
+        </WrapperContainer>
         {currentStep > 0 && (
           <ButtonText text="Back" color="Yellow" name="back" />
         )}
