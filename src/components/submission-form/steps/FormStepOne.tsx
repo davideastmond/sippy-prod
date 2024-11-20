@@ -3,12 +3,17 @@ import { TextLabel } from "@/components/textLabel";
 import { FormSchemaUserFormData } from "../definitions/types";
 
 /* 
-  name and e-mail are collected here
+  name, e-mail and phone number are collected here
 */
 interface FormStepOneProps {
   formData: Partial<FormSchemaUserFormData>;
   setFormData: { (data: Partial<FormSchemaUserFormData>): void };
-  errors: { email?: string; name?: string };
+  errors: {
+    email?: string;
+    name?: string;
+    areaCode?: string;
+    phoneNumber?: string;
+  };
 }
 export const FormStepOne = ({
   formData,
@@ -38,6 +43,34 @@ export const FormStepOne = ({
         }
         error={errors.name}
       />
+      <TextLabel text="Phone number" fontSize="Text-18" color="Gray-100" />
+      <div className="flex gap-x-2">
+        <InputText
+          text="Area code"
+          value={formData.areaCode?.toString()!}
+          maxLength={3}
+          onChange={(event) =>
+            setFormData({
+              ...formData,
+              areaCode: parseInt(event.target.value, 10) || 213,
+            })
+          }
+          error={errors.areaCode}
+        />
+
+        <InputText
+          text="Phone number"
+          value={formData.phoneNumber?.toString()!}
+          maxLength={7}
+          onChange={(event) =>
+            setFormData({
+              ...formData,
+              phoneNumber: parseInt(event.target.value, 10) || 0,
+            })
+          }
+          error={errors.phoneNumber}
+        />
+      </div>
     </>
   );
 };

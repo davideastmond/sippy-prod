@@ -15,4 +15,14 @@ export const formSchema = z.object({
     .min(dayjs().set("hour", 0).set("minute", 0).set("second", 0).toDate())
     .nullable(),
   timeSlot: z.nativeEnum(TimeSlot),
+  areaCode: z
+    .number()
+    .int()
+    .min(201, { message: "Enter a valid 3-digit area code" })
+    .max(999, { message: "Enter a valid 3-digit area code" }),
+  phoneNumber: z
+    .number()
+    .int()
+    .min(100000, { message: "Telephone number should be 7 digits" })
+    .max(9999999, { message: "Telephone number should be 7 digits" }),
 });
