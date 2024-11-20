@@ -76,8 +76,8 @@ export const FormStepThree = ({
       <div className="flex">
         <Image alt="info" src={InfoIcon} width={16} />
         <p className="text-white">
-          Please note: your appointment timeslot is not guaranteed. We will
-          e-mail you with a confirmed appointment time.
+          Note that your appointment timeslot is not guaranteed. We will e-mail
+          you with a confirmed appointment time.
         </p>
       </div>
     </>
@@ -86,6 +86,7 @@ export const FormStepThree = ({
 
 const toCalendarDateFromJSDate = (date?: Date): CalendarDate | null => {
   // formData.appointmentDate is a Date object but the NextUi calendar component requires a CalendarDate object
+  console.info("89 date", date);
   if (!date) return null;
 
   const convertedDayjsDate = dayjs(date);

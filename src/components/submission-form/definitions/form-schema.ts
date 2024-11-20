@@ -12,7 +12,7 @@ export const formSchema = z.object({
   }),
   appointmentDate: z
     .date()
-    .min(dayjs().set("hour", 9).set("minute", 0).toDate())
+    .min(dayjs().set("hour", 0).set("minute", 0).set("second", 0).toDate())
     .nullable(),
   timeSlot: z.nativeEnum(TimeSlot),
 });

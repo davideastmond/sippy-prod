@@ -1,6 +1,7 @@
 "use client";
 
 import { TimeSlot } from "@/types/time-slot";
+import dayjs from "dayjs";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
@@ -23,7 +24,7 @@ export function SubmissionForm() {
     address: {
       fullAddress: "",
     },
-    appointmentDate: null,
+    appointmentDate: dayjs().toDate(),
     timeSlot: TimeSlot.Morning,
   });
   const [errors, setErrors] = useState<{
@@ -80,7 +81,6 @@ export function SubmissionForm() {
       <ReviewSubmit formData={formData} />,
     ];
 
-    // These are just safety checks
     if (index < 0) return steps[0];
     if (index >= steps.length) return steps[steps.length - 1];
 
@@ -90,7 +90,7 @@ export function SubmissionForm() {
   const navigateStep = (direction: "next" | "back") => {
     if (direction === "next") {
       if (currentStep === MAX_STEPS - 1) {
-        // Submit the formw
+        // TODO: Submit the form
         console.log("Submit the form");
         return;
       }
