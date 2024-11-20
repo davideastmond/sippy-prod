@@ -47,12 +47,13 @@ export const FormStepOne = ({
       <div className="flex gap-x-2">
         <InputText
           text="Area code"
-          value={formData.areaCode?.toString()!}
+          value={formData.areaCode}
           maxLength={3}
+          type="number"
           onChange={(event) =>
             setFormData({
               ...formData,
-              areaCode: parseInt(event.target.value, 10) || 213,
+              areaCode: event.target.value,
             })
           }
           error={errors.areaCode}
@@ -60,12 +61,13 @@ export const FormStepOne = ({
 
         <InputText
           text="Phone number"
-          value={formData.phoneNumber?.toString()!}
+          value={formData.phoneNumber}
           maxLength={7}
+          type="number"
           onChange={(event) =>
             setFormData({
               ...formData,
-              phoneNumber: parseInt(event.target.value, 10) || 0,
+              phoneNumber: event.target.value,
             })
           }
           error={errors.phoneNumber}
