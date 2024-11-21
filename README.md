@@ -62,8 +62,7 @@ Follow these steps to set up and run the application locally:
    Create a environment variable called `AUTH_SECRET` and assign some string (any string) to it.
    This is used by NextAuth to generate a token.
 
-   To enable address autocomplete functionality, you need to set up a Google API key and assign it to an environment variable named `GOOGLE_API_KEY`. This key is required for using the Google Places API to fetch address suggestions. Click [here](https://developers.google.com/maps/documentation/places/web-service/get-api-key) for instructions on how to obtain the key.
-
+   To enable address autocomplete functionality, you need to set up a Google API key and assign it to an environment variable named `GOOGLEMAPS_API_KEY`. This key is required for using the Google Places API to fetch address suggestions. Click [here](https://developers.google.com/maps/documentation/places/web-service/get-api-key) for instructions on how to obtain the key.
 
 4. **Generate Prisma Client**
 

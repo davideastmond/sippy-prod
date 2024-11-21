@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 // Your Google API key is used here as an environment variable
-const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
+const GOOGLEMAPS_API_KEY = process.env.GOOGLEMAPS_API_KEY;
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
@@ -19,7 +19,7 @@ export async function GET(req: Request) {
     const googleResponse = await fetch(
       `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(
         query
-      )}&types=address&components=country:US&key=${GOOGLE_API_KEY}`
+      )}&types=address&components=country:US&key=${GOOGLEMAPS_API_KEY}`
     );
 
     if (!googleResponse.ok) {
@@ -33,7 +33,9 @@ export async function GET(req: Request) {
 
     // Filter addresses that include "Los Angeles" and create an array of suggestions
     const suggestions = data.predictions
-      .filter((prediction: any) => prediction.description.includes("Los Angeles"))
+      .filter((prediction: any) =>
+        prediction.description.includes("Los Angeles")
+      )
       .map((prediction: any) => prediction.description);
 
     return NextResponse.json(suggestions);
