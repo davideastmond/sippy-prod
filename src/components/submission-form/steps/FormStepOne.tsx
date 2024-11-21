@@ -24,15 +24,7 @@ export const FormStepOne = ({
     <>
       <TextLabel text="E-mail Address" fontSize="Text-18" color="Gray-100" />
       {/* The e-mail field is auto-populated by the session user */}
-      <InputText
-        text="E-mail Address"
-        value={formData.email!}
-        disalbed
-        onChange={(event) =>
-          setFormData({ ...formData, email: event.target.value })
-        }
-        error={errors.email}
-      />
+      <InputText text="E-mail Address" value={formData.email!} disalbed />
 
       <TextLabel text="Full Name" fontSize="Text-18" color="Gray-100" />
       <InputText
