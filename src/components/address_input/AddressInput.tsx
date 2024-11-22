@@ -1,14 +1,14 @@
 "use client";
 
-import { GoogleAddressApiResponse } from "@/types/google-address-api-response";
+import { GoogleAddressData } from "@/types/google-address-data";
 import debounce from "lodash/debounce";
 import { ChangeEvent, useCallback, useState } from "react";
 import { InputText } from "../inputText";
 
 interface AddressInputProps {
   validationErrors?: string;
-  onSelect?: (data: GoogleAddressApiResponse) => void;
-  addressData?: GoogleAddressApiResponse;
+  onSelect?: (data: GoogleAddressData) => void;
+  addressData?: GoogleAddressData;
 }
 const AddressInput = ({
   onSelect,
@@ -19,7 +19,7 @@ const AddressInput = ({
 
   const [error, setError] = useState("");
   const [suggestionsDropdownOpen, setSuggestionsDropdownOpen] = useState(false);
-  const [suggestions, setSuggestions] = useState<GoogleAddressApiResponse[]>(
+  const [suggestions, setSuggestions] = useState<GoogleAddressData[]>(
     getInitialGoogleAddressData(addressData)
   );
   const fetchSuggestions = useCallback(
@@ -36,7 +36,7 @@ const AddressInput = ({
         if (!response.ok) {
           throw new Error("Failed to fetch suggestions");
         }
-        const data: GoogleAddressApiResponse[] = await response.json();
+        const data: GoogleAddressData[] = await response.json();
         setSuggestions(data);
       } catch (error) {
         console.error("Error fetching suggestions:", error);
@@ -56,7 +56,7 @@ const AddressInput = ({
     fetchSuggestions(e.target.value);
   };
 
-  const handleSelect = (address: GoogleAddressApiResponse) => {
+  const handleSelect = (address: GoogleAddressData) => {
     setQuery(address.description);
     setSuggestions([]);
     setError("");
@@ -94,12 +94,12 @@ const AddressInput = ({
 };
 
 function getInitialGoogleAddressData(
-  addressData: GoogleAddressApiResponse | undefined
-): GoogleAddressApiResponse[] {
+  addressData: GoogleAddressData | undefined
+): GoogleAddressData[] {
   return addressData ? [addressData] : [];
 }
 
-function getInitialQuery(addressData: GoogleAddressApiResponse | undefined) {
+function getInitialQuery(addressData: GoogleAddressData | undefined) {
   return addressData?.description || "";
 }
 
