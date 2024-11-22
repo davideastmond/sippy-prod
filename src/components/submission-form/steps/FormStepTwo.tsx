@@ -1,3 +1,4 @@
+import AddressInput from "@/components/address_input/AddressInput";
 import { TextLabel } from "@/components/textLabel";
 import { FormSchemaUserFormData } from "../definitions/types";
 
@@ -11,8 +12,8 @@ interface FormStepTwoProps {
 export const FormStepTwo = ({ formData, setFormData }: FormStepTwoProps) => {
   return (
     <>
-      <TextLabel text="Address" fontSize="Text-18" color="Gray-100" />
-      {/* The address field should be auto-complete. It will go here */}
+      <TextLabel text="Service Address" fontSize="Text-18" color="Gray-100" />
+      <AddressInput />
     </>
   );
 };
