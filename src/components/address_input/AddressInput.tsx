@@ -1,14 +1,15 @@
 "use client";
 
-import React, { useState, useCallback, ChangeEvent, FormEvent } from "react";
 import debounce from "lodash/debounce";
+import { ChangeEvent, useCallback, useState } from "react";
+import { InputText } from "../inputText";
 
 const AddressInput = () => {
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState([]);
-  const [selectedAddress, setSelectedAddress] = useState<String | null>(null);
+  const [selectedAddress, setSelectedAddress] = useState<string | null>(null);
   const [error, setError] = useState("");
-
+  const [suggestionsDropdownOpen, setSuggestionsDropdownOpen] = useState(false);
   const fetchSuggestions = useCallback(
     debounce(async (value) => {
       if (!value) {
@@ -17,7 +18,9 @@ const AddressInput = () => {
       }
 
       try {
-        const response = await fetch(`/api/addresses?query=${encodeURIComponent(value)}`);
+        const response = await fetch(
+          `/api/addresses?query=${encodeURIComponent(value)}`
+        );
         if (!response.ok) {
           throw new Error("Failed to fetch suggestions");
         }
@@ -31,51 +34,50 @@ const AddressInput = () => {
     []
   );
 
-  const handleChange = (e:ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.value?.length > 0) {
+      setSuggestionsDropdownOpen(true);
+    } else {
+      setSuggestionsDropdownOpen(false);
+    }
     setQuery(e.target.value);
     setSelectedAddress(null);
     fetchSuggestions(e.target.value);
   };
 
-  const handleSelect = (address:string) => {
+  const handleSelect = (address: string) => {
     setQuery(address);
     setSelectedAddress(address);
     setSuggestions([]);
     setError("");
-  };
-
-  // This should be changed after integration with the request submission form
-  const handleSubmit = (e:FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!selectedAddress) {
-      setError("Please select a valid Los Angeles address.");
-      return;
-    }
-    console.log("Form submitted with the following address: ", selectedAddress);
+    setSuggestionsDropdownOpen(false);
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <input
+    <>
+      <InputText
+        text="Enter your address"
         type="text"
         value={query}
         onChange={handleChange}
-        placeholder="Enter your address"
       />
-      <ul>
-        {suggestions.length > 0 ? (
-          suggestions.map((address, idx) => (
-            <li key={idx} onClick={() => handleSelect(address)}>
-              {address}
-            </li>
-          ))
-        ) : (
-          query && <li>No matching addresses found</li>
-        )}
-      </ul>
+      {suggestionsDropdownOpen && (
+        <ul className="bg-simmpy-gray-100 rounded p-2">
+          {suggestions.length > 0
+            ? suggestions.map((address, idx) => (
+                <li
+                  key={idx}
+                  onClick={() => handleSelect(address)}
+                  className="hover:cursor-pointe"
+                >
+                  {address}
+                </li>
+              ))
+            : query && <li>No matching addresses found</li>}
+        </ul>
+      )}
       {error && <p style={{ color: "red" }}>{error}</p>}
-      <button type="submit">Submit</button>
-    </form>
+    </>
   );
 };
 
