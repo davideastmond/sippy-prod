@@ -22,8 +22,7 @@ export function SubmissionForm() {
   const [formData, setFormData] = useState<Partial<FormSchemaUserFormData>>({
     name: "",
     email: "",
-    // TODO: Determine structure of address object
-    googleAddressData: null as any,
+    googleAddressData: {} as any,
     appointmentDate: dayjs().add(1, "day").toDate(),
     timeSlot: TimeSlot.Morning,
     areaCode: "",
@@ -130,7 +129,7 @@ export function SubmissionForm() {
   const submitResidentRequest = async () => {
     try {
       setIsBusy(true);
-      await ResidentRequestService.create(formData);
+      await ResidentRequestService.create(formData as any);
       setIsBusy(false);
     } catch (error: any) {
       console.error(error);
