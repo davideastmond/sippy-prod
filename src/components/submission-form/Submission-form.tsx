@@ -7,15 +7,15 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { ButtonText } from "../buttonText";
-import { TextLabel } from "../textLabel";
 import { WrapperContainer } from "../wrapperContainer";
 import { HeaderStatus } from "./AppointmentHeaderStatus";
-import { formSchema } from "./definitions/form-schema";
 import { FormSchemaUserFormData } from "./definitions/types";
 import { FormStepOne } from "./steps/FormStepOne";
 import { FormStepThree } from "./steps/FormStepThree";
 import { FormStepTwo } from "./steps/FormStepTwo";
 import { ReviewSubmit } from "./steps/ReviewSubmit";
+import { SubmitSuccess } from "./SubmitSuccess";
+import { FormStepValidator } from "./utils/form-step-validator/form-step-validator";
 
 const MAX_STEPS = 4;
 export function SubmissionForm() {
@@ -23,9 +23,7 @@ export function SubmissionForm() {
     name: "",
     email: "",
     // TODO: Determine structure of address object
-    address: {
-      fullAddress: "",
-    },
+    googleAddressData: null as any,
     appointmentDate: dayjs().add(1, "day").toDate(),
     timeSlot: TimeSlot.Morning,
     areaCode: "",
@@ -34,6 +32,11 @@ export function SubmissionForm() {
   const [errors, setErrors] = useState<{
     email?: string;
     name?: string;
+    googleAddressData?: string;
+    appointmentDate?: string;
+    timeSlot?: string;
+    areaCode?: string;
+    phoneNumber?: string;
   }>({});
 
   const [currentStep, setCurrentStep] = useState(0);
@@ -46,29 +49,32 @@ export function SubmissionForm() {
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
-
-    const result = formSchema.safeParse(formData);
-    if (!result.success) {
-      const fieldErrors: {
-        email?: string;
-        name?: string;
-        address?: { fullAddress?: string };
-        appointmentDate?: string;
-        timeSlot?: string;
-        areaCode?: string;
-        phoneNumber?: string;
-      } = {};
-
-      for (const err of result.error.errors) {
-        fieldErrors[err.path[0] as keyof FormSchemaUserFormData] = err.message;
-      }
-      setErrors(fieldErrors);
-      return;
-    }
-    setErrors({});
-
     const submitterButton = (event.nativeEvent as SubmitEvent)
       ?.submitter as HTMLButtonElement;
+
+    if (submitterButton.name === "next") {
+      const result = FormStepValidator(currentStep).safeParse(formData);
+      if (!result.success) {
+        const fieldErrors: {
+          email?: string;
+          name?: string;
+          googleAddressData?: string;
+          appointmentDate?: string;
+          timeSlot?: string;
+          areaCode?: string;
+          phoneNumber?: string;
+        } = {};
+
+        for (const err of result.error.errors) {
+          fieldErrors[err.path[0] as keyof FormSchemaUserFormData] =
+            err.message;
+        }
+        console.info(fieldErrors);
+        setErrors(fieldErrors);
+        return;
+      }
+      setErrors({});
+    }
 
     navigateStep(submitterButton.name as "next" | "back");
   }
@@ -80,7 +86,11 @@ export function SubmissionForm() {
         setFormData={setFormData}
         errors={errors}
       />,
-      <FormStepTwo formData={formData} setFormData={setFormData} />,
+      <FormStepTwo
+        formData={formData}
+        setFormData={setFormData}
+        errors={errors}
+      />,
       <FormStepThree
         formData={formData}
         setFormData={setFormData}
@@ -98,7 +108,7 @@ export function SubmissionForm() {
   const navigateStep = async (direction: "next" | "back") => {
     if (direction === "next") {
       if (currentStep === MAX_STEPS - 1) {
-        // This condition is the final submission
+        // The at the final step. Submit the form
         await submitResidentRequest();
         setIsSubmitted(true); // Show the submission confirmation
         return;
@@ -136,23 +146,7 @@ export function SubmissionForm() {
   }
 
   return isSubmitted ? (
-    <div className="flex p-6 w-full flex-col gap-4 bg-simmpy-gray-600 rounded-md justify-center items-center">
-      <TextLabel
-        text="Thank you for your submission!"
-        fontSize="Text-20"
-        color="Gray-100"
-      />
-      <TextLabel
-        text="Please note that your appointment time slot is not guaranteed until you receive a confirmation email."
-        fontSize="Text-14"
-        color="Gray-100"
-      />
-      <ButtonText
-        text="Return to dashboard"
-        color="Green"
-        onClick={() => router.push("/dashboard")}
-      />
-    </div>
+    <SubmitSuccess />
   ) : (
     <div className="flex gap-2 flex-col flex-1 justify-center items-center">
       <HeaderStatus currentStage={currentStep} stages={[1, 2, 3, 4]} />
