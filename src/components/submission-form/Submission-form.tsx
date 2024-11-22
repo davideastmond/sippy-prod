@@ -5,7 +5,7 @@ import { ResidentRequestService } from "app/services/resident-request-service";
 import dayjs from "dayjs";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { ButtonText } from "../buttonText";
 import { WrapperContainer } from "../wrapperContainer";
 import { HeaderStatus } from "./AppointmentHeaderStatus";
@@ -38,6 +38,7 @@ export function SubmissionForm() {
     areaCode?: string;
     phoneNumber?: string;
   }>({});
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const [currentStep, setCurrentStep] = useState(0);
 
@@ -47,12 +48,16 @@ export function SubmissionForm() {
 
   const router = useRouter();
 
+  const isFinalStep = useMemo(
+    () => currentStep === MAX_STEPS - 1,
+    [currentStep]
+  );
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     const submitterButton = (event.nativeEvent as SubmitEvent)
       ?.submitter as HTMLButtonElement;
 
-    if (submitterButton.name === "next") {
+    if (submitterButton.name === "next" && !isFinalStep) {
       const result = FormStepValidator(currentStep).safeParse(formData);
       if (!result.success) {
         const fieldErrors: {
@@ -69,7 +74,7 @@ export function SubmissionForm() {
           fieldErrors[err.path[0] as keyof FormSchemaUserFormData] =
             err.message;
         }
-        console.info(fieldErrors);
+
         setErrors(fieldErrors);
         return;
       }
@@ -107,7 +112,7 @@ export function SubmissionForm() {
 
   const navigateStep = async (direction: "next" | "back") => {
     if (direction === "next") {
-      if (currentStep === MAX_STEPS - 1) {
+      if (isFinalStep) {
         // The at the final step. Submit the form
         await submitResidentRequest();
         setIsSubmitted(true); // Show the submission confirmation
@@ -172,6 +177,9 @@ export function SubmissionForm() {
           disabled={isBusy}
         />
       </form>
+      {submitError && (
+        <p className="text-red-500 text-sm font-lato">{submitError}</p>
+      )}
     </div>
   );
 }
