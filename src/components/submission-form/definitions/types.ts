@@ -1,4 +1,14 @@
 import { z } from "zod";
-import { formSchema } from "./form-schema";
+import {
+  addressSchema,
+  appointmentSchema,
+  nameEmailPhoneSchema,
+} from "./form-schemas";
 
-export type FormSchemaUserFormData = z.infer<typeof formSchema>;
+export type nameEmailPhoneFormData = z.infer<typeof nameEmailPhoneSchema>;
+export type appointmentFormData = z.infer<typeof appointmentSchema>;
+export type addressSchemaFormData = z.infer<typeof addressSchema>;
+
+export type FormSchemaUserFormData = nameEmailPhoneFormData &
+  appointmentFormData &
+  addressSchemaFormData;
