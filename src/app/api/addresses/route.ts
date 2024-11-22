@@ -29,10 +29,11 @@ export async function GET(req: Request) {
       );
     }
 
-    const data = await googleResponse.json();
+    const placesAutocompleteResponse: google.maps.places.AutocompleteResponse =
+      await googleResponse.json();
 
     // Filter addresses that include "Los Angeles" and create an array of suggestions
-    const suggestions = data.predictions
+    const suggestions = placesAutocompleteResponse.predictions
       .filter((prediction: any) =>
         prediction.description.includes("Los Angeles")
       )
