@@ -1,3 +1,4 @@
+import { GoogleAddressComponentsParser } from "@/lib/utils/google-address-components-parser";
 import { NextResponse } from "next/server";
 
 // Your Google API key is used here as an environment variable
@@ -32,13 +33,46 @@ export async function GET(req: Request) {
     const placesAutocompleteResponse: google.maps.places.AutocompleteResponse =
       await googleResponse.json();
 
-    // Filter addresses that include "Los Angeles" and create an array of suggestions
-    const suggestions = placesAutocompleteResponse.predictions
+    // Filter addresses that include "Los Angeles" and create an array of suggestions with a placeId
+    const descriptionPlaceIds = placesAutocompleteResponse.predictions
       .filter((prediction: any) =>
         prediction.description.includes("Los Angeles")
       )
-      .map((prediction: any) => prediction.description);
+      .map((prediction: any) => ({
+        description: prediction.description,
+        place_id: prediction.place_id,
+      }));
 
+    const suggestions = []; // This is what will be returned in the API Response
+
+    // Access the google maps places details api to grab the address components as well as the lat and long
+    for await (const el of descriptionPlaceIds) {
+      const googleDetailsResponse = await fetch(
+        `https://maps.googleapis.com/maps/api/place/details/json?place_id=${el.place_id}&fields=address_components,geometry&key=${GOOGLEMAPS_API_KEY}`
+      );
+
+      if (!googleDetailsResponse.ok) {
+        return NextResponse.json(
+          { error: "Failed to fetch data from Google Places API" },
+          { status: googleDetailsResponse.status }
+        );
+      }
+
+      const placeDetails: { result: google.maps.places.PlaceResult } =
+        await googleDetailsResponse.json();
+
+      const addressComponents = placeDetails.result.address_components;
+      const geometry = placeDetails.result.geometry;
+
+      suggestions.push({
+        description: el.description,
+        place_id: el.place_id,
+        address: new GoogleAddressComponentsParser(
+          addressComponents!,
+          geometry!
+        ).parse(),
+      });
+    }
     return NextResponse.json(suggestions);
   } catch (error) {
     console.error("Error fetching Google Places API data:", error);
