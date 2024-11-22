@@ -1,15 +1,27 @@
 "use client";
 
+import { GoogleAddressApiResponse } from "@/types/google-address-api-response";
 import debounce from "lodash/debounce";
 import { ChangeEvent, useCallback, useState } from "react";
 import { InputText } from "../inputText";
 
-const AddressInput = () => {
-  const [query, setQuery] = useState("");
-  const [suggestions, setSuggestions] = useState([]);
-  const [selectedAddress, setSelectedAddress] = useState<string | null>(null);
+interface AddressInputProps {
+  validationErrors?: string;
+  onSelect?: (data: GoogleAddressApiResponse) => void;
+  addressData?: GoogleAddressApiResponse;
+}
+const AddressInput = ({
+  onSelect,
+  validationErrors,
+  addressData,
+}: AddressInputProps) => {
+  const [query, setQuery] = useState(getInitialQuery(addressData));
+
   const [error, setError] = useState("");
   const [suggestionsDropdownOpen, setSuggestionsDropdownOpen] = useState(false);
+  const [suggestions, setSuggestions] = useState<GoogleAddressApiResponse[]>(
+    getInitialGoogleAddressData(addressData)
+  );
   const fetchSuggestions = useCallback(
     debounce(async (value) => {
       if (!value) {
@@ -24,7 +36,7 @@ const AddressInput = () => {
         if (!response.ok) {
           throw new Error("Failed to fetch suggestions");
         }
-        const data = await response.json();
+        const data: GoogleAddressApiResponse[] = await response.json();
         setSuggestions(data);
       } catch (error) {
         console.error("Error fetching suggestions:", error);
@@ -41,16 +53,15 @@ const AddressInput = () => {
       setSuggestionsDropdownOpen(false);
     }
     setQuery(e.target.value);
-    setSelectedAddress(null);
     fetchSuggestions(e.target.value);
   };
 
-  const handleSelect = (address: string) => {
-    setQuery(address);
-    setSelectedAddress(address);
+  const handleSelect = (address: GoogleAddressApiResponse) => {
+    setQuery(address.description);
     setSuggestions([]);
     setError("");
     setSuggestionsDropdownOpen(false);
+    onSelect?.(address);
   };
 
   return (
@@ -60,17 +71,18 @@ const AddressInput = () => {
         type="text"
         value={query}
         onChange={handleChange}
+        error={validationErrors}
       />
       {suggestionsDropdownOpen && (
         <ul className="bg-simmpy-gray-100 rounded p-2">
           {suggestions.length > 0
-            ? suggestions.map((address, idx) => (
+            ? suggestions.map((addressSuggestion, idx) => (
                 <li
                   key={idx}
-                  onClick={() => handleSelect(address)}
+                  onClick={() => handleSelect(addressSuggestion)}
                   className="hover:cursor-pointe"
                 >
-                  {address}
+                  {addressSuggestion.description}
                 </li>
               ))
             : query && <li>No matching addresses found</li>}
@@ -80,5 +92,15 @@ const AddressInput = () => {
     </>
   );
 };
+
+function getInitialGoogleAddressData(
+  addressData: GoogleAddressApiResponse | undefined
+): GoogleAddressApiResponse[] {
+  return addressData ? [addressData] : [];
+}
+
+function getInitialQuery(addressData: GoogleAddressApiResponse | undefined) {
+  return addressData?.description || "";
+}
 
 export default AddressInput;
