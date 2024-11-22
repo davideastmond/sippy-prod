@@ -2,6 +2,7 @@
 
 import { TextLabel } from "@/components/textLabel";
 import { getTimeSlotSummaryCaption } from "@/lib/utils/time-slot";
+import { Address } from "@prisma/client";
 import dayjs from "dayjs";
 import { FormSchemaUserFormData } from "../definitions/types";
 
@@ -21,6 +22,11 @@ export const ReviewSubmit = ({ formData }: ReviewSubmitProps) => {
   return (
     <>
       <TextLabel text="Review and Submit" fontSize="Text-20" color="Gray-100" />
+      <TextLabel
+        text="Please review the information below and click 'Submit' to confirm your appointment."
+        fontSize="Text-12"
+        color="Gray-100"
+      />
       <div>
         <TextLabel text="Full Name:" fontSize="Text-14" color="Gray-100" />
         <TextLabel text={formData.name!} fontSize="Text-14" color="Green" />
@@ -39,10 +45,8 @@ export const ReviewSubmit = ({ formData }: ReviewSubmitProps) => {
       </div>
       <div>
         <TextLabel text="Address:" fontSize="Text-14" color="Gray-100" />
-        <TextLabel
-          text={formData.address?.fullAddress! || "No address provided"}
-          fontSize="Text-14"
-          color="Green"
+        <FormattedAddress
+          address={formData.googleAddressData?.address as Partial<Address>}
         />
       </div>
       <div>
@@ -70,5 +74,23 @@ export const ReviewSubmit = ({ formData }: ReviewSubmitProps) => {
         />
       </div>
     </>
+  );
+};
+
+const FormattedAddress = ({ address }: { address: Partial<Address> }) => {
+  return (
+    <div>
+      <TextLabel
+        text={`${address.streetNumber} ${address.streetName}`}
+        fontSize="Text-14"
+        color="Green"
+      />
+
+      <TextLabel
+        text={`${address.city}, ${address.zipCode}`}
+        fontSize="Text-14"
+        color="Green"
+      />
+    </div>
   );
 };
