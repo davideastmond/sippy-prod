@@ -64,6 +64,8 @@ Follow these steps to set up and run the application locally:
 
    To enable address autocomplete functionality, you need to set up a Google API key and assign it to an environment variable named `GOOGLEMAPS_API_KEY`. This key is required for using the Google Places API to fetch address suggestions. Click [here](https://developers.google.com/maps/documentation/places/web-service/get-api-key) for instructions on how to obtain the key.
 
+   In your Google console, ensure that the `Places` and `PlacesDetails` API functionality are switched on.
+
 4. **Generate Prisma Client**
 
    To generate the Prisma client based on the defined schema, run:
