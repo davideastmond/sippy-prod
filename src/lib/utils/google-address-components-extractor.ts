@@ -1,6 +1,6 @@
 import { Address } from "@prisma/client";
 /* 
-  This goal of this class is to parse the address components returned by the Google Maps Geocoding API
+  This goal of this class is to extract the address components returned by the Google Maps Geocoding API
   and return an address object
   streetName   String
   streetNumber String
@@ -11,7 +11,7 @@ import { Address } from "@prisma/client";
 
 */
 
-export class GoogleAddressComponentsParser {
+export class GoogleAddressComponentsExtractor {
   private addressComponents: google.maps.GeocoderAddressComponent[];
   private geometry: google.maps.places.PlaceGeometry;
   constructor(
@@ -22,7 +22,7 @@ export class GoogleAddressComponentsParser {
     this.geometry = geometry;
   }
 
-  public parse(): Partial<Address> {
+  public extract(): Partial<Address> {
     return {
       streetName: this.getStreetName(),
       streetNumber: this.getStreetNumber(),

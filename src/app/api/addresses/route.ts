@@ -1,4 +1,4 @@
-import { GoogleAddressComponentsParser } from "@/lib/utils/google-address-components-parser";
+import { GoogleAddressComponentsExtractor } from "@/lib/utils/google-address-components-extractor";
 import { NextResponse } from "next/server";
 
 // Your Google API key is used here as an environment variable
@@ -61,16 +61,15 @@ export async function GET(req: Request) {
       const placeDetails: { result: google.maps.places.PlaceResult } =
         await googleDetailsResponse.json();
 
-      const addressComponents = placeDetails.result.address_components;
-      const geometry = placeDetails.result.geometry;
+      const { geometry, address_components } = placeDetails.result;
 
       suggestions.push({
         description: el.description,
         place_id: el.place_id,
-        address: new GoogleAddressComponentsParser(
-          addressComponents!,
+        address: new GoogleAddressComponentsExtractor(
+          address_components!,
           geometry!
-        ).parse(),
+        ).extract(),
       });
     }
     return NextResponse.json(suggestions);
