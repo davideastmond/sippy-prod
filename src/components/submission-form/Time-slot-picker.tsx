@@ -1,4 +1,4 @@
-import { getTimeSlotHours } from "@/lib/utils/time-slot";
+import { getTimeSlotHoursClock } from "@/lib/utils/time-slot/time-slot";
 import { TimeSlot } from "@/types/time-slot";
 import { Radio, RadioGroup, RadioProps, cn } from "@nextui-org/react";
 import { useState } from "react";
@@ -24,13 +24,13 @@ export const TimeSlotPicker = ({ value, onChange }: TimeSlotPickerProps) => {
       onValueChange={handleTimeSlotChange}
     >
       <CustomRadio value={TimeSlot.Morning}>
-        {getTimeSlotHours(TimeSlot.Morning)}
+        {getTimeSlotHoursClock(TimeSlot.Morning)}
       </CustomRadio>
       <CustomRadio value={TimeSlot.Daytime}>
-        {getTimeSlotHours(TimeSlot.Daytime)}
+        {getTimeSlotHoursClock(TimeSlot.Daytime)}
       </CustomRadio>
       <CustomRadio value={TimeSlot.Evening}>
-        {getTimeSlotHours(TimeSlot.Evening)}
+        {getTimeSlotHoursClock(TimeSlot.Evening)}
       </CustomRadio>
     </RadioGroup>
   );
