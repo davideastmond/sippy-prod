@@ -23,7 +23,7 @@ export const ReviewSubmit = ({ formData }: ReviewSubmitProps) => {
     <>
       <TextLabel text="Review and Submit" fontSize="Text-20" color="Gray-100" />
       <TextLabel
-        text="Please review the information below and click 'Submit' to confirm your appointment."
+        text="Please review the information below and tap 'Submit' to send your appointment request."
         fontSize="Text-12"
         color="Gray-100"
       />
