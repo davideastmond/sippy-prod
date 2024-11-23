@@ -3,7 +3,7 @@ import dayjs from "dayjs";
 import { z } from "zod";
 
 // Name, e-mail, phone number/area code are validated here
-export const nameEmailPhoneSchema = z.object({
+export const nameEmailPhoneValidationSchema = z.object({
   areaCode: z.custom(
     (value: string) => {
       const areaCodeRegex = /^[2-9]\d{2}$/;
@@ -25,7 +25,7 @@ export const nameEmailPhoneSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
 });
 
-export const addressSchema = z.object({
+export const addressValidationSchema = z.object({
   googleAddressData: z.object(
     {
       description: z.string().min(1, { message: "Address is required" }),
@@ -45,7 +45,7 @@ export const addressSchema = z.object({
   ),
 });
 
-export const appointmentSchema = z.object({
+export const appointmentValidationSchema = z.object({
   appointmentDate: z
     .date()
     .min(dayjs().set("hour", 0).set("minute", 0).set("second", 0).toDate()),

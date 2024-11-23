@@ -1,13 +1,15 @@
-import { z } from "zod";
 import {
-  addressSchema,
-  appointmentSchema,
-  nameEmailPhoneSchema,
-} from "./form-schemas";
+  addressValidationSchema,
+  appointmentValidationSchema,
+  nameEmailPhoneValidationSchema,
+} from "@/lib/validation-schemas/validation-schemas";
+import { z } from "zod";
 
-export type nameEmailPhoneFormData = z.infer<typeof nameEmailPhoneSchema>;
-export type appointmentFormData = z.infer<typeof appointmentSchema>;
-export type addressSchemaFormData = z.infer<typeof addressSchema>;
+export type nameEmailPhoneFormData = z.infer<
+  typeof nameEmailPhoneValidationSchema
+>;
+export type appointmentFormData = z.infer<typeof appointmentValidationSchema>;
+export type addressSchemaFormData = z.infer<typeof addressValidationSchema>;
 
 export type FormSchemaUserFormData = nameEmailPhoneFormData &
   appointmentFormData &
