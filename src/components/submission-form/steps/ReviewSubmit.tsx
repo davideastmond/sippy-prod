@@ -1,4 +1,4 @@
-/* Confirm and submit screen */
+/* Review and submit screen */
 
 import { TextLabel } from "@/components/textLabel";
 import { getTimeSlotSummaryCaption } from "@/lib/utils/time-slot/time-slot";

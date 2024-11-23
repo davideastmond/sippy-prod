@@ -1,9 +1,9 @@
 "use client";
 
+import { InputText } from "@/components/inputText";
 import { GoogleAddressData } from "@/types/google-address-data";
 import debounce from "lodash/debounce";
 import { ChangeEvent, useCallback, useState } from "react";
-import { InputText } from "../inputText";
 
 interface AddressInputProps {
   validationErrors?: string;

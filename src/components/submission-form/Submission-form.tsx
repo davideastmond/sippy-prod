@@ -1,13 +1,14 @@
 "use client";
 
+import { ButtonText } from "@/components/buttonText";
+import { WrapperContainer } from "@/components/wrapperContainer";
 import { TimeSlot } from "@/types/time-slot";
+
 import { ResidentRequestService } from "app/services/resident-request-service";
 import dayjs from "dayjs";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useMemo, useState } from "react";
-import { ButtonText } from "../buttonText";
-import { WrapperContainer } from "../wrapperContainer";
 import { HeaderStatus } from "./AppointmentHeaderStatus";
 import { FormSchemaUserFormData } from "./definitions/types";
 import { FormStepOne } from "./steps/FormStepOne";

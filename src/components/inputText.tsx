@@ -1,4 +1,4 @@
-import { TextLabel } from "./textLabel";
+import { TextLabel } from "@/components/textLabel";
 
 interface InputTextProps {
   text: string;
