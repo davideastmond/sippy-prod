@@ -1,7 +1,7 @@
 /* Confirm and submit screen */
 
 import { TextLabel } from "@/components/textLabel";
-import { getTimeSlotSummaryCaption } from "@/lib/utils/time-slot";
+import { getTimeSlotSummaryCaption } from "@/lib/utils/time-slot/time-slot";
 import { Address } from "@prisma/client";
 import dayjs from "dayjs";
 import { FormSchemaUserFormData } from "../definitions/types";
