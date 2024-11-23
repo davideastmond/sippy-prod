@@ -52,3 +52,10 @@ export const appointmentValidationSchema = z.object({
 
   timeSlot: z.nativeEnum(TimeSlot),
 });
+
+// This will be used in the backend to validate the request body
+export const residentRequestValidationSchema = z.union([
+  nameEmailPhoneValidationSchema,
+  addressValidationSchema,
+  appointmentValidationSchema,
+]);

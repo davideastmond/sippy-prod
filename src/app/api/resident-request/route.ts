@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { assignRequestedTimeSlot } from "@/lib/utils/time-slot/time-slot-assigners";
+import { residentRequestValidationSchema } from "@/lib/validation-schemas/validation-schemas";
 import { ResidentReqestApiRequest } from "@/types/resident-request-api-request";
 import { Address } from "@prisma/client";
 import { NextResponse } from "next/server";
@@ -10,7 +11,17 @@ export const POST = auth(async function POST(req) {
     return NextResponse.json({ message: "No session" }, { status: 401 });
   }
 
-  const requestBody: ResidentReqestApiRequest = await req.json();
+  let requestBody: ResidentReqestApiRequest;
+
+  try {
+    requestBody = await req.json();
+    residentRequestValidationSchema.parse(requestBody);
+  } catch (error: any) {
+    return NextResponse.json(
+      { errors: error.issues || "Invalid request body." },
+      { status: 400 }
+    );
+  }
 
   const {
     name,
