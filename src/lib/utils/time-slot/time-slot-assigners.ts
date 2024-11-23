@@ -1,6 +1,6 @@
+import { getTimeSlotHours } from "@/lib/utils/time-slot/time-slot";
 import { TimeSlot } from "@/types/time-slot";
 import dayjs from "dayjs";
-import { getTimeSlotHours } from "./time-slot";
 
 export function assignRequestedTimeSlot(
   appointmentDate: string,
