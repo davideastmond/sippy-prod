@@ -37,6 +37,8 @@ export const POST = auth(async function POST(req) {
     timeSlot
   );
 
+  const { address }: { address: Partial<Address> } = googleAddressData;
+
   // This route is assuming that external users are submitting the request on their own behalf
   // Find the user in the database by e-mail, update their name to the one they entered on the form
   try {
@@ -47,15 +49,12 @@ export const POST = auth(async function POST(req) {
         phoneNumber: `${areaCode}${phoneNumber}`,
         address: {
           create: {
-            streetNumber: (googleAddressData.address as Partial<Address>)
-              .streetNumber!,
-            city: (googleAddressData.address as Partial<Address>).city!,
-            zipCode: (googleAddressData.address as Partial<Address>).zipCode!,
-            latitude: (googleAddressData.address as Partial<Address>).latitude!,
-            longitude: (googleAddressData.address as Partial<Address>)
-              .longitude!,
-            streetName: (googleAddressData.address as Partial<Address>)
-              .streetName!,
+            streetNumber: address.streetNumber!,
+            city: address.city!,
+            zipCode: address.zipCode!,
+            latitude: address.latitude!,
+            longitude: address.longitude!,
+            streetName: address.streetName!,
           },
         },
         requests: {
