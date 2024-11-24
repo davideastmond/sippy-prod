@@ -129,6 +129,7 @@ export function SubmissionForm() {
       setIsBusy(false);
     } catch (error: any) {
       console.error(error);
+      setSubmitError("Failed to submit request.");
       setIsBusy(false);
     }
   };
