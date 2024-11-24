@@ -26,23 +26,24 @@ export const nameEmailPhoneValidationSchema = z.object({
 });
 
 export const addressValidationSchema = z.object({
-  googleAddressData: z.object(
-    {
-      description: z.string().min(1, { message: "Address is required" }),
-      place_id: z.string().min(1, { message: "Place ID is required" }),
-      address: z.object({
-        streetName: z.string().min(1, { message: "Street name is required" }),
-        streetNumber: z
-          .string()
-          .min(1, { message: "Street number is required" }),
-        city: z.string().min(11, { message: "City is required" }),
-        zipCode: z.string().min(5, { message: "Zip code is required" }),
+  googleAddressData: z.object({
+    description: z.string().min(1),
+    place_id: z.string().min(1),
+    address: z.object(
+      {
+        streetName: z.string().min(1),
+        streetNumber: z.string().min(1),
+        city: z.string().min(11),
+        zipCode: z.string().min(5),
         latitude: z.number(),
         longitude: z.number(),
-      }),
-    },
-    { message: "Address is required" }
-  ),
+      },
+      {
+        invalid_type_error: "Select a valid address from the dropdown",
+        required_error: "Select a valid address from the dropdown",
+      }
+    ),
+  }),
 });
 
 export const appointmentValidationSchema = z.object({

@@ -67,7 +67,7 @@ const AddressInput = ({
   return (
     <>
       <InputText
-        text="Enter your address"
+        text="Start typing your address..."
         type="text"
         value={query}
         onChange={handleChange}
