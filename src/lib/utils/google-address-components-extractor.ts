@@ -54,9 +54,11 @@ export class GoogleAddressComponentsExtractor {
     )!.long_name!;
   }
   private getLatitude(): number {
-    return this.geometry.location ? this.geometry.location.lat() : 0;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (this.geometry.location as any).lat;
   }
   private getLongitude(): number {
-    return this.geometry.location ? this.geometry.location.lng() : 0;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (this.geometry.location as any).lng;
   }
 }
