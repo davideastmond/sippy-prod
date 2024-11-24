@@ -181,7 +181,7 @@ This project is built and maintained as part of the Chingu Community. We're cons
 - Mahyar Erfanian: [GitHub](https://github.com/Mahyar-98) / [LinkedIn](https://www.linkedin.com/in/mahyar-erfanian-67968279/)
 - Franklin Macedo: [GitHub](https://github.com/frankdias92) / [LinkedIn](https://linkedin.com/in/franklin-md)
 - Nandor Nagy: [GitHub](https://github.com/n3ndor) / [LinkedIn](https://www.linkedin.com/in/nandornagylinked/)
-- # Eoin McDonnell [GitHub](https://github.com/oldmcdonnell) / [LinkedIn](https://www.linkedin.com/in/mcdonnell-eoin/)...
+- Eoin McDonnell [GitHub](https://github.com/oldmcdonnell) / [LinkedIn](https://www.linkedin.com/in/mcdonnell-eoin/)...
 
 ## Future Contributions
 
