@@ -111,20 +111,15 @@ export function SubmissionForm() {
   };
 
   const navigateStep = async (direction: "next" | "back") => {
-    if (direction === "next") {
-      if (isFinalStep) {
-        // The at the final step. Submit the form
-        await submitResidentRequest();
-        setIsSubmitted(true); // Show the submission confirmation
-        return;
-      }
-      setCurrentStep((prev) => prev + 1);
-      return;
+    if (direction === "back") {
+      return currentStep === 0 ? undefined : setCurrentStep((prev) => prev - 1);
     }
-
-    // Back condition is the assumed fall-back
-    if (currentStep === 0) return;
-    setCurrentStep((prev) => prev - 1);
+    if (isFinalStep) {
+      await submitResidentRequest();
+      setIsSubmitted(true);
+    } else {
+      setCurrentStep((prev) => prev + 1);
+    }
   };
 
   const submitResidentRequest = async () => {
