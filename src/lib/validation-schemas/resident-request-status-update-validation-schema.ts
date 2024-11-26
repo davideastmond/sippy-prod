@@ -1,6 +1,6 @@
 import { RequestStatus } from "@prisma/client";
 import { z } from "zod";
-export const submissionRequestStatusUpdateValidationSchema = z.object({
+export const residentRequestStatusUpdateValidationSchema = z.object({
   status: z.enum([
     RequestStatus.CANCELED,
     RequestStatus.COMPLETED,

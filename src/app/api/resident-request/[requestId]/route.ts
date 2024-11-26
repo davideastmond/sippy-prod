@@ -1,5 +1,5 @@
 import { authOptions } from "@/auth";
-import { submissionRequestStatusUpdateValidationSchema } from "@/lib/validation-schemas/submission-request-status-update-validation-schema";
+import { residentRequestStatusUpdateValidationSchema } from "@/lib/validation-schemas/resident-request-status-update-validation-schema";
 import { ResidentRequestStatusUpdateApiRequest } from "@/types/resident-request-status-update-api-request";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
@@ -24,7 +24,7 @@ export async function PATCH(
   let requestBody: ResidentRequestStatusUpdateApiRequest;
   try {
     requestBody = await req.json();
-    submissionRequestStatusUpdateValidationSchema.parse(requestBody);
+    residentRequestStatusUpdateValidationSchema.parse(requestBody);
   } catch (error) {
     if (error instanceof ZodError) {
       return NextResponse.json({ errors: error.issues }, { status: 400 });
