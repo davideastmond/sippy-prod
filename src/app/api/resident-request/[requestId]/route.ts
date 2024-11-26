@@ -5,16 +5,9 @@ import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { ZodError } from "zod";
 import {
-  handleResidentRequestFromAdmin,
-  handleResidentRequestFromUser,
+  updateResidentRequestStatusFromAdmin,
+  updateResidentRequestStatusFromUser,
 } from "./handlers";
-/* 
-  Rules to think about:
-  - Users should be able to cancel a request in pending status
-  - Admins are able to cancel a pending request, or mark it as completed
-  - Admins can revert a completed request back to pending
-  - Admins can't cancel a completed request?
-*/
 
 export async function PATCH(
   req: NextRequest,
@@ -43,7 +36,7 @@ export async function PATCH(
 
   if (session.user.isAdmin) {
     try {
-      await handleResidentRequestFromAdmin(params.requestId, status);
+      await updateResidentRequestStatusFromAdmin(params.requestId, status);
       return NextResponse.json({
         message: "Resident request was updated by admin",
       });
@@ -54,7 +47,7 @@ export async function PATCH(
 
   // Otherwise this is a user request
   try {
-    await handleResidentRequestFromUser(params.requestId, status);
+    await updateResidentRequestStatusFromUser(params.requestId, status);
     return NextResponse.json({
       message: "Resident request was updated by user",
     });

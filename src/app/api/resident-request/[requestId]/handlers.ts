@@ -1,8 +1,16 @@
 import { prisma } from "@/lib/prisma";
 import { RequestStatus } from "@prisma/client";
 
-// Request handlers that define the things that can be done with the request?
-export async function handleResidentRequestFromUser(
+/* 
+  Rules to think about:
+  - Users should be able to cancel a request in pending status
+  - Admins are able to cancel a pending request, or mark it as completed
+  - Admins can revert a completed request back to pending
+  - Admins can't cancel a completed request?
+*/
+
+// These functions define the things that can be done with the request based on the user's role
+export async function updateResidentRequestStatusFromUser(
   requestId: string,
   action: RequestStatus
 ) {
@@ -15,7 +23,7 @@ export async function handleResidentRequestFromUser(
   }
 }
 
-export async function handleResidentRequestFromAdmin(
+export async function updateResidentRequestStatusFromAdmin(
   requestId: string,
   action: RequestStatus
 ) {
