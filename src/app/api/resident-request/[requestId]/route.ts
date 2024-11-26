@@ -11,17 +11,16 @@ import {
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { requestId: string } }
+  segmentData: { params: Promise<{ requestId: string }> }
 ) {
   const session = await getServerSession(authOptions);
-
-  const { requestId } = await params;
 
   // If there is no authentication session, return a 401 Unauthorized response
   if (!session || !session.user) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
+  const { requestId } = await segmentData.params;
   let requestBody: ResidentRequestStatusUpdateApiRequest;
   try {
     requestBody = await req.json();
