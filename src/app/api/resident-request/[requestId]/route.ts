@@ -43,7 +43,9 @@ export async function PATCH(
         message: "Resident request was updated by admin",
       });
     } catch (error) {
-      return NextResponse.json({ error }, { status: 400 });
+      if (error instanceof Error) {
+        return NextResponse.json({ error: error.message }, { status: 400 });
+      }
     }
   }
 
@@ -54,6 +56,8 @@ export async function PATCH(
       message: "Resident request was updated by user",
     });
   } catch (error) {
-    return NextResponse.json({ error }, { status: 400 });
+    if (error instanceof Error) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
   }
 }
