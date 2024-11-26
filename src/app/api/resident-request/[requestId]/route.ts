@@ -15,6 +15,8 @@ export async function PATCH(
 ) {
   const session = await getServerSession(authOptions);
 
+  const { requestId } = await params;
+
   // If there is no authentication session, return a 401 Unauthorized response
   if (!session || !session.user) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
@@ -36,7 +38,7 @@ export async function PATCH(
 
   if (session.user.isAdmin) {
     try {
-      await updateResidentRequestStatusFromAdmin(params.requestId, status);
+      await updateResidentRequestStatusFromAdmin(requestId, status);
       return NextResponse.json({
         message: "Resident request was updated by admin",
       });
@@ -47,7 +49,7 @@ export async function PATCH(
 
   // Otherwise this is a user request
   try {
-    await updateResidentRequestStatusFromUser(params.requestId, status);
+    await updateResidentRequestStatusFromUser(requestId, status);
     return NextResponse.json({
       message: "Resident request was updated by user",
     });
