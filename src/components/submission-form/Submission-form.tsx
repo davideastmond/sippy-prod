@@ -225,8 +225,8 @@ const CancelConfirmationModal = ({
   onCancel: () => void;
 }) => {
   return (
-    <div className="modal-container absolute w-full top-[0]">
-      <div className="modal-box w-full max-w-[800px] lg:ml-[30%] overflow-clip bg-simmpy-gray-600 p-4 rounded-md mt-[20vh]">
+    <div className="absolute w-full top-[0] h-full bg-simmpy-gray-900/60">
+      <div className="modal-box w-full max-w-[800px] lg:ml-[30%] bg-simmpy-gray-600 p-4 rounded-md mt-[20vh]">
         <p className="text-simmpy-gray-100 text-center text-lg">
           Choosing cancel will discard your application and your changes will
           not be saved.
