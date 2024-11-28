@@ -60,32 +60,32 @@ export default function AdminDashboard() {
   }, [session?.user?.isAdmin]);
 
   const handleSearch = (query: string) => {
-    const lowerCaseQuery = query.toLowerCase();
+    const requestQuery = query.toLowerCase();
 
     setFilteredPending(
       pendingRequests.filter(
         (request) =>
-          request.user.name.toLowerCase().includes(lowerCaseQuery) ||
-          request.user.email.toLowerCase().includes(lowerCaseQuery) ||
-          request.requestedTimeSlot.description?.toLowerCase().includes(lowerCaseQuery)
+          request.user.name.toLowerCase().includes(requestQuery) ||
+          request.user.email.toLowerCase().includes(requestQuery) ||
+          request.requestedTimeSlot.description?.toLowerCase().includes(requestQuery)
       )
     );
 
     setFilteredCompleted(
       completedRequests.filter(
         (request) =>
-          request.user.name.toLowerCase().includes(lowerCaseQuery) ||
-          request.user.email.toLowerCase().includes(lowerCaseQuery) ||
-          request.requestedTimeSlot.description?.toLowerCase().includes(lowerCaseQuery)
+          request.user.name.toLowerCase().includes(requestQuery) ||
+          request.user.email.toLowerCase().includes(requestQuery) ||
+          request.requestedTimeSlot.description?.toLowerCase().includes(requestQuery)
       )
     );
 
     setFilteredCanceled(
       canceledRequests.filter(
         (request) =>
-          request.user.name.toLowerCase().includes(lowerCaseQuery) ||
-          request.user.email.toLowerCase().includes(lowerCaseQuery) ||
-          request.requestedTimeSlot.description?.toLowerCase().includes(lowerCaseQuery)
+          request.user.name.toLowerCase().includes(requestQuery) ||
+          request.user.email.toLowerCase().includes(requestQuery) ||
+          request.requestedTimeSlot.description?.toLowerCase().includes(requestQuery)
       )
     );
   };
