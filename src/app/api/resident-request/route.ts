@@ -1,7 +1,7 @@
 import { authOptions } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { assignRequestedTimeSlot } from "@/lib/utils/time-slot/time-slot-assigners";
-import { residentRequestValidationSchema } from "@/lib/validation-schemas/validation-schemas";
+import { residentRequestValidationSchema } from "@/lib/validation-schemas/submission-request-validation-schemas";
 import { ResidentReqestApiRequest } from "@/types/resident-request-api-request";
 import { Address, RequestStatus  } from "@prisma/client";
 import { getServerSession } from "next-auth";

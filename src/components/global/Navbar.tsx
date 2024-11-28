@@ -4,29 +4,29 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-
+ 
 export default function Navbar() {
   const { status } = useSession();
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-
+ 
   const handleSignOut = async () => {
     await signOut();
     // Redirect to the home page
     router.push("/");
     setIsMenuOpen(false);
   };
-
+ 
   const handleLinkClick = () => {
     setIsMenuOpen(false);
   };
-
+ 
   return (
     <nav className="bg-white shadow-md w-full">
       <div className="container mx-auto flex justify-between items-center px-6 md:px-8 py-4">
         <div className="flex items-center gap-6">
           <Image
-            src="/assets/images/icons/logo.webp"
+            src="/assets/images/icons/sippy_nav.jpg"
             alt="Logo"
             width={40}
             height={40}
@@ -77,8 +77,13 @@ export default function Navbar() {
             >
               Contact
             </Link>
+            {status === "authenticated" && (
+              <Link href="/dashboard" className="hover:text-simmpy-green text-simmpy-gray-800" onClick={handleLinkClick}>
+                Dashboard
+              </Link>
+            )}
           </div>
-
+ 
           <div className="flex flex-col md:flex-row items-center gap-4 px-4 md:px-0 mt-4 md:mt-0">
             {status === "unauthenticated" ? (
               <>
