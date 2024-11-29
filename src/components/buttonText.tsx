@@ -1,8 +1,9 @@
 interface ButtonTextProps {
   text: string;
-  color: "Green" | "Yellow";
+  color: "Green" | "Yellow" | "Red";
   name?: string;
   disabled?: boolean;
+  paddingX?: 2 | 4;
   onClick?: () => void;
 }
 
@@ -12,16 +13,15 @@ export function ButtonText({
   color,
   name,
   disabled,
+  paddingX,
   ...rest
 }: ButtonTextProps) {
   return (
     <button
-      className={`flex justify-center items-center font-montserrat font-bold text-xl w-full py-2 rounded-lg
-        ${
-          color === "Green"
-            ? "bg-simmpy-green text-white"
-            : "bg-simmpy-yellow text-simmpy-gray-800"
-        }
+      className={`flex justify-center items-center font-montserrat font-bold text-xl w-full py-2 rounded-lg ${
+        "px-" + paddingX
+      }
+        ${colorMap[color]}
       `}
       onClick={onClick}
       name={name}
@@ -33,3 +33,9 @@ export function ButtonText({
     </button>
   );
 }
+
+const colorMap = {
+  Green: "bg-simmpy-green text-white",
+  Yellow: "bg-simmpy-yellow text-simmpy-gray-800",
+  Red: "bg-simmpy-red text-white",
+};
