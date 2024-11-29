@@ -51,16 +51,7 @@ export async function POST(req: NextRequest) {
       data: {
         name,
         phoneNumber: `${areaCode}${phoneNumber}`,
-        address: {
-          create: {
-            streetNumber: address.streetNumber!,
-            city: address.city!,
-            zipCode: address.zipCode!,
-            latitude: address.latitude!,
-            longitude: address.longitude!,
-            streetName: address.streetName!,
-          },
-        },
+
         requests: {
           create: {
             requestedTimeSlot: {
@@ -69,11 +60,20 @@ export async function POST(req: NextRequest) {
                 endTime: endTime,
               },
             },
+            address: {
+              create: {
+                streetNumber: address.streetNumber!,
+                city: address.city!,
+                zipCode: address.zipCode!,
+                latitude: address.latitude!,
+                longitude: address.longitude!,
+                streetName: address.streetName!,
+              },
+            },
           },
         },
       },
       include: {
-        address: true,
         requests: true,
       },
     });
@@ -86,4 +86,65 @@ export async function POST(req: NextRequest) {
   }
 
   return NextResponse.json({ message: "Request received" });
+}
+
+// This needs to be merged with the GET route for the admin dashboard
+export async function GET(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session || !session.user) {
+    return NextResponse.json({ message: "No session" }, { status: 401 });
+  }
+
+  const { searchParams } = new URL(req.url);
+  const userId = searchParams.get("userId");
+
+  if (!userId) {
+    return NextResponse.json(
+      { message: "No user ID provided" },
+      { status: 400 }
+    );
+  }
+
+  // Maybe we need to split this logic into handlers to differentiate between admin and user requests?
+  if (!session.user.isAdmin && session.user.id !== userId) {
+    return NextResponse.json(
+      { message: "Unauthorized to view these requests" },
+      { status: 401 }
+    );
+  }
+
+  try {
+    const fetchedRequestsForUserId = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        requests: {
+          select: {
+            id: true,
+            requestedTimeSlot: {
+              select: {
+                startTime: true,
+                endTime: true,
+              },
+            },
+            assignedTimeSlot: {
+              select: {
+                startTime: true,
+                endTime: true,
+              },
+            },
+            address: true,
+            status: true,
+          },
+        },
+        name: true,
+      },
+    });
+    return NextResponse.json(fetchedRequestsForUserId, { status: 200 });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json(
+      { message: "Failed to get resident requests" },
+      { status: 500 }
+    );
+  }
 }
