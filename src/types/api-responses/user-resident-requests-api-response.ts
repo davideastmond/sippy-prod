@@ -18,6 +18,7 @@ const userWithResidentRequests = Prisma.validator<Prisma.UserDefaultArgs>()({
         assignedTimeSlot: { select: { startTime: true, endTime: true } },
         address: true,
         status: true,
+        createdAt: true,
       },
     },
   },

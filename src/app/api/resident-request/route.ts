@@ -134,6 +134,7 @@ export async function GET(req: NextRequest) {
             },
             address: true,
             status: true,
+            createdAt: true,
           },
         },
       },
