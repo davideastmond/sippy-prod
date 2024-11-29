@@ -8,6 +8,7 @@ import { Prisma } from "@prisma/client";
  This approach is supposed to be scalable and prevent us from having to write a lot of types for every possible combination of data we might want to fetch from the API
  */
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const userWithResidentRequests = Prisma.validator<Prisma.UserDefaultArgs>()({
   include: {
     requests: {

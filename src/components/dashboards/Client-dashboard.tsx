@@ -33,7 +33,7 @@ export default function ClientDashboard() {
       setIsLoading(true);
       const res =
         await ResidentRequestService.getResidentRequestsByAuthenticatedUser(
-          session?.user?.id!
+          session!.user!.id!
         );
       setRequestsForUser(res);
       setIsLoading(false);
