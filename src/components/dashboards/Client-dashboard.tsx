@@ -57,20 +57,20 @@ export default function ClientDashboard() {
     );
   }
   return (
-    <>
+    <div className="p-2">
+      <h1 className="py-4">Welcome, {session?.user?.name} </h1>
       <div>
-        <h1>Client Dashboard</h1>
+        <h1 className="text-3xl font-bold text-center">My Requests</h1>
       </div>
-      <h1>Welcome, {session?.user?.name} </h1>
-      <div className="relative overflow-x-auto mt-6 p-2">
-        <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-          <thead className="text-xs text-gray-700 bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+      <div className="relative overflow-x-auto mt-6 p-2 lg:flex lg:justify-center">
+        <table className="w-full text-sm text-left rtl:text-right text-gray-500 lg:max-w-[800px]">
+          <thead className="text-xs text-gray-700 bg-simmpy-gray-100 uppercase">
             <tr>
               <th scope="col" className="py-3">
                 Address
               </th>
               <th scope="col" className="py-3">
-                Req. Appt. Time
+                Req. Time Slot
               </th>
               <th scope="col" className="py-3">
                 Confirmed ETA
@@ -83,7 +83,7 @@ export default function ClientDashboard() {
           <tbody>
             {requestsForUser?.requests.map((request) => (
               <tr
-                className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
+                className="bg-white border-b hover:cursor-pointer hover:bg-gray-50"
                 key={request?.id}
                 onClick={() => router.push(`/resident-request/${request?.id}`)}
               >
@@ -112,15 +112,22 @@ export default function ClientDashboard() {
                 </td>
               </tr>
             ))}
+            {requestsForUser?.requests.length === 0 && (
+              <tr>
+                <td colSpan={4} className="text-center py-4">
+                  No requests found
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
-    </>
+    </div>
   );
 }
 
 const requestStatusColorMap = {
-  [RequestStatus.CANCELED]: "bg-simmpy-red",
-  [RequestStatus.COMPLETED]: "bg-simmpy-green",
+  [RequestStatus.CANCELED]: "bg-simmpy-red text-simmpy-gray-100",
+  [RequestStatus.COMPLETED]: "bg-simmpy-green text-simmpy-gray-100",
   [RequestStatus.PENDING]: "bg-simmpy-yellow",
 };
