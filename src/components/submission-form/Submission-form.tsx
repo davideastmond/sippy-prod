@@ -144,10 +144,10 @@ export function SubmissionForm() {
     if (session?.user?.email) {
       setFormData({ ...formData, email: session.user.email });
     }
-  }, [session?.user?.email]);
+  }, [session?.user?.email, formData]);
 
   if (status === "unauthenticated") {
-    router.replace("/signup");
+    router.replace("/authenticate");
     return null;
   }
 

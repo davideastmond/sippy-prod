@@ -81,18 +81,11 @@ export default function Navbar() {
 
           <div className="flex flex-col md:flex-row items-center gap-4 px-4 md:px-0 mt-4 md:mt-0">
             {status === "unauthenticated" ? (
-              <>
-                <Link href="/login" onClick={handleLinkClick}>
-                  <button className="px-4 py-2 text-white bg-simmpy-gray-800 hover:bg-simmpy-gray-600 rounded">
-                    Log in
-                  </button>
-                </Link>
-                <Link href="/signup" onClick={handleLinkClick}>
+                <Link href="/authenticate" onClick={handleLinkClick}>
                   <button className="px-4 py-2 text-white bg-simmpy-green hover:bg-green-600 rounded">
-                    Sign up
+                    Power Up
                   </button>
                 </Link>
-              </>
             ) : (
               <button
                 onClick={handleSignOut}

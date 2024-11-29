@@ -23,7 +23,7 @@ export default function AuthProviderSignIn() {
       </h1>
       <div className="flex flex-col gap-2">
         <button
-          className="bg-gray-600 px-8 py-2 rounded-lg bg-white text-simmpy-gray-800 border-simmpy-100 border-[1px]"
+          className="bg-gray-600 px-8 py-2 rounded-lg text-white border-simmpy-100 border-[1px]"
           onClick={() => handleSignIn("google")}
         >
           <div className="flex justify-center gap-2 font-semibold">
