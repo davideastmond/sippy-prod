@@ -1,5 +1,5 @@
+import { UserResidentRequestsApiResponse } from "@/types/api-responses/user-resident-requests-api-response";
 import { ResidentReqestApiRequest } from "@/types/resident-request-api-request";
-import { ResidentRequest } from "@prisma/client";
 
 export const ResidentRequestService = {
   create: async (data: ResidentReqestApiRequest) => {
@@ -19,7 +19,7 @@ export const ResidentRequestService = {
   },
   getResidentRequestsByAuthenticatedUser: async (
     userId: string
-  ): Promise<Partial<ResidentRequest[]>> => {
+  ): Promise<UserResidentRequestsApiResponse> => {
     const response = await fetch(`/api/resident-request/?userId=${userId}`);
 
     if (!response.ok) {
