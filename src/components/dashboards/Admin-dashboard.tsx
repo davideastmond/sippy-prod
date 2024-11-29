@@ -3,7 +3,7 @@
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import Image from "next/image"; // Import for placeholder image
+import Image from "next/image";
 import Collapsible from "../collapsible/Collapsible";
 import SearchRequests from "../searchRequests/SearchRequests";
 import { ResidentRequest, TimeSlot, User, RequestStatus } from "@prisma/client";
@@ -49,7 +49,7 @@ export default function AdminDashboard() {
         fetchRequests(RequestStatus.CANCELED),
       ]).then(([pending, completed, canceled]) => {
         setPendingRequests(pending);
-        setFilteredPending(pending); // Initial state matches full data
+        setFilteredPending(pending);
         setCompletedRequests(completed);
         setFilteredCompleted(completed);
         setCanceledRequests(canceled);
@@ -90,6 +90,59 @@ export default function AdminDashboard() {
     );
   };
 
+  const toggleRequestStatus = async (requestId: string, currentStatus: RequestStatus) => {
+    let newStatus: RequestStatus;
+
+    switch (currentStatus) {
+      case RequestStatus.PENDING:
+        newStatus = RequestStatus.COMPLETED;
+        break;
+      case RequestStatus.COMPLETED:
+        newStatus = RequestStatus.PENDING;
+        break;
+      case RequestStatus.CANCELED:
+        newStatus = RequestStatus.PENDING;
+        break;
+      default:
+        return;
+    }
+
+    try {
+      const res = await fetch(`/api/resident-request/${requestId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to update request status");
+      }
+
+      // Refresh requests after update
+      const updatedPending = await fetch(`/api/resident-request?status=${RequestStatus.PENDING}`).then((res) =>
+        res.json()
+      );
+      const updatedCompleted = await fetch(`/api/resident-request?status=${RequestStatus.COMPLETED}`).then((res) =>
+        res.json()
+      );
+      const updatedCanceled = await fetch(`/api/resident-request?status=${RequestStatus.CANCELED}`).then((res) =>
+        res.json()
+      );
+
+      setPendingRequests(updatedPending);
+      setFilteredPending(updatedPending);
+      setCompletedRequests(updatedCompleted);
+      setFilteredCompleted(updatedCompleted);
+      setCanceledRequests(updatedCanceled);
+      setFilteredCanceled(updatedCanceled);
+    } catch (error) {
+      console.error("Error updating request status:", error);
+      setError("Failed to update request status.");
+    }
+  };
+
   if (error) {
     return <p className="text-red-500">{error}</p>;
   }
@@ -102,87 +155,99 @@ export default function AdminDashboard() {
     <>
       {session?.user?.isAdmin ? (
         <div className="flex flex-wrap">
-          {/* Left Section: Dashboard Content */}
           <div className="w-full md:w-2/3 p-6 bg-white rounded-lg shadow-md dark:bg-simmpy-gray-900">
             <h1 className="text-3xl font-bold text-simmpy-green">Admin Dashboard</h1>
 
             {/* Search Bar */}
             <SearchRequests onSearch={handleSearch} />
 
-            {/* Open Resident Requests */}
-            <Collapsible title="Open Resident Requests">
+            {/* Pending Requests */}
+            <Collapsible title="Pending Resident Requests">
               {filteredPending.length > 0 ? (
                 <ul className="mt-4 space-y-4">
                   {filteredPending.map((request) => (
                     <li key={request.id} className="p-4 bg-simmpy-gray-100 rounded-lg shadow">
-                      <p className="text-sm text-simmpy-gray-800">
-                        <strong>{request.requestedTimeSlot.description}</strong> <br />
-                        Date:{" "}
-                        {new Date(request.requestedTimeSlot.startTime).toLocaleDateString()} <br />
-                        Time:{" "}
-                        {new Date(request.requestedTimeSlot.startTime).toLocaleTimeString()} -{" "}
-                        {new Date(request.requestedTimeSlot.endTime).toLocaleTimeString()} <br />
+                      <p>
                         User: {request.user.name} ({request.user.email})
                       </p>
+                      <p>
+                        Time:{" "}
+                        {new Date(request.requestedTimeSlot.startTime).toLocaleTimeString()} -{" "}
+                        {new Date(request.requestedTimeSlot.endTime).toLocaleTimeString()}
+                      </p>
+                      <button
+                        onClick={() => toggleRequestStatus(request.id, request.status)}
+                        className="text-simmpy-green underline"
+                      >
+                        Mark as Complete
+                      </button>
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p className="text-gray-500 mt-4">No matching open requests found.</p>
+                <p>No pending requests</p>
               )}
             </Collapsible>
 
-            {/* Completed Resident Requests */}
+            {/* Completed Requests */}
             <Collapsible title="Completed Resident Requests">
               {filteredCompleted.length > 0 ? (
                 <ul className="mt-4 space-y-4">
                   {filteredCompleted.map((request) => (
                     <li key={request.id} className="p-4 bg-simmpy-gray-100 rounded-lg shadow">
-                      <p className="text-sm text-simmpy-gray-800">
-                        <strong>{request.requestedTimeSlot?.description || "No description available"}</strong> <br />
-                        Date:{" "}
-                        {new Date(request.requestedTimeSlot.startTime).toLocaleDateString()} <br />
-                        Time:{" "}
-                        {new Date(request.requestedTimeSlot.startTime).toLocaleTimeString()} -{" "}
-                        {new Date(request.requestedTimeSlot.endTime).toLocaleTimeString()} <br />
+                      <p>
                         User: {request.user.name} ({request.user.email})
                       </p>
+                      <p>
+                        Time:{" "}
+                        {new Date(request.requestedTimeSlot.startTime).toLocaleTimeString()} -{" "}
+                        {new Date(request.requestedTimeSlot.endTime).toLocaleTimeString()}
+                      </p>
+                      <button
+                        onClick={() => toggleRequestStatus(request.id, request.status)}
+                        className="text-simmpy-yellow underline"
+                      >
+                        Mark as Pending
+                      </button>
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p className="text-gray-500 mt-4">No matching completed requests found.</p>
+                <p>No completed requests</p>
               )}
             </Collapsible>
 
-            {/* Canceled Resident Requests */}
+            {/* Canceled Requests */}
             <Collapsible title="Canceled Resident Requests">
               {filteredCanceled.length > 0 ? (
                 <ul className="mt-4 space-y-4">
                   {filteredCanceled.map((request) => (
                     <li key={request.id} className="p-4 bg-simmpy-gray-100 rounded-lg shadow">
-                      <p className="text-sm text-simmpy-gray-800">
-                        <strong>{request.requestedTimeSlot.description}</strong> <br />
-                        Date:{" "}
-                        {new Date(request.requestedTimeSlot.startTime).toLocaleDateString()} <br />
-                        Time:{" "}
-                        {new Date(request.requestedTimeSlot.startTime).toLocaleTimeString()} -{" "}
-                        {new Date(request.requestedTimeSlot.endTime).toLocaleTimeString()} <br />
+                      <p>
                         User: {request.user.name} ({request.user.email})
                       </p>
+                      <p>
+                        Time:{" "}
+                        {new Date(request.requestedTimeSlot.startTime).toLocaleTimeString()} -{" "}
+                        {new Date(request.requestedTimeSlot.endTime).toLocaleTimeString()}
+                      </p>
+                      <button
+                        onClick={() => toggleRequestStatus(request.id, request.status)}
+                        className="text-simmpy-green underline"
+                      >
+                        Reopen as Pending
+                      </button>
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p className="text-gray-500 mt-4">No matching canceled requests found.</p>
+                <p>No canceled requests</p>
               )}
             </Collapsible>
           </div>
-
-          {/* Right Section: Map Placeholder */}
           <div className="w-full md:w-1/3 p-6">
             <Image
-              src="/assets/images/MapPlaceHholder.png"
+              src="/assets/images/MapPlaceholder.png"
               alt="Map Placeholder"
               width={400}
               height={400}
