@@ -46,7 +46,7 @@ export function SubmissionForm() {
   const { data: session, status } = useSession();
   const [isBusy, setIsBusy] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [cancelModalOpen, setCancelModalOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
 
   const router = useRouter();
 
@@ -200,13 +200,13 @@ export function SubmissionForm() {
           <ButtonText
             text="Cancel"
             color="Red"
-            onClick={() => setCancelModalOpen(true)}
+            onClick={() => setModalOpen(true)}
           />
         )}
       </div>
-      {cancelModalOpen && (
+      {modalOpen && (
         <CancelConfirmationModal
-          onCancel={() => setCancelModalOpen(false)}
+          onCancel={() => setModalOpen(false)}
           onConfirm={() => {
             // Redirect to dashboard?
             router.push("/dashboard");
