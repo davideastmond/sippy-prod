@@ -103,7 +103,11 @@ export default function ClientDashboard() {
                     end={request.assignedTimeSlot?.endTime}
                   />
                 </td>
-                <td className={`${statusMapColor[request.status]} text-center`}>
+                <td
+                  className={`${
+                    requestStatusColorMap[request.status]
+                  } text-center`}
+                >
                   {request.status}
                 </td>
               </tr>
@@ -115,7 +119,7 @@ export default function ClientDashboard() {
   );
 }
 
-const statusMapColor = {
+const requestStatusColorMap = {
   [RequestStatus.CANCELED]: "bg-simmpy-red",
   [RequestStatus.COMPLETED]: "bg-simmpy-green",
   [RequestStatus.PENDING]: "bg-simmpy-yellow",
