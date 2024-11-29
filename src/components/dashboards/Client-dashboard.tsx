@@ -66,16 +66,16 @@ export default function ClientDashboard() {
         <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
           <thead className="text-xs text-gray-700 bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
             <tr>
-              <th scope="col" className="px-6 py-3">
+              <th scope="col" className="py-3">
                 Address
               </th>
-              <th scope="col" className="px-6 py-3">
+              <th scope="col" className="py-3">
                 Req. Appt. Time
               </th>
-              <th scope="col" className="px-6 py-3">
+              <th scope="col" className="py-3">
                 Confirmed ETA
               </th>
-              <th scope="col" className="px-6 py-3">
+              <th scope="col" className="py-3">
                 Status
               </th>
             </tr>
@@ -87,17 +87,17 @@ export default function ClientDashboard() {
                 key={request?.id}
                 onClick={() => router.push(`/resident-request/${request?.id}`)}
               >
-                <td className="px-6 py-4">
+                <td>
                   {request.address?.streetNumber} {request.address?.streetName},{" "}
                   {request.address?.city}
                 </td>
-                <td className="px-6 py-4">
+                <td>
                   <FormattedTimeSlotDateTime
                     start={request.requestedTimeSlot?.startTime}
                     end={request.requestedTimeSlot?.endTime}
                   />
                 </td>
-                <td className="px-6 py-4">
+                <td>
                   <FormattedTimeSlotDateTime
                     start={request.assignedTimeSlot?.startTime}
                     end={request.assignedTimeSlot?.endTime}
