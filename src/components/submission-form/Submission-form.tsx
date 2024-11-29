@@ -145,7 +145,7 @@ export function SubmissionForm() {
     if (session?.user?.email) {
       setFormData({ ...formData, email: session.user.email });
     }
-  }, [session?.user?.email]);
+  }, [session?.user?.email, formData]);
 
   useEffect(() => {
     // Used to handle when user is closing the browser tab and their form is not submitted
@@ -161,7 +161,7 @@ export function SubmissionForm() {
   }, [isSubmitted]);
 
   if (status === "unauthenticated") {
-    router.replace("/signup");
+    router.replace("/authenticate");
     return null;
   }
 

@@ -7,7 +7,7 @@ export default function AdminDashboard() {
   const { data: session, status } = useSession();
 
   if (status === "unauthenticated") {
-    router.replace("/signup");
+    router.replace("/authenticate");
     return null;
   }
 
