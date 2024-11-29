@@ -136,7 +136,6 @@ export async function GET(req: NextRequest) {
             status: true,
           },
         },
-        name: true,
       },
     });
     return NextResponse.json(fetchedRequestsForUserId, { status: 200 });
