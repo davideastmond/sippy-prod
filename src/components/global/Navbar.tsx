@@ -2,12 +2,13 @@
 import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useState } from "react";
 
 export default function Navbar() {
   const { status } = useSession();
   const router = useRouter();
+  const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handleSignOut = async () => {
@@ -80,26 +81,22 @@ export default function Navbar() {
           </div>
 
           <div className="flex flex-col md:flex-row items-center gap-4 px-4 md:px-0 mt-4 md:mt-0">
-            {status === "unauthenticated" ? (
-              <>
-                <Link href="/login" onClick={handleLinkClick}>
-                  <button className="px-4 py-2 text-white bg-simmpy-gray-800 hover:bg-simmpy-gray-600 rounded">
-                    Log in
-                  </button>
-                </Link>
-                <Link href="/signup" onClick={handleLinkClick}>
-                  <button className="px-4 py-2 text-white bg-simmpy-green hover:bg-green-600 rounded">
-                    Sign up
-                  </button>
-                </Link>
-              </>
+
+            {pathname !== "/authenticate" ? (
+              <Link href="/authenticate" onClick={handleLinkClick}>
+                <button className="px-4 py-2 text-white bg-simmpy-green hover:bg-green-600 rounded">
+                  Get Started
+                </button>
+              </Link>
             ) : (
-              <button
-                onClick={handleSignOut}
-                className="px-4 py-2 text-white bg-simmpy-gray-800 hover:bg-simmpy-gray-600 rounded"
-              >
-                Log out
-              </button>
+              status === "authenticated" && (
+                <button
+                  onClick={handleSignOut}
+                  className="px-4 py-2 text-white bg-simmpy-gray-800 hover:bg-simmpy-gray-600 rounded"
+                >
+                  Log out
+                </button>
+              )
             )}
           </div>
         </div>
