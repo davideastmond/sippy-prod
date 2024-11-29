@@ -35,7 +35,13 @@ export default function ClientDashboard() {
         await ResidentRequestService.getResidentRequestsByAuthenticatedUser(
           session!.user!.id!
         );
-      setRequestsForUser(res);
+
+      const sortedRequests = res.requests.sort((a, b) => {
+        return (
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+      });
+      setRequestsForUser({ ...res, requests: sortedRequests });
       setIsLoading(false);
     } catch (error) {
       console.error(error);
