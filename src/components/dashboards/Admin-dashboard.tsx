@@ -4,7 +4,6 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import Collapsible from "../collapsible/Collapsible";
 import SearchRequests from "../searchRequests/SearchRequests";
 import { ResidentRequest, TimeSlot, User, RequestStatus } from "@prisma/client";
 import Spinner from "../spinner/Spinner";
@@ -35,13 +34,19 @@ export default function AdminDashboard() {
   useEffect(() => {
     if (session?.user?.isAdmin) {
       const fetchRequests = async (status: RequestStatus) => {
-        return fetch(`/api/resident-request?status=${status}`)
-          .then((response) => response.json())
-          .catch((error) => {
-            console.error(`Error fetching ${status} resident requests:`, error);
-            setError(`Failed to load ${status} resident requests.`);
-            return [];
-          });
+        try {
+          const response = await fetch(`/api/resident-request?status=${status}`);
+          const data: ExtendedResidentRequest[] = await response.json();
+
+          // Sort requests by createdAt date in descending order
+          return data.sort(
+            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
+        } catch (error) {
+          console.error(`Error fetching ${status} resident requests:`, error);
+          setError(`Failed to load ${status} resident requests.`);
+          return [];
+        }
       };
 
       Promise.all([
@@ -163,7 +168,7 @@ export default function AdminDashboard() {
             <SearchRequests onSearch={handleSearch} />
 
             {/* Pending Requests */}
-            <Collapsible title="Pending Resident Requests">
+            <div><h2 className="text-xl font-bold text-simmpy-gray-800 mb-4">Pending Requests</h2>
               {filteredPending.length > 0 ? (
                 <ul className="mt-4 space-y-4">
                   {filteredPending.map((request) => (
@@ -188,10 +193,11 @@ export default function AdminDashboard() {
               ) : (
                 <p>No pending requests</p>
               )}
-            </Collapsible>
+            </div>
 
             {/* Completed Requests */}
-            <Collapsible title="Completed Resident Requests">
+            <div>
+              <h2 className="text-xl font-bold text-simmpy-gray-800 mb-4">Completed Requests</h2>
               {filteredCompleted.length > 0 ? (
                 <ul className="mt-4 space-y-4">
                   {filteredCompleted.map((request) => (
@@ -216,10 +222,11 @@ export default function AdminDashboard() {
               ) : (
                 <p>No completed requests</p>
               )}
-            </Collapsible>
+            </div>
 
             {/* Canceled Requests */}
-            <Collapsible title="Canceled Resident Requests">
+            <h2 className="text-xl font-bold text-simmpy-gray-800 mb-4">Canceled Requests</h2>
+            <div>
               {filteredCanceled.length > 0 ? (
                 <ul className="mt-4 space-y-4">
                   {filteredCanceled.map((request) => (
@@ -244,7 +251,7 @@ export default function AdminDashboard() {
               ) : (
                 <p>No canceled requests</p>
               )}
-            </Collapsible>
+            </div>
           </div>
           <div className="w-full md:w-1/3 p-6">
             <Image
