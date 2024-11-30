@@ -80,7 +80,7 @@ const AddressInput = ({
                 <li
                   key={idx}
                   onClick={() => handleSelect(addressSuggestion)}
-                  className="hover:cursor-pointe"
+                  className="hover:cursor-pointer"
                 >
                   {addressSuggestion.description}
                 </li>

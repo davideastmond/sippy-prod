@@ -14,9 +14,6 @@ model User {
   phoneNumber String?
   name        String
 
-  address   Address? @relation(fields: [addressId], references: [id])
-  addressId String?
-
   createdAt DateTime @default(now())
 
   requests ResidentRequest[]
@@ -38,6 +35,9 @@ model ResidentRequest {
   assignedTimeSlot      TimeSlot? @relation("AssignedTimeSlot", fields: [assigned_time_slot_id], references: [id])
   assigned_time_slot_id String?
 
+  address   Address? @relation(fields: [addressId], references: [id])
+  addressId String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -53,7 +53,7 @@ model Address {
   latitude     Float
   longitude    Float
 
-  users User[]
+  residentRequests ResidentRequest[]
 
   @@map("addresses")
 }

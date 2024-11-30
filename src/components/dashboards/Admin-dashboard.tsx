@@ -12,7 +12,6 @@ type ExtendedResidentRequest = ResidentRequest & {
   user: User;
   requestedTimeSlot: TimeSlot;
 };
-
 export default function AdminDashboard() {
   const router = useRouter();
   const { data: session, status } = useSession();
@@ -24,7 +23,6 @@ export default function AdminDashboard() {
   const [filteredCanceled, setFilteredCanceled] = useState<ExtendedResidentRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
   useEffect(() => {
     if (status === "unauthenticated") {
       router.replace("/signup");
@@ -76,7 +74,6 @@ export default function AdminDashboard() {
           request.requestedTimeSlot.description?.toLowerCase().includes(requestQuery)
       )
     );
-
     setFilteredCompleted(
       completedRequests.filter(
         (request) =>
@@ -85,7 +82,6 @@ export default function AdminDashboard() {
           request.requestedTimeSlot.description?.toLowerCase().includes(requestQuery)
       )
     );
-
     setFilteredCanceled(
       canceledRequests.filter(
         (request) =>
@@ -156,7 +152,11 @@ export default function AdminDashboard() {
   if (loading) {
     return <p className="text-gray-500">Loading Resident Requests...</p>;
   }
-
+ 
+  if (loading) {
+    return <p className="text-gray-500">Loading Resident Requests...</p>;
+  }
+ 
   return (
     <>
       {session?.user?.isAdmin ? (
