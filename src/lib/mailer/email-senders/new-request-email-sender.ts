@@ -16,7 +16,7 @@ export async function sendNewRequestConfirmationEmail({
     await mailer.sendMail({
       to: email,
       subject: "Sippy Panels Request Received",
-      text: `Dear ${name}, your request has been received. /n Details: /n Service Address: ${formattedAddress} /n Request Appointment Date and Time: ${formattedAppointmentDateTime} /n Note that the chosen requested appointment time is tentative. /n You will receive a confirmation email once your request has been scheduled. /n Thank you for choosing Sippy Panels.`,
+      text: `Dear ${name}, your request has been received. \n Details: \n Service Address: ${formattedAddress} \n Request Appointment Date and Time: ${formattedAppointmentDateTime} \n Note that the chosen requested appointment time is tentative. \n You will receive a confirmation email once your request has been scheduled. \n Thank you for choosing Sippy Panels.`,
       html: `<html>
             <h1>Dear ${name}, your request has been received.</h1>
             <br />
