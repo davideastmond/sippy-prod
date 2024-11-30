@@ -1,5 +1,7 @@
 import { authOptions } from "@/auth";
+import { sendNewRequestConfirmationEmail } from "@/lib/mailer/email-senders/new-request-email-sender";
 import { prisma } from "@/lib/prisma";
+import { getTimeSlotSummaryCaption } from "@/lib/utils/time-slot/time-slot";
 import { assignRequestedTimeSlot } from "@/lib/utils/time-slot/time-slot-assigners";
 import { residentRequestValidationSchema } from "@/lib/validation-schemas/submission-request-validation-schemas";
 import { ResidentReqestApiRequest } from "@/types/resident-request-api-request";
@@ -85,6 +87,13 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Attempt to send confirmation e-mail
+  await sendNewRequestConfirmationEmail({
+    email: session.user!.email!,
+    name,
+    formattedAddress: `${address.streetNumber} ${address.streetName}, ${address.city}`,
+    formattedAppointmentDateTime: getTimeSlotSummaryCaption(timeSlot),
+  });
   return NextResponse.json({ message: "Request received" });
 }
 
