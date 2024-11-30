@@ -93,6 +93,7 @@ export async function POST(req: NextRequest) {
     name,
     formattedAddress: `${address.streetNumber} ${address.streetName}, ${address.city}`,
     formattedAppointmentDateTime: getTimeSlotSummaryCaption(timeSlot),
+    formattedPhoneNumber: `(${areaCode})-${phoneNumber}`,
   });
   return NextResponse.json({ message: "Request received" });
 }
