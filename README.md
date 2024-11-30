@@ -144,6 +144,13 @@ This project uses **Prisma** as the ORM and **PostgreSQL** as the database. Here
 2. **Prisma Scripts**: Scripts for Prisma (`prisma:generate`, `prisma:migrate`, and `prisma:deploy`) are added to the `package.json` for easy schema management and migrations.
 3. **Database Schema**: The schema includes tables like `users`, `resident_requests`, `addresses`, and `time_slots`, all with defined relationships and constraints.
 
+## E-mail mocking using Ethereal
+
+Review the FAQ https://ethereal.email/faq
+
+- All e-mails sent by our service are mocked and will be intercepted by Ethereal.
+- Log into your Ethereal mailbox to inspect the e-mails.
+
 ---
 
 ## Team Documents
