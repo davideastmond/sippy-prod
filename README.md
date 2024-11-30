@@ -69,7 +69,7 @@ Follow these steps to set up and run the application locally:
    ### For mock e-mail functionality using Ethereal:
 
    - Create a free account at https://ethereal.email/
-   - Copy credentials (user, password and host) and paste them into the relavent `.env` files
+   - Copy credentials (user, password and host) and paste them into the appropriate environment variables:
      `SMTP_HOST=smtp.ethereal.email` (or whatever ethereal indicates)
      `SMTP_USER=<copy from ethereal>`
      `SMTP_PASSWORD=<copy from ethereal>`
