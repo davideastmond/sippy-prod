@@ -7,6 +7,7 @@ import Image from "next/image";
 import Collapsible from "../collapsible/Collapsible";
 import SearchRequests from "../searchRequests/SearchRequests";
 import { ResidentRequest, TimeSlot, User, RequestStatus } from "@prisma/client";
+import Spinner from "../spinner/Spinner";
 
 type ExtendedResidentRequest = ResidentRequest & {
   user: User;
