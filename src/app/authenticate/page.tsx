@@ -1,4 +1,4 @@
-import AuthProviderSignIn from "@/components/auth/Auth";
+import AuthProviderSignIn from "@/components/auth/AuthProviderSignIn";
 
 export default function SignUpPage() {
   return (

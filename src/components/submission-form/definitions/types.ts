@@ -2,7 +2,7 @@ import {
   addressValidationSchema,
   appointmentValidationSchema,
   nameEmailPhoneValidationSchema,
-} from "@/lib/validation-schemas/validation-schemas";
+} from "@/lib/validation-schemas/submission-request-validation-schemas";
 import { z } from "zod";
 
 export type nameEmailPhoneFormData = z.infer<
