@@ -1,5 +1,6 @@
 import HomeFeature from "../HomeFeature";
 import ContactForm from "../ContactForm";
+import Testimonials from "../Testimonials";
 
 const features = [
   {
@@ -41,6 +42,10 @@ const Home = () => {
         {features.map((feature, index) => (
           <HomeFeature key={index} {...feature} />
         ))}
+      </section>
+      {/* Testimonials Section */}
+      <section>
+        <Testimonials />
       </section>
       {/* Contact Section */}
       <section className="flex overflow-hidden flex-col justify-center items-center pb-24 w-full bg-white max-md:max-w-full">
