@@ -1,6 +1,6 @@
 "use client";
 
-import SearchRequests from "@/components/searchRequests/SearchRequests";
+import SearchRequestsFilterPanel from "@/components/search-requests-filter-panel/Search-requests-filter-panel";
 import Spinner from "@/components/spinner/Spinner";
 import { formatPhoneNumber } from "@/lib/utils/phone-number/format-phone-number";
 import { requestStatusColorMap } from "@/lib/utils/request-status/request-status-color-map";
@@ -73,8 +73,8 @@ export default function AdminDashboard() {
             <h1 className="text-3xl font-bold text-center">Requests</h1>
           </div>
           <div>
-            {/* Search Bar */}
-            <SearchRequests onSearch={handleSearch} />
+            {/* Search and filter panel */}
+            <SearchRequestsFilterPanel onSearch={handleSearch} />
           </div>
           <div className="relative overflow-x-auto mt-6 p-2 lg:flex lg:justify-center">
             <table className="w-full text-sm text-left rtl:text-right text-gray-500">
