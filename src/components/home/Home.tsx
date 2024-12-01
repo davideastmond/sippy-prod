@@ -1,6 +1,7 @@
 import HomeFeature from "../HomeFeature";
 import ContactForm from "../ContactForm";
 import Testimonials from "../Testimonials";
+import Hero from "../Hero";
 
 const features = [
   {
@@ -37,6 +38,10 @@ const features = [
 const Home = () => {
   return (
     <main className="flex overflow-hidden flex-col bg-white">
+      {/* Hero Section */}
+      <section>
+        <Hero />
+      </section>
       {/* Features Section */}
       <section className="flex flex-col items-center py-24 w-full max-md:max-w-full">
         {features.map((feature, index) => (
