@@ -20,7 +20,7 @@ const SearchRequestsFilterPanel: React.FC<SearchRequestsProps> = ({
       completed: false,
       pending: false,
       canceled: false,
-      all: false,
+      all: true,
     }
   );
 
@@ -96,12 +96,12 @@ const SearchRequestsFilterPanel: React.FC<SearchRequestsProps> = ({
         {/* Dropdown */}
         <div
           id="dropdownHelper"
-          className={`mt-2 ${
+          className={`${
             dropdownHidden ? "hidden" : ""
           } z-10 bg-white divide-y divide-gray-100 rounded-lg shadow w-60`}
         >
           <ul
-            className="p-4 bg-white absolute z-10 space-y-1 text-sm text-gray-700 border border-gray-300"
+            className="mt-2 p-4 bg-white absolute z-10 space-y-1 text-sm text-gray-700 border border-gray-300"
             aria-labelledby="dropdownHelperButton"
           >
             <li>
