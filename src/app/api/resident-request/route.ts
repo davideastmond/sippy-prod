@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { assignRequestedTimeSlot } from "@/lib/utils/time-slot/time-slot-assigners";
 import { residentRequestValidationSchema } from "@/lib/validation-schemas/submission-request-validation-schemas";
 import { ResidentReqestApiRequest } from "@/types/resident-request-api-request";
-import { Address, RequestStatus  } from "@prisma/client";
+import { Address, RequestStatus } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { ZodError } from "zod";
@@ -90,19 +90,18 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ message: "Request received" });
 }
 
-
 //adding GET method
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
 
-  if (!session  || !session.user) {
+  if (!session || !session.user) {
     return NextResponse.json({ message: "No session" }, { status: 401 });
   }
-  
+
   const { searchParams } = new URL(req.url);
 
-  if(session.user.isAdmin){    
+  if (session.user.isAdmin) {
     const status = searchParams.get("status");
     if (!status) {
       return NextResponse.json(
@@ -111,17 +110,17 @@ export async function GET(req: NextRequest) {
       );
     }
     try {
-      const residentRequests = await adminGetResidentsRequests(status as RequestStatus)  
+      const residentRequests = await adminGetResidentsRequests(
+        status as RequestStatus & "all"
+      );
       return NextResponse.json(residentRequests);
     } catch (error) {
-      console.log('Eror', error);
+      console.log("Error", error);
       return NextResponse.json(
         { message: "Failed to fetch resident request" },
         { status: 400 }
       );
     }
-    
-
   }
 
   const userId = searchParams.get("userId");
@@ -131,8 +130,6 @@ export async function GET(req: NextRequest) {
       { message: "No user ID provided" },
       { status: 400 }
     );
-
-
   }
   if (session.user.id !== userId) {
     return NextResponse.json(
@@ -144,7 +141,7 @@ export async function GET(req: NextRequest) {
     const fetchedRequestsForUserId = await getUserResidentRequest(userId);
     return NextResponse.json(fetchedRequestsForUserId);
   } catch (error) {
-    console.log('Eror', error);
+    console.log("Error", error);
     return NextResponse.json(
       { message: "Failed to fetch resident request" },
       { status: 400 }

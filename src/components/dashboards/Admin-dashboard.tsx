@@ -1,27 +1,27 @@
 "use client";
 
+import SearchRequests from "@/components/searchRequests/SearchRequests";
+import Spinner from "@/components/spinner/Spinner";
+import { formatPhoneNumber } from "@/lib/utils/phone-number/format-phone-number";
+import { requestStatusColorMap } from "@/lib/utils/request-status/request-status-color-map";
+import { AllUserRequestsAdminGetResponse } from "@/types/api-responses/admin-resident-requests-api-response";
+import { ResidentRequestService } from "app/services/resident-request-service";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import Image from "next/image";
-import SearchRequests from "../searchRequests/SearchRequests";
-import { ResidentRequest, TimeSlot, User, RequestStatus } from "@prisma/client";
+import FormattedTimeSlotDateTime from "../formatted-time-slot-date-time.tsx/FormattedTimeSlotDateTime";
 
-type ExtendedResidentRequest = ResidentRequest & {
-  user: User;
-  requestedTimeSlot: TimeSlot;
-};
 export default function AdminDashboard() {
   const router = useRouter();
   const { data: session, status } = useSession();
-  const [pendingRequests, setPendingRequests] = useState<ExtendedResidentRequest[]>([]);
-  const [completedRequests, setCompletedRequests] = useState<ExtendedResidentRequest[]>([]);
-  const [canceledRequests, setCanceledRequests] = useState<ExtendedResidentRequest[]>([]);
-  const [filteredPending, setFilteredPending] = useState<ExtendedResidentRequest[]>([]);
-  const [filteredCompleted, setFilteredCompleted] = useState<ExtendedResidentRequest[]>([]);
-  const [filteredCanceled, setFilteredCanceled] = useState<ExtendedResidentRequest[]>([]);
-  const [loading, setLoading] = useState(true);
+
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [userRequests, setUserRequests] = useState<
+    AllUserRequestsAdminGetResponse[]
+  >([]);
+
   useEffect(() => {
     if (status === "unauthenticated") {
       router.replace("/signup");
@@ -30,118 +30,26 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (session?.user?.isAdmin) {
-      const fetchRequests = async (status: RequestStatus) => {
-        try {
-          const response = await fetch(`/api/resident-request?status=${status}`);
-          const data: ExtendedResidentRequest[] = await response.json();
-
-          // Sort requests by createdAt date in descending order
-          return data.sort(
-            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-          );
-        } catch (error) {
-          console.error(`Error fetching ${status} resident requests:`, error);
-          setError(`Failed to load ${status} resident requests.`);
-          return [];
-        }
-      };
-
-      Promise.all([
-        fetchRequests(RequestStatus.PENDING),
-        fetchRequests(RequestStatus.COMPLETED),
-        fetchRequests(RequestStatus.CANCELED),
-      ]).then(([pending, completed, canceled]) => {
-        setPendingRequests(pending);
-        setFilteredPending(pending);
-        setCompletedRequests(completed);
-        setFilteredCompleted(completed);
-        setCanceledRequests(canceled);
-        setFilteredCanceled(canceled);
-        setLoading(false);
-      });
+      fetchAllRequests();
     }
   }, [session?.user?.isAdmin]);
 
-  const handleSearch = (query: string) => {
-    const requestQuery = query.toLowerCase();
-
-    setFilteredPending(
-      pendingRequests.filter(
-        (request) =>
-          request.user.name.toLowerCase().includes(requestQuery) ||
-          request.user.email.toLowerCase().includes(requestQuery) ||
-          request.requestedTimeSlot.description?.toLowerCase().includes(requestQuery)
-      )
-    );
-    setFilteredCompleted(
-      completedRequests.filter(
-        (request) =>
-          request.user.name.toLowerCase().includes(requestQuery) ||
-          request.user.email.toLowerCase().includes(requestQuery) ||
-          request.requestedTimeSlot.description?.toLowerCase().includes(requestQuery)
-      )
-    );
-    setFilteredCanceled(
-      canceledRequests.filter(
-        (request) =>
-          request.user.name.toLowerCase().includes(requestQuery) ||
-          request.user.email.toLowerCase().includes(requestQuery) ||
-          request.requestedTimeSlot.description?.toLowerCase().includes(requestQuery)
-      )
-    );
+  const fetchAllRequests = async () => {
+    try {
+      setLoading(true);
+      const requests = await ResidentRequestService.adminGetAllRequests();
+      console.log(requests);
+      setUserRequests(requests);
+      setLoading(false);
+    } catch (error) {
+      console.error(error);
+      setError("Failed to fetch requests");
+      setLoading(false);
+    }
   };
 
-  const toggleRequestStatus = async (requestId: string, currentStatus: RequestStatus) => {
-    let newStatus: RequestStatus;
-    //swtching status 
-    switch (currentStatus) {
-      case RequestStatus.PENDING:
-        newStatus = RequestStatus.COMPLETED;
-        break;
-      case RequestStatus.COMPLETED:
-        newStatus = RequestStatus.PENDING;
-        break;
-      case RequestStatus.CANCELED:
-        newStatus = RequestStatus.PENDING;
-        break;
-      default:
-        return;
-    }
-
-    try {
-      const res = await fetch(`/api/resident-request/${requestId}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ status: newStatus }),
-      });
-
-      if (!res.ok) {
-        throw new Error("Failed to update request status");
-      }
-
-      // Refresh requests after update
-      const updatedPending = await fetch(`/api/resident-request?status=${RequestStatus.PENDING}`).then((res) =>
-        res.json()
-      );
-      const updatedCompleted = await fetch(`/api/resident-request?status=${RequestStatus.COMPLETED}`).then((res) =>
-        res.json()
-      );
-      const updatedCanceled = await fetch(`/api/resident-request?status=${RequestStatus.CANCELED}`).then((res) =>
-        res.json()
-      );
-
-      setPendingRequests(updatedPending);
-      setFilteredPending(updatedPending);
-      setCompletedRequests(updatedCompleted);
-      setFilteredCompleted(updatedCompleted);
-      setCanceledRequests(updatedCanceled);
-      setFilteredCanceled(updatedCanceled);
-    } catch (error) {
-      console.error("Error updating request status:", error);
-      setError("Failed to update request status.");
-    }
+  const handleSearch = (query: string) => {
+    const requestQuery = query.toLowerCase();
   };
 
   if (error) {
@@ -149,117 +57,88 @@ export default function AdminDashboard() {
   }
 
   if (loading) {
-    return <p className="text-gray-500">Loading Resident Requests...</p>;
+    return (
+      <div className="flex justify-center mt-[10%]">
+        <Spinner />
+      </div>
+    );
   }
- 
-  if (loading) {
-    return <p className="text-gray-500">Loading Resident Requests...</p>;
-  }
- 
+
   return (
     <>
       {session?.user?.isAdmin ? (
-        <div className="flex flex-wrap">
-          <div className="w-full md:w-2/3 p-6 bg-white rounded-lg shadow-md dark:bg-simmpy-gray-900">
-            <h1 className="text-3xl font-bold text-simmpy-green">Admin Dashboard</h1>
-
+        <div className="p-2">
+          <h1 className="py-4">Welcome, {session?.user?.name} (Admin) </h1>
+          <div>
+            <h1 className="text-3xl font-bold text-center">Requests</h1>
+          </div>
+          <div>
             {/* Search Bar */}
             <SearchRequests onSearch={handleSearch} />
-
-            {/* Pending Requests */}
-            <div><h2 className="text-xl font-bold text-simmpy-gray-800 mb-4">Pending Requests</h2>
-              {filteredPending.length > 0 ? (
-                <ul className="mt-4 space-y-4">
-                  {filteredPending.map((request) => (
-                    <li key={request.id} className="p-4 bg-simmpy-gray-100 rounded-lg shadow">
-                      <p>
-                        User: {request.user.name} ({request.user.email})
-                      </p>
-                      <p>
-                        Time:{" "}
-                        {new Date(request.requestedTimeSlot.startTime).toLocaleTimeString()} -{" "}
-                        {new Date(request.requestedTimeSlot.endTime).toLocaleTimeString()}
-                      </p>
-                      <button
-                        onClick={() => toggleRequestStatus(request.id, request.status)}
-                        className="text-simmpy-green underline"
-                      >
-                        Mark as Complete
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p>No pending requests</p>
-              )}
-            </div>
-
-            {/* Completed Requests */}
-            <div>
-              <h2 className="text-xl font-bold text-simmpy-gray-800 mb-4">Completed Requests</h2>
-              {filteredCompleted.length > 0 ? (
-                <ul className="mt-4 space-y-4">
-                  {filteredCompleted.map((request) => (
-                    <li key={request.id} className="p-4 bg-simmpy-gray-100 rounded-lg shadow">
-                      <p>
-                        User: {request.user.name} ({request.user.email})
-                      </p>
-                      <p>
-                        Time:{" "}
-                        {new Date(request.requestedTimeSlot.startTime).toLocaleTimeString()} -{" "}
-                        {new Date(request.requestedTimeSlot.endTime).toLocaleTimeString()}
-                      </p>
-                      <button
-                        onClick={() => toggleRequestStatus(request.id, request.status)}
-                        className="text-simmpy-yellow underline"
-                      >
-                        Mark as Pending
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p>No completed requests</p>
-              )}
-            </div>
-
-            {/* Canceled Requests */}
-            <h2 className="text-xl font-bold text-simmpy-gray-800 mb-4">Canceled Requests</h2>
-            <div>
-              {filteredCanceled.length > 0 ? (
-                <ul className="mt-4 space-y-4">
-                  {filteredCanceled.map((request) => (
-                    <li key={request.id} className="p-4 bg-simmpy-gray-100 rounded-lg shadow">
-                      <p>
-                        User: {request.user.name} ({request.user.email})
-                      </p>
-                      <p>
-                        Time:{" "}
-                        {new Date(request.requestedTimeSlot.startTime).toLocaleTimeString()} -{" "}
-                        {new Date(request.requestedTimeSlot.endTime).toLocaleTimeString()}
-                      </p>
-                      <button
-                        onClick={() => toggleRequestStatus(request.id, request.status)}
-                        className="text-simmpy-green underline"
-                      >
-                        Reopen as Pending
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p>No canceled requests</p>
-              )}
-            </div>
           </div>
-          <div className="w-full md:w-1/3 p-6">
-            <Image
-              src="/assets/images/MapPlaceholder.png"
-              alt="Map Placeholder"
-              width={400}
-              height={400}
-              className="rounded-lg shadow-md"
-            />
+          <div className="relative overflow-x-auto mt-6 p-2 lg:flex lg:justify-center">
+            <table className="w-full text-sm text-left rtl:text-right text-gray-500">
+              <thead className="text-xs text-gray-700 bg-simmpy-gray-100 uppercase">
+                <tr>
+                  <th scope="col" className="py-3">
+                    Name
+                  </th>
+                  <th scope="col" className="py-3">
+                    Email
+                  </th>
+                  <th scope="col" className="py-3">
+                    Phone#
+                  </th>
+                  <th scope="col" className="py-3">
+                    Service Address
+                  </th>
+                  <th scope="col" className="py-3">
+                    Req. Time Slot
+                  </th>
+                  <th scope="col" className="py-3">
+                    Confirmed ETA
+                  </th>
+                  <th scope="col" className="py-3">
+                    Status
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {userRequests?.map((request) => (
+                  <tr
+                    className="bg-white border-b hover:cursor-pointer hover:bg-gray-50"
+                    key={request?.id}
+                  >
+                    <td>{request.user.name}</td>
+                    <td>{request.user.email}</td>
+                    <td>{formatPhoneNumber(request.user.phoneNumber!)}</td>
+                    <td>
+                      {request.address?.streetNumber}{" "}
+                      {request.address?.streetName} {request.address?.city}
+                    </td>
+                    <td>
+                      <FormattedTimeSlotDateTime
+                        start={request.requestedTimeSlot.startTime}
+                        end={request.requestedTimeSlot.endTime}
+                      />
+                    </td>
+                    <td>
+                      <FormattedTimeSlotDateTime
+                        start={request.assignedTimeSlot?.startTime}
+                        end={request.assignedTimeSlot?.endTime}
+                      />
+                    </td>
+                    <td
+                      className={`${
+                        requestStatusColorMap[request.status]
+                      } text-center`}
+                    >
+                      {request.status}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       ) : (

@@ -1,3 +1,4 @@
+import { AllUserRequestsAdminGetResponse } from "@/types/api-responses/admin-resident-requests-api-response";
 import { UserResidentRequestsApiResponse } from "@/types/api-responses/user-resident-requests-api-response";
 import { ResidentReqestApiRequest } from "@/types/resident-request-api-request";
 import { RequestStatus } from "@prisma/client";
@@ -43,5 +44,22 @@ export const ResidentRequestService = {
     }
 
     return response.json();
+  },
+  adminGetAllRequests: async (): Promise<AllUserRequestsAdminGetResponse[]> => {
+    const response = await fetch(`/api/resident-request?status=all`);
+    const data: AllUserRequestsAdminGetResponse[] = await response.json();
+
+    if (!response.ok) {
+      throw new Error("Failed to get all resident requests");
+    }
+
+    // Sort requests by createdAt date in descending order
+    if (data) {
+      return data.sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+    }
+    return [];
   },
 };
