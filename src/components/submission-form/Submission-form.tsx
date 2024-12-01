@@ -145,7 +145,7 @@ export function SubmissionForm() {
     if (session?.user?.email) {
       setFormData({ ...formData, email: session.user.email });
     }
-  }, [session?.user?.email, formData]);
+  }, [session?.user?.email]);
 
   useEffect(() => {
     // Used to handle when user is closing the browser tab and their form is not submitted
