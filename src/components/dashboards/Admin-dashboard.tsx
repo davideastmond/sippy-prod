@@ -38,11 +38,10 @@ export default function AdminDashboard() {
     try {
       setLoading(true);
       const requests = await ResidentRequestService.adminGetAllRequests();
-      console.log(requests);
       setUserRequests(requests);
       setLoading(false);
     } catch (error) {
-      console.error(error);
+      console.log(error);
       setError("Failed to fetch requests");
       setLoading(false);
     }
@@ -72,7 +71,7 @@ export default function AdminDashboard() {
           <div>
             <h1 className="text-3xl font-bold text-center">Requests</h1>
           </div>
-          <div>
+          <div className="mb-32">
             {/* Search and filter panel */}
             <SearchRequestsFilterPanel onSearch={handleSearch} />
           </div>
