@@ -5,10 +5,12 @@ import { getTimeSlotSummaryCaption } from "@/lib/utils/time-slot/time-slot";
 import { assignRequestedTimeSlot } from "@/lib/utils/time-slot/time-slot-assigners";
 import { residentRequestValidationSchema } from "@/lib/validation-schemas/submission-request-validation-schemas";
 import { ResidentReqestApiRequest } from "@/types/resident-request-api-request";
-import { Address } from "@prisma/client";
+import { Address, RequestStatus  } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { ZodError } from "zod";
+import { adminGetResidentsRequests } from "./adminHandler";
+import { getUserResidentRequest } from "./userHandler";
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -98,14 +100,40 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ message: "Request received" });
 }
 
-// This needs to be merged with the GET route for the admin dashboard
+
+//adding GET method
+
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
-  if (!session || !session.user) {
+
+  if (!session  || !session.user) {
     return NextResponse.json({ message: "No session" }, { status: 401 });
   }
-
+  
   const { searchParams } = new URL(req.url);
+
+  if(session.user.isAdmin){    
+    const status = searchParams.get("status");
+    if (!status) {
+      return NextResponse.json(
+        { message: "No status provided" },
+        { status: 400 }
+      );
+    }
+    try {
+      const residentRequests = await adminGetResidentsRequests(status as RequestStatus)  
+      return NextResponse.json(residentRequests);
+    } catch (error) {
+      console.log('Eror', error);
+      return NextResponse.json(
+        { message: "Failed to fetch resident request" },
+        { status: 400 }
+      );
+    }
+    
+
+  }
+
   const userId = searchParams.get("userId");
 
   if (!userId) {
@@ -113,48 +141,23 @@ export async function GET(req: NextRequest) {
       { message: "No user ID provided" },
       { status: 400 }
     );
-  }
 
-  // Maybe we need to split this logic into handlers to differentiate between admin and user requests?
-  if (!session.user.isAdmin && session.user.id !== userId) {
+
+  }
+  if (session.user.id !== userId) {
     return NextResponse.json(
       { message: "Unauthorized to view these requests" },
       { status: 401 }
     );
   }
-
   try {
-    const fetchedRequestsForUserId = await prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        requests: {
-          select: {
-            id: true,
-            requestedTimeSlot: {
-              select: {
-                startTime: true,
-                endTime: true,
-              },
-            },
-            assignedTimeSlot: {
-              select: {
-                startTime: true,
-                endTime: true,
-              },
-            },
-            address: true,
-            status: true,
-            createdAt: true,
-          },
-        },
-      },
-    });
-    return NextResponse.json(fetchedRequestsForUserId, { status: 200 });
+    const fetchedRequestsForUserId = await getUserResidentRequest(userId);
+    return NextResponse.json(fetchedRequestsForUserId);
   } catch (error) {
-    console.error(error);
+    console.log('Eror', error);
     return NextResponse.json(
-      { message: "Failed to get resident requests" },
-      { status: 500 }
+      { message: "Failed to fetch resident request" },
+      { status: 400 }
     );
   }
 }
