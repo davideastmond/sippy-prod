@@ -47,8 +47,8 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleSearch = (query: string) => {
-    const requestQuery = query.toLowerCase();
+  const handleSearch = (query: string, filters: Record<string, boolean>) => {
+    console.log("51", query, filters);
   };
 
   if (error) {

@@ -1,19 +1,14 @@
 "use client";
 
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ChangeEvent, useState } from "react";
 
 interface SearchRequestsProps {
-  onSearch: (query: string) => void;
+  onSearch: (query: string, filter: Record<string, boolean>) => void;
 }
 
 const SearchRequestsFilterPanel: React.FC<SearchRequestsProps> = ({
   onSearch,
 }) => {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-
   const [dropdownHidden, setDropdownHidden] = useState(true);
   const [checkedOptions, setCheckedOptions] = useState<Record<string, boolean>>(
     {
@@ -23,20 +18,12 @@ const SearchRequestsFilterPanel: React.FC<SearchRequestsProps> = ({
       all: true,
     }
   );
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const handleSearch = (query: string) => {
-    const newSearchParams = new URLSearchParams(searchParams.toString());
-    if (query) {
-      newSearchParams.set("query", query);
-    } else {
-      newSearchParams.delete("query");
-    }
-
-    // Update the URL with the new query params
-    router.push(`${pathname}?${newSearchParams.toString()}`);
-
+  const handleTextSearchChanged = (query: string) => {
     // Call the onSearch prop to filter data
-    onSearch(query);
+    setSearchQuery(query);
+    onSearch(query, checkedOptions);
   };
 
   const handleCheckboxFilterSelectionChanged = (
@@ -60,6 +47,7 @@ const SearchRequestsFilterPanel: React.FC<SearchRequestsProps> = ({
       all: false,
     };
     setCheckedOptions(newCheckedOptions);
+    onSearch(searchQuery, newCheckedOptions);
   };
 
   return (
@@ -68,13 +56,13 @@ const SearchRequestsFilterPanel: React.FC<SearchRequestsProps> = ({
         type="text"
         placeholder="Search by name or email"
         className="border border-gray-300 rounded-md px-4 py-2 mr-2" //not sure if i need this...
-        onChange={(e) => handleSearch(e.target.value)}
+        onChange={(e) => handleTextSearchChanged(e.target.value)}
       />
       <div>
         <button
           id="dropdownHelperButton"
           data-dropdown-toggle="dropdownHelper"
-          className="text-simmpy-gray-900 focus:ring-2 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center border border-gray-300"
+          className="text-simmpy-gray-200 focus:ring-2 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center border border-gray-300"
           type="button"
           onClick={() => setDropdownHidden(!dropdownHidden)}
         >
