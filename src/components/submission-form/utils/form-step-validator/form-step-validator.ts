@@ -2,7 +2,7 @@ import {
   addressValidationSchema,
   appointmentValidationSchema,
   nameEmailPhoneValidationSchema,
-} from "../../../../lib/validation-schemas/validation-schemas";
+} from "@/lib/validation-schemas/submission-request-validation-schemas";
 
 /* 
   Since the form is split into steps, we need to validate the form data based on the current step.

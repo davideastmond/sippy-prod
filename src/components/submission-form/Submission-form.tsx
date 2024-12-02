@@ -46,6 +46,7 @@ export function SubmissionForm() {
   const { data: session, status } = useSession();
   const [isBusy, setIsBusy] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
 
   const router = useRouter();
 
@@ -146,41 +147,112 @@ export function SubmissionForm() {
     }
   }, [session?.user?.email]);
 
+  useEffect(() => {
+    // Used to handle when user is closing the browser tab and their form is not submitted
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+    };
+    if (!isSubmitted) {
+      window.addEventListener("beforeunload", handler);
+      return () => {
+        window.removeEventListener("beforeunload", handler);
+      };
+    }
+  }, [isSubmitted]);
+
   if (status === "unauthenticated") {
-    router.replace("/signup");
+    router.replace("/authenticate");
     return null;
   }
 
   return isSubmitted ? (
     <SubmitSuccess />
   ) : (
-    <div className="flex gap-2 flex-col flex-1 justify-center items-center">
-      <HeaderStatus currentStage={currentStep} stages={[1, 2, 3, 4]} />
-      <form
-        onSubmit={handleSubmit}
-        className="flex p-6 w-full flex-col gap-4 bg-simmpy-gray-600 rounded-md"
-      >
-        <WrapperContainer>
-          {getFormComponentByStep(currentStep)}
-        </WrapperContainer>
-        {currentStep > 0 && (
+    <>
+      <div className="flex gap-2 flex-col flex-1 justify-center items-center">
+        <HeaderStatus currentStage={currentStep} stages={[1, 2, 3, 4]} />
+        <form
+          onSubmit={handleSubmit}
+          className="flex p-6 w-full flex-col gap-4 bg-simmpy-gray-600 rounded-md"
+        >
+          <WrapperContainer>
+            {getFormComponentByStep(currentStep)}
+          </WrapperContainer>
+          {currentStep > 0 && (
+            <ButtonText
+              text="Back"
+              color="Yellow"
+              name="back"
+              disabled={isBusy}
+            />
+          )}
           <ButtonText
-            text="Back"
-            color="Yellow"
-            name="back"
+            text={currentStep === MAX_STEPS - 1 ? "Submit" : "Next"}
+            color="Green"
+            name="next"
             disabled={isBusy}
           />
+        </form>
+        {submitError && (
+          <p className="text-red-500 text-sm font-lato">{submitError}</p>
         )}
-        <ButtonText
-          text={currentStep === MAX_STEPS - 1 ? "Submit" : "Next"}
-          color="Green"
-          name="next"
-          disabled={isBusy}
+        {!isSubmitted && (
+          <ButtonText
+            text="Cancel"
+            color="Red"
+            onClick={() => setModalOpen(true)}
+          />
+        )}
+      </div>
+      {modalOpen && (
+        <CancelConfirmationModal
+          onCancel={() => setModalOpen(false)}
+          onConfirm={() => {
+            // Redirect to dashboard?
+            router.push("/dashboard");
+          }}
         />
-      </form>
-      {submitError && (
-        <p className="text-red-500 text-sm font-lato">{submitError}</p>
       )}
-    </div>
+    </>
   );
 }
+
+const CancelConfirmationModal = ({
+  onConfirm,
+  onCancel,
+}: {
+  onConfirm: () => void;
+  onCancel: () => void;
+}) => {
+  return (
+    <div className="absolute w-full top-[0] h-full bg-simmpy-gray-900/60">
+      <div className="modal-box w-full max-w-[800px] lg:ml-[30%] bg-simmpy-gray-600 p-4 rounded-md mt-[20vh]">
+        <p className="text-simmpy-gray-100 text-center text-lg">
+          Choosing cancel will discard your application and your changes will
+          not be saved.
+        </p>
+        <p className="text-simmpy-gray-100 text-center text-lg">
+          Are you sure you want to cancel?
+        </p>
+        <div className="flex justify-end gap-x-4 mt-4">
+          <div>
+            <ButtonText
+              text="Yes-cancel"
+              color="Red"
+              paddingX={4}
+              onClick={() => onConfirm()}
+            />
+          </div>
+          <div>
+            <ButtonText
+              text="Go back"
+              color="Green"
+              paddingX={4}
+              onClick={() => onCancel()}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};

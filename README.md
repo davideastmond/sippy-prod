@@ -66,6 +66,15 @@ Follow these steps to set up and run the application locally:
 
    In your Google console, ensure that the `Places` and `PlacesDetails` API functionality are switched on.
 
+   ### For mock e-mail functionality using Ethereal:
+
+   - Create a free account at https://ethereal.email/
+   - Copy credentials (user, password and host) and paste them into the appropriate environment variables:
+     `SMTP_HOST=smtp.ethereal.email` (or whatever ethereal indicates)
+     `SMTP_USER=<copy from ethereal>`
+     `SMTP_PASSWORD=<copy from ethereal>`
+     `SMTP_FROM="'Admin' <admin@sippy.com>"`
+
 4. **Generate Prisma Client**
 
    To generate the Prisma client based on the defined schema, run:
@@ -134,6 +143,13 @@ This project uses **Prisma** as the ORM and **PostgreSQL** as the database. Here
 1. **Define Services** in `docker-compose.yml` for containerized environments, with PostgreSQL setup using the Bitnami PostgreSQL image and persistent storage.
 2. **Prisma Scripts**: Scripts for Prisma (`prisma:generate`, `prisma:migrate`, and `prisma:deploy`) are added to the `package.json` for easy schema management and migrations.
 3. **Database Schema**: The schema includes tables like `users`, `resident_requests`, `addresses`, and `time_slots`, all with defined relationships and constraints.
+
+## E-mail mocking using Ethereal
+
+Review the FAQ https://ethereal.email/faq
+
+- All e-mails sent by our service are mocked and will be intercepted by Ethereal.
+- Log into your Ethereal mailbox to inspect the e-mails.
 
 ---
 
