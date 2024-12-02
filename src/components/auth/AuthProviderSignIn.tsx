@@ -13,7 +13,7 @@ export default function AuthProviderSignIn() {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentReview((prev) => (prev + 1) % reviews.length);
-    }, 10000); // Change review every 10 seconds
+    }, 7000); // Change review every 10 seconds
     return () => clearInterval(interval);
   }, []);
 
@@ -32,10 +32,11 @@ export default function AuthProviderSignIn() {
       className="flex flex-col-reverse md:flex-row"
       style={{ minHeight: "calc(100vh - 72px)" }} // screen minus navbar
     >
-
       <div className="w-full md:w-1/2 bg-white flex flex-col relative  mb-4">
         <div className="flex flex-col justify-center items-center flex-grow text-center px-4 md:px-16 mt-12 mb-10">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-4">Welcome</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-4">
+            Welcome
+          </h1>
           <p className="text-gray-600 mb-2 md:mb-8 text-sm md:text-base">
             Sign in or sign up to request a solar panel installation.
           </p>
@@ -76,11 +77,14 @@ export default function AuthProviderSignIn() {
       <div
         className="w-full md:w-1/2 flex flex-col justify-end items-center py-12 px-8 md:px-16 relative rounded-b-[15%] md:rounded-br-none"
         style={{
-          background: "linear-gradient(to top, #9ca3af, #f3f4f6 50%, white 100%)",
+          background:
+            "linear-gradient(to top, #9ca3af, #f3f4f6 50%, white 100%)",
         }}
       >
-        
-        <div className="text-center max-w-md mb-10 md:mb-36">
+        <div className="text-center max-w-md mb-10 md:mb-52">
+          <p className="text-gray-700 md:text-base text-left font-semibold mb-10">
+            What our users say about us:
+          </p>
           <p className="italic text-lg md:text-xl text-gray-800 font-medium mb-4">
             “{reviews[currentReview].quote}”
           </p>
