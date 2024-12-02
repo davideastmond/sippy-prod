@@ -39,7 +39,9 @@ const SearchRequestsFilterPanel: React.FC<SearchRequestsProps> = ({
     onSearch(query);
   };
 
-  const handleSelectionChanged = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleCheckboxFilterSelectionChanged = (
+    e: ChangeEvent<HTMLInputElement>
+  ) => {
     // Handle the "All" checkbox
     if (e.target.name === "all") {
       const newCheckedOptions = {
@@ -113,7 +115,7 @@ const SearchRequestsFilterPanel: React.FC<SearchRequestsProps> = ({
                     aria-describedby="helper-checkbox-text-1"
                     type="checkbox"
                     checked={checkedOptions.completed}
-                    onChange={handleSelectionChanged}
+                    onChange={handleCheckboxFilterSelectionChanged}
                     className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
                   />
                 </div>
@@ -135,7 +137,7 @@ const SearchRequestsFilterPanel: React.FC<SearchRequestsProps> = ({
                     aria-describedby="helper-checkbox-text-1"
                     name="pending"
                     type="checkbox"
-                    onChange={handleSelectionChanged}
+                    onChange={handleCheckboxFilterSelectionChanged}
                     checked={checkedOptions.pending}
                     className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
                   />
@@ -158,7 +160,7 @@ const SearchRequestsFilterPanel: React.FC<SearchRequestsProps> = ({
                     aria-describedby="helper-checkbox-text-1"
                     type="checkbox"
                     name="canceled"
-                    onChange={handleSelectionChanged}
+                    onChange={handleCheckboxFilterSelectionChanged}
                     checked={checkedOptions.canceled}
                     className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
                   />
@@ -181,7 +183,7 @@ const SearchRequestsFilterPanel: React.FC<SearchRequestsProps> = ({
                     aria-describedby="helper-checkbox-text-1"
                     type="checkbox"
                     name="all"
-                    onChange={handleSelectionChanged}
+                    onChange={handleCheckboxFilterSelectionChanged}
                     checked={checkedOptions.all}
                     className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
                   />
