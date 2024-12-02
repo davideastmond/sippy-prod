@@ -11,12 +11,16 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import FormattedTimeSlotDateTime from "../formatted-time-slot-date-time.tsx/FormattedTimeSlotDateTime";
 
+const MAX_TAKE = 10; // This is the number of requests to fetch per page
+
 export default function AdminDashboard() {
   const router = useRouter();
   const { data: session, status } = useSession();
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pageNumber, setPageNumber] = useState(0);
+  const [totalCount, setTotalCount] = useState(0);
 
   const [userRequests, setUserRequests] = useState<
     AllUserRequestsAdminGetResponse[]
@@ -32,13 +36,17 @@ export default function AdminDashboard() {
     if (session?.user?.isAdmin) {
       fetchAllRequests();
     }
-  }, [session?.user?.isAdmin]);
+  }, [session?.user?.isAdmin, pageNumber]);
 
   const fetchAllRequests = async () => {
     try {
       setLoading(true);
-      const requests = await ResidentRequestService.adminGetAllRequests();
-      setUserRequests(requests);
+      const requests = await ResidentRequestService.adminGetAllRequests({
+        take: MAX_TAKE,
+        skip: pageNumber * MAX_TAKE,
+      });
+      setUserRequests(requests.residentRequests);
+      setTotalCount(requests.count);
       setLoading(false);
     } catch (error) {
       console.log(error);
@@ -49,6 +57,16 @@ export default function AdminDashboard() {
 
   const handleSearch = (query: string, filters: Record<string, boolean>) => {
     console.log("51", query, filters);
+  };
+
+  const handlePagination = (direction: "forward" | "backward") => {
+    if (direction === "forward") {
+      if ((pageNumber + 1) * MAX_TAKE > totalCount) return;
+      setPageNumber((prev) => prev + 1);
+    } else {
+      if (pageNumber === 0) return;
+      setPageNumber((prev) => prev - 1);
+    }
   };
 
   if (error) {
@@ -82,10 +100,10 @@ export default function AdminDashboard() {
                   <th scope="col" className="py-3">
                     Name
                   </th>
-                  <th scope="col" className="py-3">
+                  <th scope="col" className="py-3 hidden lg:table-cell">
                     Email
                   </th>
-                  <th scope="col" className="py-3">
+                  <th scope="col" className="py-3 hidden lg:table-cell">
                     Phone#
                   </th>
                   <th scope="col" className="py-3">
@@ -109,8 +127,12 @@ export default function AdminDashboard() {
                     key={request?.id}
                   >
                     <td>{request.user.name}</td>
-                    <td>{request.user.email}</td>
-                    <td>{formatPhoneNumber(request.user.phoneNumber!)}</td>
+                    <td className="hidden lg:table-cell">
+                      {request.user.email}
+                    </td>
+                    <td className="hidden lg:table-cell">
+                      {formatPhoneNumber(request.user.phoneNumber!)}
+                    </td>
                     <td>
                       {request.address?.streetNumber}{" "}
                       {request.address?.streetName} {request.address?.city}
@@ -138,6 +160,42 @@ export default function AdminDashboard() {
                 ))}
               </tbody>
             </table>
+          </div>
+          <div>
+            {/* Pagination Section */}
+            <div className="flex flex-col items-center">
+              {/* <!-- Help text --> */}
+              <span className="text-sm text-gray-700">
+                Showing{" "}
+                <span className="font-semibold text-gray-900">
+                  {pageNumber * MAX_TAKE + 1}
+                </span>{" "}
+                to{" "}
+                <span className="font-semibold text-gray-900">
+                  {pageNumber * MAX_TAKE + userRequests.length}
+                </span>{" "}
+                of{" "}
+                <span className="font-semibold text-gray-900">
+                  {totalCount}
+                </span>{" "}
+                Entries
+              </span>
+              {/* <!-- Buttons --> */}
+              <div className="inline-flex mt-2 xs:mt-0">
+                <button
+                  onClick={() => handlePagination("backward")}
+                  className="flex items-center justify-center px-3 h-8 text-sm font-medium text-white bg-gray-800 rounded-s hover:bg-gray-900"
+                >
+                  Prev
+                </button>
+                <button
+                  onClick={() => handlePagination("forward")}
+                  className="flex items-center justify-center px-3 h-8 text-sm font-medium text-white bg-gray-800 border-0 border-s border-gray-700 rounded-e hover:bg-gray-900"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       ) : (

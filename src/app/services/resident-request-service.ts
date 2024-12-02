@@ -3,6 +3,10 @@ import { UserResidentRequestsApiResponse } from "@/types/api-responses/user-resi
 import { ResidentReqestApiRequest } from "@/types/resident-request-api-request";
 import { RequestStatus } from "@prisma/client";
 
+type AllResidentRequestsAdminGetResponseWithCount = {
+  residentRequests: AllUserRequestsAdminGetResponse[];
+  count: number;
+};
 export const ResidentRequestService = {
   create: async (data: ResidentReqestApiRequest) => {
     const response = await fetch("/api/resident-request", {
@@ -45,9 +49,18 @@ export const ResidentRequestService = {
 
     return response.json();
   },
-  adminGetAllRequests: async (): Promise<AllUserRequestsAdminGetResponse[]> => {
-    const response = await fetch(`/api/resident-request?status=all`);
-    const data: AllUserRequestsAdminGetResponse[] = await response.json();
+  adminGetAllRequests: async ({
+    take = 10,
+    skip,
+  }: {
+    take: number;
+    skip: number;
+  }): Promise<AllResidentRequestsAdminGetResponseWithCount> => {
+    const response = await fetch(
+      `/api/resident-request?status=all&take=${take}&skip=${skip}`
+    );
+    const data: AllResidentRequestsAdminGetResponseWithCount =
+      await response.json();
 
     if (!response.ok) {
       throw new Error("Failed to get all resident requests");
@@ -55,11 +68,14 @@ export const ResidentRequestService = {
 
     // Sort requests by createdAt date in descending order
     if (data) {
-      return data.sort(
-        (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      );
+      return {
+        residentRequests: data.residentRequests.sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        ),
+        count: data.count,
+      };
     }
-    return [];
+    return { residentRequests: [], count: 0 };
   },
 };

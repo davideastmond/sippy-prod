@@ -113,6 +113,9 @@ export async function GET(req: NextRequest) {
 
   if (session.user.isAdmin) {
     const status = searchParams.get("status");
+    const take = searchParams.get("take");
+    const skip = searchParams.get("skip");
+
     if (!status) {
       return NextResponse.json(
         { message: "No status provided" },
@@ -121,7 +124,8 @@ export async function GET(req: NextRequest) {
     }
     try {
       const residentRequests = await adminGetResidentsRequests(
-        status as RequestStatus & "all"
+        status as RequestStatus & "all",
+        { take: parseInt(take!, 10), skip: parseInt(skip!, 10) }
       );
       return NextResponse.json(residentRequests);
     } catch (error) {
