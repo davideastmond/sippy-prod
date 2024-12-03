@@ -19,7 +19,7 @@ const AboutSection = () => {
             </span>
           </div>
           <p className="flex-wrap flex-1 shrink gap-2.5 mt-8 w-full min-h-[156px] text-neutral-700 max-md:max-w-full">
-            Our team, THE AGILE SUNCREW, is dedicated to helping you optimize your scheduling needs, enhance communication, and support sustainable operational practices. With expertise spanning multiple time zones and areas of development, we bring our collective experience to ensure your project's success in North and South America.
+            Our team, THE AGILE SUNCREW, is dedicated to helping you optimize your scheduling needs, enhance communication, and support sustainable operational practices. With expertise spanning multiple areas of development, we bring our collective experience to ensure your project's success.
           </p>
         </article>
       </section>
