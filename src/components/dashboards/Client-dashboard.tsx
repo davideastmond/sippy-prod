@@ -59,7 +59,10 @@ export default function ClientDashboard() {
 
   const handleCancelPendingRequest = async (requestId: string) => {
     try {
-      await ResidentRequestService.cancelRequestById(requestId);
+      await ResidentRequestService.patchRequestStatusById(
+        requestId,
+        RequestStatus.CANCELED
+      );
 
       // Refresh the requests to update the status
       await fetchResidentRequestsForUser();
