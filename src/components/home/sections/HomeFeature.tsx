@@ -1,4 +1,5 @@
 import { HomeFeatureProps } from "@/types/home-feature";
+import Image from "next/image";
 
 const HomeFeature = ({
   title,
@@ -22,12 +23,13 @@ const HomeFeature = ({
   );
 
   const imageElement = (
-    <div className="flex flex-1 shrink self-stretch my-auto basis-0 h-[512px] min-w-[240px] w-[560px] max-w-full max-md:h-auto max-md:w-auto">
-      <img
+    <div className="relative flex flex-1 shrink self-stretch my-auto basis-0 h-[512px] min-w-[240px] w-[560px] max-w-full max-md:h-auto max-md:w-auto">
+      <Image
         src={image.src}
         alt={image.alt}
-        className="w-full h-full max-md:h-auto max-md:max-w-full object-contain rounded-lg"
+        className="object-contain rounded-lg"
         loading="lazy"
+        fill
       />
     </div>
   );
