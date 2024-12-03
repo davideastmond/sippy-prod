@@ -5,10 +5,12 @@ import Spinner from "@/components/spinner/Spinner";
 import { formatPhoneNumber } from "@/lib/utils/phone-number/format-phone-number";
 import { requestStatusColorMap } from "@/lib/utils/request-status/request-status-color-map";
 import { AllUserRequestsAdminGetResponse } from "@/types/api-responses/admin-resident-requests-api-response";
+import { RequestStatus } from "@prisma/client";
 import { ResidentRequestService } from "app/services/resident-request-service";
+import { debounce } from "lodash";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import FormattedTimeSlotDateTime from "../formatted-time-slot-date-time.tsx/FormattedTimeSlotDateTime";
 
 const MAX_TAKE = 10; // This is the number of requests to fetch per page
@@ -28,7 +30,7 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (status === "unauthenticated") {
-      router.replace("/signup");
+      router.replace("/authenticate");
     }
   }, [status, router]);
 
@@ -56,8 +58,30 @@ export default function AdminDashboard() {
   };
 
   const handleSearch = (query: string, filters: Record<string, boolean>) => {
+    //TODO: Implement search and filter
     console.log("51", query, filters);
+    fetchSearchResults(query, filters);
   };
+
+  const fetchSearchResults = useCallback(
+    debounce(async (query: string, filters: Record<string, boolean>) => {
+      if (!query) {
+        setUserRequests([]);
+        return;
+      }
+
+      try {
+        await ResidentRequestService.searchRequests({
+          stringQuery: query,
+          requestStatus: Object.keys(filters).filter((key) => filters[key]),
+        });
+      } catch (error) {
+        console.error("Error fetching search results:", error);
+        setUserRequests([]);
+      }
+    }, 300),
+    []
+  );
 
   const handlePagination = (direction: "forward" | "backward") => {
     if (direction === "forward") {
@@ -69,9 +93,26 @@ export default function AdminDashboard() {
     }
   };
 
-  if (error) {
-    return <p className="text-red-500">{error}</p>;
-  }
+  const handleUpdateRequestStatus = async (
+    requestStatus: RequestStatus,
+    requestId: string
+  ) => {
+    try {
+      setLoading(true);
+      // Do an admin update action to the current request
+      await ResidentRequestService.patchRequestStatusById(
+        requestId,
+        requestStatus
+      );
+
+      await fetchAllRequests();
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+      console.log(error);
+      setError("Failed to update request status");
+    }
+  };
 
   if (loading) {
     return (
@@ -118,6 +159,9 @@ export default function AdminDashboard() {
                   <th scope="col" className="py-3">
                     Status
                   </th>
+                  <th scope="col" className="py-3">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -155,6 +199,14 @@ export default function AdminDashboard() {
                       } text-center`}
                     >
                       {request.status}
+                    </td>
+                    <td>
+                      <ActionButtons
+                        request={request}
+                        onActionButtonClicked={(action: RequestStatus) =>
+                          handleUpdateRequestStatus(action, request.id)
+                        }
+                      />
                     </td>
                   </tr>
                 ))}
@@ -196,6 +248,10 @@ export default function AdminDashboard() {
                 </button>
               </div>
             </div>
+            <div>
+              {/* Errors */}
+              {error && <p className="text-red-500">{error}</p>}
+            </div>
           </div>
         </div>
       ) : (
@@ -206,3 +262,42 @@ export default function AdminDashboard() {
     </>
   );
 }
+
+const ActionButtons = ({
+  request,
+  onActionButtonClicked,
+}: {
+  request: AllUserRequestsAdminGetResponse;
+  onActionButtonClicked: (requestStatus: RequestStatus) => void;
+}) => {
+  if (request.status === RequestStatus.PENDING) {
+    return (
+      <div className="flex flex-col">
+        <button
+          className="px-2 py-1 text-simmpy-green"
+          onClick={() => onActionButtonClicked(RequestStatus.COMPLETED)}
+        >
+          Mark Completed
+        </button>
+        <button
+          onClick={() => onActionButtonClicked(RequestStatus.CANCELED)}
+          className="px-2 py-1 text-simmpy-red"
+        >
+          Mark Canceled
+        </button>
+      </div>
+    );
+  }
+  if (request.status === RequestStatus.COMPLETED) {
+    return (
+      <div className="flex justify-center">
+        <button
+          className="px-2 py-1 text-simmpy-green"
+          onClick={() => onActionButtonClicked(RequestStatus.PENDING)}
+        >
+          Move back to pending
+        </button>
+      </div>
+    );
+  }
+};
