@@ -38,6 +38,7 @@ const SearchRequestsFilterPanel: React.FC<SearchRequestsProps> = ({
         all: e.target.checked,
       };
       setCheckedOptions(newCheckedOptions);
+      onSearch(searchQuery, newCheckedOptions);
       return;
     }
 
