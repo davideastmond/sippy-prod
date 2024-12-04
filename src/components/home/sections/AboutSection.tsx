@@ -28,8 +28,7 @@ const AboutSection = () => {
             your scheduling needs, enhance communication, and support
             sustainable operational practices. With expertise spanning multiple
             time zones and areas of development, we bring our collective
-            experience to ensure your project&apos;s success in North and South
-            America.
+            experience to ensure your project&apos;s success.
           </p>
         </article>
       </section>
