@@ -28,6 +28,8 @@ export default function AdminDashboard() {
     AllUserRequestsAdminGetResponse[]
   >([]);
 
+  const [isSearching, setIsSearch] = useState(false);
+
   useEffect(() => {
     if (status === "unauthenticated") {
       router.replace("/authenticate");
@@ -57,10 +59,23 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleSearch = (query: string, filters: Record<string, boolean>) => {
+  const handleSearch = async (
+    query: string,
+    filters: Record<string, boolean>
+  ) => {
     //TODO: Implement search and filter
-    console.log("51", query, filters);
-    fetchSearchResults(query, filters);
+    if (query && query.length > 0) {
+      setIsSearch(true);
+    }
+    try {
+      const searchResults = await fetchSearchResults(query, filters);
+      if (searchResults?.residentRequests) {
+        setUserRequests(searchResults.residentRequests);
+        setTotalCount(searchResults.count);
+      }
+    } catch (error) {
+      console.log("error fetching results", error);
+    }
   };
 
   const fetchSearchResults = useCallback(
@@ -71,7 +86,7 @@ export default function AdminDashboard() {
       }
 
       try {
-        await ResidentRequestService.searchRequests({
+        return ResidentRequestService.searchRequests({
           stringQuery: query,
           requestStatus: Object.keys(filters).filter((key) => filters[key]),
         });
@@ -114,6 +129,11 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleCancelSearch = async () => {
+    setIsSearch(false);
+    await fetchAllRequests();
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center mt-[10%]">
@@ -133,6 +153,14 @@ export default function AdminDashboard() {
           <div className="mb-32">
             {/* Search and filter panel */}
             <SearchRequestsFilterPanel onSearch={handleSearch} />
+            {isSearching && (
+              <button
+                onClick={handleCancelSearch}
+                className="text-simmpy-red text-sm"
+              >
+                Clear Search
+              </button>
+            )}
           </div>
           <div className="relative overflow-x-auto mt-6 p-2 lg:flex lg:justify-center">
             <table className="w-full text-sm text-left rtl:text-right text-gray-500">
