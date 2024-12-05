@@ -1,30 +1,18 @@
 import { prisma } from "@/lib/prisma";
-import { RequestStatus } from "@prisma/client";
 import { NextResponse } from "next/server";
 
-export async function adminGetResidentsRequests(
-  status: RequestStatus | "all",
-  { take, skip }: { take: number; skip: number }
-) {
-  const validStatuses: string[] = [
-    RequestStatus.COMPLETED,
-    RequestStatus.PENDING,
-    RequestStatus.CANCELED,
-    "all",
-  ];
-
-  if (!validStatuses.includes(status)) {
-    return NextResponse.json(
-      { error: "Invalid status parameter" },
-      { status: 400 }
-    );
-  }
-
+export async function adminGetResidentsRequests({
+  take,
+  skip,
+}: {
+  take: number;
+  skip: number;
+}) {
   try {
-    if (status === "all") {
-      // Simply get all resident requests. TODO: pagination
-
-      const query = {
+    // Simply get all resident requests with pagination.
+    const count = await prisma.residentRequest.count();
+    const residentRequests = await prisma.residentRequest.findMany({
+      select: {
         id: true,
         requestedTimeSlot: { select: { startTime: true, endTime: true } },
         assignedTimeSlot: { select: { startTime: true, endTime: true } },
@@ -34,31 +22,13 @@ export async function adminGetResidentsRequests(
         user: {
           select: { id: true, name: true, email: true, phoneNumber: true },
         },
-      };
-
-      const count = await prisma.residentRequest.count();
-      const residentRequests = await prisma.residentRequest.findMany({
-        select: query,
-        skip: skip,
-        take: take,
-      });
-      return { residentRequests, count };
-    }
-
-    // TODO: keeping this here incase we need. Think about pagination
-    const residentRequests = await prisma.residentRequest.findMany({
-      where: { status: status as RequestStatus },
-      include: {
-        user: true,
-        requestedTimeSlot: true,
       },
       skip: skip,
       take: take,
     });
-
-    return residentRequests;
+    return { residentRequests, count };
   } catch (error) {
-    console.error("Error fetching resident request:", error);
+    console.log("Error fetching resident request:", error);
     return NextResponse.json(
       { error: "Failed to fetch resident request" },
       { status: 500 }

@@ -5,7 +5,7 @@ import { getTimeSlotSummaryCaption } from "@/lib/utils/time-slot/time-slot";
 import { assignRequestedTimeSlot } from "@/lib/utils/time-slot/time-slot-assigners";
 import { residentRequestValidationSchema } from "@/lib/validation-schemas/submission-request-validation-schemas";
 import { ResidentReqestApiRequest } from "@/types/resident-request-api-request";
-import { Address, RequestStatus } from "@prisma/client";
+import { Address } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { ZodError } from "zod";
@@ -112,21 +112,14 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
 
   if (session.user.isAdmin) {
-    const status = searchParams.get("status");
     const take = searchParams.get("take");
     const skip = searchParams.get("skip");
 
-    if (!status) {
-      return NextResponse.json(
-        { message: "No status provided" },
-        { status: 400 }
-      );
-    }
     try {
-      const residentRequests = await adminGetResidentsRequests(
-        status as RequestStatus & "all",
-        { take: parseInt(take!, 10), skip: parseInt(skip!, 10) }
-      );
+      const residentRequests = await adminGetResidentsRequests({
+        take: parseInt(take!, 10),
+        skip: parseInt(skip!, 10),
+      });
       return NextResponse.json(residentRequests);
     } catch (error) {
       console.log("Error", error);

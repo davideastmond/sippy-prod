@@ -57,7 +57,7 @@ export const ResidentRequestService = {
     skip: number;
   }): Promise<AllResidentRequestsAdminGetResponseWithCount> => {
     const response = await fetch(
-      `/api/resident-request?status=all&take=${take}&skip=${skip}`
+      `/api/resident-request?take=${take}&skip=${skip}`
     );
     const data: AllResidentRequestsAdminGetResponseWithCount =
       await response.json();
