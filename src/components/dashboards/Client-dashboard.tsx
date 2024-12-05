@@ -2,6 +2,7 @@
 import { ButtonText } from "@/components/buttonText";
 import FormattedTimeSlotDateTime from "@/components/formatted-time-slot-date-time.tsx/FormattedTimeSlotDateTime";
 import Spinner from "@/components/spinner/Spinner";
+import { requestStatusColorMap } from "@/lib/utils/request-status/request-status-color-map";
 import { UserResidentRequestsApiResponse } from "@/types/api-responses/user-resident-requests-api-response";
 import { RequestStatus } from "@prisma/client";
 import { ResidentRequestService } from "app/services/resident-request-service";
@@ -58,7 +59,10 @@ export default function ClientDashboard() {
 
   const handleCancelPendingRequest = async (requestId: string) => {
     try {
-      await ResidentRequestService.cancelRequestById(requestId);
+      await ResidentRequestService.patchRequestStatusById(
+        requestId,
+        RequestStatus.CANCELED
+      );
 
       // Refresh the requests to update the status
       await fetchResidentRequestsForUser();
@@ -198,12 +202,6 @@ export default function ClientDashboard() {
     </div>
   );
 }
-
-const requestStatusColorMap = {
-  [RequestStatus.CANCELED]: "bg-simmpy-red text-simmpy-gray-100",
-  [RequestStatus.COMPLETED]: "bg-simmpy-green text-simmpy-gray-100",
-  [RequestStatus.PENDING]: "bg-simmpy-yellow",
-};
 
 // Should we factor this out into a separate component?
 const CancelAppointmentModal = ({

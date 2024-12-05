@@ -1,6 +1,7 @@
 /* Review and submit screen */
 
 import { TextLabel } from "@/components/textLabel";
+import { formatPhoneNumber } from "@/lib/utils/phone-number/format-phone-number";
 import { getTimeSlotSummaryCaption } from "@/lib/utils/time-slot/time-slot";
 import { Address } from "@prisma/client";
 import dayjs from "dayjs";
@@ -38,7 +39,9 @@ export const ReviewSubmit = ({ formData }: ReviewSubmitProps) => {
       <div>
         <TextLabel text="Phone Number:" fontSize="Text-14" color="Gray-100" />
         <TextLabel
-          text={`(${formData.areaCode})-${formData.phoneNumber}`}
+          text={
+            formatPhoneNumber(`${formData.areaCode!}${formData.phoneNumber!}`)!
+          }
           fontSize="Text-14"
           color="Green"
         />
