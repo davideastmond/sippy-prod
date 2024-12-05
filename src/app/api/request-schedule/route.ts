@@ -1,39 +1,46 @@
 import { PrismaClient } from "@prisma/client";
 import { NextResponse } from "next/server";
-import { timeSlotIsAvailable } from "./timeslotHandle";
+
+const prisma = new PrismaClient();
 
 export async function GET() {
-  const prisma = new PrismaClient();
-  const users = await prisma.user.findMany();
-  return NextResponse.json(users);
-}
+  // Get the current date and time
+  const currentDate = new Date();
 
-export async function POST(req: Request) {
-  const { startTime, endTime } = await req.json();
+  // Determine if we are past 20:00 today
+  const isAfterCutoff = currentDate.getHours() >= 20;
 
-  // Convert startTime and endTime to Date objects
-  const start = new Date(startTime);
-  let end = new Date(endTime);
+  // Set the start and end times
+  const startOfDay = new Date(currentDate);
+  const endOfDay = new Date(currentDate);
 
-  // Define the cutoff hour (20:00)
-  const cutOffHour = 20;
-
-  // Check if the request falls outside allowed hours
-  if (start.getHours() >= cutOffHour || end.getHours() >= cutOffHour) {
-    // Move to the next day
-    start.setDate(start.getDate() + 1);
-    start.setHours(0, 0, 0, 0); 
-    end = new Date(start); // Reset end time based on the new start
-    end.setHours(1); // Example: duration of 1 hour
+  if (isAfterCutoff) {
+    // If after 20:00, start at 20:00 of the previous day and end at 20:00 today
+    startOfDay.setDate(startOfDay.getDate() - 1);
+    startOfDay.setHours(20, 0, 0, 0);
+    endOfDay.setHours(20, 0, 0, 0);
+  } else {
+    // If before 20:00, start at 20:00 of the day before yesterday and end at 20:00 yesterday
+    startOfDay.setDate(startOfDay.getDate() - 2);
+    startOfDay.setHours(20, 0, 0, 0);
+    endOfDay.setDate(endOfDay.getDate() - 1);
+    endOfDay.setHours(20, 0, 0, 0);
   }
 
-  // Check if the adjusted time slot is available
-  const isAvailable = await timeSlotIsAvailable(start, end);
+  // Query for requests within the calculated time range
+  const residentRequests = await prisma.residentRequest.findMany({
+    where: {
+      requestedTimeSlot: {
+        startTime: { gte: startOfDay, lte: endOfDay },
+      },
+    },
+    include: {
+      user: { select: { id: true, name: true, email: true } },
+      requestedTimeSlot: true, // Include the requested time slot details
+      address: { select: { latitude: true, longitude: true, city: true } }, // Include lat/lon
+    },
+  });
 
-  if (!isAvailable) {
-    return NextResponse.json({ error: "Time slot is fully booked" }, { status: 400 });
-  }
-
-  // If time slot is available, return success message
-  return NextResponse.json({ message: "Time slot is available", start, end });
+  // Return the data as a JSON response
+  return NextResponse.json(residentRequests);
 }
