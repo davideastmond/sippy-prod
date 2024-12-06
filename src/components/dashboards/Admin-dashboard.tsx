@@ -37,10 +37,10 @@ export default function AdminDashboard() {
   }, [status, router]);
 
   useEffect(() => {
-    if (session?.user?.isAdmin) {
+    if (session?.user?.isAdmin && !isSearching) {
       fetchAllRequests();
     }
-  }, [session?.user?.isAdmin, pageNumber]);
+  }, [session?.user?.isAdmin, pageNumber, isSearching]);
 
   const fetchAllRequests = async () => {
     try {
@@ -53,7 +53,7 @@ export default function AdminDashboard() {
       setTotalCount(requests.count);
       setLoading(false);
     } catch (error) {
-      console.log(error);
+      console.log("Error fetching all requests:", error);
       setError("Failed to fetch requests");
       setLoading(false);
     }
@@ -63,40 +63,39 @@ export default function AdminDashboard() {
     query: string,
     filters: Record<string, boolean>
   ) => {
-    //TODO: Implement search and filter
-    if (query && query.length > 0) {
-      setIsSearch(true);
-    }
     try {
-      const searchResults = await fetchSearchResults(query, filters);
-      if (searchResults?.residentRequests) {
-        setUserRequests(searchResults.residentRequests);
-        setTotalCount(searchResults.count);
+      const allRequests = await ResidentRequestService.adminGetAllRequests({
+        take: MAX_TAKE,
+        skip: pageNumber * MAX_TAKE,
+      });
+
+      let filteredRequests = allRequests.residentRequests;
+
+      if (!filters.all) {
+        filteredRequests = filteredRequests.filter(
+          (request) =>
+            (filters.completed && request.status === "COMPLETED") ||
+            (filters.pending && request.status === "PENDING") ||
+            (filters.canceled && request.status === "CANCELED")
+        );
       }
+
+      if (query.trim()) {
+        filteredRequests = filteredRequests.filter(
+          (request) =>
+            request.user.name.toLowerCase().includes(query.toLowerCase()) ||
+            request.user.email.toLowerCase().includes(query.toLowerCase())
+        );
+      }
+
+      setUserRequests(filteredRequests);
+      setTotalCount(filteredRequests.length);
     } catch (error) {
-      console.log("error fetching results", error);
+      console.error("Error in handleSearch:", error);
+      setUserRequests([]);
+      setTotalCount(0);
     }
   };
-
-  const fetchSearchResults = useCallback(
-    debounce(async (query: string, filters: Record<string, boolean>) => {
-      if (!query) {
-        setUserRequests([]);
-        return;
-      }
-
-      try {
-        return ResidentRequestService.searchRequests({
-          stringQuery: query,
-          requestStatus: Object.keys(filters).filter((key) => filters[key]),
-        });
-      } catch (error) {
-        console.error("Error fetching search results:", error);
-        setUserRequests([]);
-      }
-    }, 300),
-    []
-  );
 
   const handlePagination = (direction: "forward" | "backward") => {
     if (direction === "forward") {
@@ -123,14 +122,15 @@ export default function AdminDashboard() {
       await fetchAllRequests();
       setLoading(false);
     } catch (error) {
-      setLoading(false);
-      console.log(error);
+      console.log("Error updating request status:", error);
       setError("Failed to update request status");
+      setLoading(false);
     }
   };
 
   const handleCancelSearch = async () => {
     setIsSearch(false);
+    setPageNumber(0);
     await fetchAllRequests();
   };
 
@@ -193,51 +193,59 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {userRequests?.map((request) => (
-                  <tr
-                    className="bg-white border-b hover:cursor-pointer hover:bg-gray-50"
-                    key={request?.id}
-                  >
-                    <td>{request.user.name}</td>
-                    <td className="hidden lg:table-cell">
-                      {request.user.email}
-                    </td>
-                    <td className="hidden lg:table-cell">
-                      {formatPhoneNumber(request.user.phoneNumber!)}
-                    </td>
-                    <td>
-                      {request.address?.streetNumber}{" "}
-                      {request.address?.streetName} {request.address?.city}
-                    </td>
-                    <td>
-                      <FormattedTimeSlotDateTime
-                        start={request.requestedTimeSlot.startTime}
-                        end={request.requestedTimeSlot.endTime}
-                      />
-                    </td>
-                    <td>
-                      <FormattedTimeSlotDateTime
-                        start={request.assignedTimeSlot?.startTime}
-                        end={request.assignedTimeSlot?.endTime}
-                      />
-                    </td>
-                    <td
-                      className={`${
-                        requestStatusColorMap[request.status]
-                      } text-center`}
-                    >
-                      {request.status}
-                    </td>
-                    <td>
-                      <ActionButtons
-                        request={request}
-                        onActionButtonClicked={(action: RequestStatus) =>
-                          handleUpdateRequestStatus(action, request.id)
-                        }
-                      />
+                {userRequests?.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="text-center text-gray-500 py-4">
+                      No requests found
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  userRequests.map((request) => (
+                    <tr
+                      className="bg-white border-b hover:cursor-pointer hover:bg-gray-50"
+                      key={request?.id}
+                    >
+                      <td>{request.user.name}</td>
+                      <td className="hidden lg:table-cell">
+                        {request.user.email}
+                      </td>
+                      <td className="hidden lg:table-cell">
+                        {formatPhoneNumber(request.user.phoneNumber!)}
+                      </td>
+                      <td>
+                        {request.address?.streetNumber}{" "}
+                        {request.address?.streetName} {request.address?.city}
+                      </td>
+                      <td>
+                        <FormattedTimeSlotDateTime
+                          start={request.requestedTimeSlot.startTime}
+                          end={request.requestedTimeSlot.endTime}
+                        />
+                      </td>
+                      <td>
+                        <FormattedTimeSlotDateTime
+                          start={request.assignedTimeSlot?.startTime}
+                          end={request.assignedTimeSlot?.endTime}
+                        />
+                      </td>
+                      <td
+                        className={`${
+                          requestStatusColorMap[request.status]
+                        } text-center`}
+                      >
+                        {request.status}
+                      </td>
+                      <td>
+                        <ActionButtons
+                          request={request}
+                          onActionButtonClicked={(action: RequestStatus) =>
+                            handleUpdateRequestStatus(action, request.id)
+                          }
+                        />
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
