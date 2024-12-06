@@ -1,11 +1,6 @@
 import { prisma } from "@/lib/prisma";
-
-// Define allowed time slots
-const timeSlots = [
-  { start: "08:00", end: "11:00" },
-  { start: "11:00", end: "14:00" },
-  { start: "14:00", end: "17:00" },
-];
+import { getTimeSlotHours } from "@/lib/utils/time-slot/time-slot";
+import { TimeSlot } from "@/types/time-slot";
 
 /**
  * Check if a given time range aligns with defined time slots.
@@ -14,15 +9,18 @@ const timeSlots = [
  * @returns Boolean indicating if the range matches a defined slot
  */
 export function isWithinTimeSlot(startTime: Date, endTime: Date): boolean {
-  return timeSlots.some((slot) => {
+  const allTimeSlots = [
+    { start: getTimeSlotHours(TimeSlot.Morning)[0], end: getTimeSlotHours(TimeSlot.Morning)[1] },
+    { start: getTimeSlotHours(TimeSlot.Daytime)[0], end: getTimeSlotHours(TimeSlot.Daytime)[1] },
+    { start: getTimeSlotHours(TimeSlot.Evening)[0], end: getTimeSlotHours(TimeSlot.Evening)[1] },
+  ];
+
+  return allTimeSlots.some((slot) => {
     const slotStart = new Date(startTime);
     const slotEnd = new Date(startTime);
 
-    const [startHour, startMinute] = slot.start.split(":").map(Number);
-    const [endHour, endMinute] = slot.end.split(":").map(Number);
-
-    slotStart.setHours(startHour, startMinute, 0, 0);
-    slotEnd.setHours(endHour, endMinute, 0, 0);
+    slotStart.setHours(slot.start, 0, 0, 0);
+    slotEnd.setHours(slot.end, 0, 0, 0);
 
     return startTime >= slotStart && endTime <= slotEnd;
   });
@@ -75,21 +73,26 @@ export async function getAvailableSlots(date: Date) {
     endTime: new Date(slot.requestedTimeSlot.endTime),
   }));
 
-  const availableSlots = timeSlots.filter((slot) => {
-    const slotStart = new Date(date);
-    const slotEnd = new Date(date);
+  const availableSlots = [TimeSlot.Morning, TimeSlot.Daytime, TimeSlot.Evening].filter(
+    (timeSlot) => {
+      const [startHour, endHour] = getTimeSlotHours(timeSlot);
 
-    const [startHour, startMinute] = slot.start.split(":").map(Number);
-    const [endHour, endMinute] = slot.end.split(":").map(Number);
+      const slotStart = new Date(date);
+      const slotEnd = new Date(date);
 
-    slotStart.setHours(startHour, startMinute, 0, 0);
-    slotEnd.setHours(endHour, endMinute, 0, 0);
+      slotStart.setHours(startHour, 0, 0, 0);
+      slotEnd.setHours(endHour, 0, 0, 0);
 
-    return !bookedRanges.some(
-      (booked) =>
-        slotStart < booked.endTime && slotEnd > booked.startTime // Overlapping check
-    );
-  });
+      return !bookedRanges.some(
+        (booked) =>
+          slotStart < booked.endTime && slotEnd > booked.startTime // Overlapping check
+      );
+    }
+  );
 
-  return availableSlots;
+  return availableSlots.map((timeSlot) => ({
+    label: timeSlot,
+    start: getTimeSlotHours(timeSlot)[0],
+    end: getTimeSlotHours(timeSlot)[1],
+  }));
 }
