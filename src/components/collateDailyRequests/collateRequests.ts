@@ -1,4 +1,7 @@
 import { ResidentRequestCollation } from "../../types/resident-request-collation";
+import { getTimeSlotHours } from "@/lib/utils/time-slot/time-slot";
+import { TimeSlot } from "@/types/time-slot";
+
 
 export async function fetchDailyRequests(): Promise<ResidentRequestCollation[]> {
   try {
@@ -17,9 +20,9 @@ export async function collateDailyRequests(): Promise<ResidentRequestCollation[]
   const requests = await fetchDailyRequests();
 
   const groupedRequests: Record<string, ResidentRequestCollation[]> = {
-    Morning: [],
-    Noon: [],
-    Afternoon: [],
+    [TimeSlot.Morning]: [],
+    [TimeSlot.Daytime]: [],
+    [TimeSlot.Evening]: [],
   };
 
   for (const request of requests) {
@@ -29,12 +32,12 @@ export async function collateDailyRequests(): Promise<ResidentRequestCollation[]
     }
 
     const startTime = new Date(request.requestedTimeSlot.startTime).getHours();
-    if (startTime >= 8 && startTime < 11) {
-      groupedRequests["Morning"].push(request);
-    } else if (startTime >= 11 && startTime < 14) {
-      groupedRequests["Noon"].push(request);
-    } else if (startTime >= 14 && startTime < 17) {
-      groupedRequests["Afternoon"].push(request);
+    for (const timeSlot of Object.values(TimeSlot)) {
+      const [startHour, endHour] = getTimeSlotHours(timeSlot);
+      if (startTime >= startHour && startTime < endHour) {
+        groupedRequests[timeSlot].push(request);
+        break;
+      }
     }
   }
 
