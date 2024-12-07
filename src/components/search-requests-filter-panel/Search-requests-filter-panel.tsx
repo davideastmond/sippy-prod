@@ -29,24 +29,21 @@ const SearchRequestsFilterPanel: React.FC<SearchRequestsProps> = ({
   const handleCheckboxFilterSelectionChanged = (
     e: ChangeEvent<HTMLInputElement>
   ) => {
-    // Handle the "All" checkbox
-    if (e.target.name === "all") {
-      const newCheckedOptions = {
-        completed: false,
-        pending: false,
-        canceled: false,
-        all: e.target.checked,
-      };
-      setCheckedOptions(newCheckedOptions);
-      onSearch(searchQuery, newCheckedOptions);
-      return;
-    }
-
     const newCheckedOptions = {
       ...checkedOptions,
       [e.target.name]: e.target.checked,
       all: false,
     };
+
+    const noFiltersSelected =
+      !newCheckedOptions.completed &&
+      !newCheckedOptions.pending &&
+      !newCheckedOptions.canceled;
+
+    if (noFiltersSelected) {
+      newCheckedOptions.all = true;
+    }
+
     setCheckedOptions(newCheckedOptions);
     onSearch(searchQuery, newCheckedOptions);
   };
@@ -95,98 +92,30 @@ const SearchRequestsFilterPanel: React.FC<SearchRequestsProps> = ({
             className="mt-2 p-4 bg-white absolute z-10 space-y-1 text-sm text-gray-700 border border-gray-300"
             aria-labelledby="dropdownHelperButton"
           >
-            <li>
-              <div className="flex rounded hover:bg-gray-100 dark:hover:bg-gray-600">
-                <div className="flex items-center h-5">
-                  <input
-                    id="completed-cb"
-                    name="completed"
-                    aria-describedby="helper-checkbox-text-1"
-                    type="checkbox"
-                    checked={checkedOptions.completed}
-                    onChange={handleCheckboxFilterSelectionChanged}
-                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
-                  />
+            {["completed", "pending", "canceled", "all"].map((status) => (
+              <li key={status}>
+                <div className="flex rounded hover:bg-gray-100">
+                  <div className="flex items-center h-5">
+                    <input
+                      id={`${status}-cb`}
+                      name={status}
+                      type="checkbox"
+                      onChange={handleCheckboxFilterSelectionChanged}
+                      checked={checkedOptions[status]}
+                      className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                    />
+                  </div>
+                  <div className="ml-2 text-sm">
+                    <label
+                      htmlFor={`${status}-cb`}
+                      className="font-medium text-gray-900"
+                    >
+                      {status.charAt(0).toUpperCase() + status.slice(1)}
+                    </label>
+                  </div>
                 </div>
-                <div className="ms-2 text-sm">
-                  <label
-                    htmlFor="completed-cb"
-                    className="font-medium text-gray-900 dark:text-gray-300"
-                  >
-                    <p>Completed</p>
-                  </label>
-                </div>
-              </div>
-            </li>
-            <li>
-              <div className="flex rounded hover:bg-gray-100 dark:hover:bg-gray-600">
-                <div className="flex items-center h-5">
-                  <input
-                    id="pending-cb"
-                    aria-describedby="helper-checkbox-text-1"
-                    name="pending"
-                    type="checkbox"
-                    onChange={handleCheckboxFilterSelectionChanged}
-                    checked={checkedOptions.pending}
-                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
-                  />
-                </div>
-                <div className="ms-2 text-sm">
-                  <label
-                    htmlFor="pending-cb"
-                    className="font-medium text-gray-900 dark:text-gray-300"
-                  >
-                    <p>Pending</p>
-                  </label>
-                </div>
-              </div>
-            </li>
-            <li>
-              <div className="flex rounded hover:bg-gray-100 dark:hover:bg-gray-600">
-                <div className="flex items-center h-5">
-                  <input
-                    id="canceled-cb"
-                    aria-describedby="helper-checkbox-text-1"
-                    type="checkbox"
-                    name="canceled"
-                    onChange={handleCheckboxFilterSelectionChanged}
-                    checked={checkedOptions.canceled}
-                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
-                  />
-                </div>
-                <div className="ms-2 text-sm">
-                  <label
-                    htmlFor="canceled-cb"
-                    className="font-medium text-gray-900 dark:text-gray-300"
-                  >
-                    <p>Canceled</p>
-                  </label>
-                </div>
-              </div>
-            </li>
-            <li>
-              <div className="flex rounded hover:bg-gray-100 dark:hover:bg-gray-600">
-                <div className="flex items-center h-5">
-                  <input
-                    id="all-cb"
-                    aria-describedby="helper-checkbox-text-1"
-                    type="checkbox"
-                    name="all"
-                    onChange={handleCheckboxFilterSelectionChanged}
-                    checked={checkedOptions.all}
-                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
-                  />
-                </div>
-                <div className="ms-2 text-sm">
-                  <label
-                    htmlFor="all-cb"
-                    className="font-medium text-gray-900 dark:text-gray-300"
-                  >
-                    <p>All</p>
-                  </label>
-                </div>
-              </div>
-            </li>
+              </li>
+            ))}
           </ul>
         </div>
       </div>

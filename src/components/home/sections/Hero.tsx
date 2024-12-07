@@ -1,5 +1,5 @@
 import Image from "next/image";
-import * as React from "react";
+import Link from "next/link";
 
 const Hero = () => {
   return (
@@ -19,11 +19,12 @@ const Hero = () => {
             </p>
           </div>
           <div className="mt-12 max-w-full w-[136px] max-md:mt-10">
-            <button className="flex items-start rounded-xl w-[136px]">
-              <div className="overflow-hidden gap-3 self-stretch py-3.5 pr-6 pl-6 bg-lime-600 rounded-xl shadow-sm max-md:px-5 text-2xl font-semibold text-white">
-                Sign up
-              </div>
-            </button>
+            <Link
+              href="/resident-request/new"
+              className="overflow-hidden gap-3 self-stretch py-3.5 pr-6 pl-6 bg-simmpy-green hover:bg-green-600 rounded-xl shadow-sm max-md:px-5 text-2xl font-semibold text-white cursor-pointer"
+            >
+              Sign up
+            </Link>
           </div>
         </div>
         <div className="relative aspect-[1.05] min-w-[240px] w-[483px] max-md:max-w-full">
