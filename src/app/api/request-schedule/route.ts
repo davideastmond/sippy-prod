@@ -1,44 +1,82 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { computeRouteMatrix } from "@/lib/utils/google-routes";
+import { GoogleAddressComponentsExtractor } from "@/lib/utils/google-address-components-extractor";
 
 export async function GET() {
-  // Get the current date and time
-  const currentDate = new Date();
-
-  // Determine if we are past 20:00 today
-  const isAfterCutoff = currentDate.getHours() >= 20;
-
-  // Set the start and end times
-  const startOfDay = new Date(currentDate);
-  const endOfDay = new Date(currentDate);
-
-  if (isAfterCutoff) {
-    // If after 20:00, start at 20:00 of the previous day and end at 20:00 today
-    startOfDay.setDate(startOfDay.getDate() - 1);
-    startOfDay.setHours(20, 0, 0, 0);
-    endOfDay.setHours(20, 0, 0, 0);
-  } else {
-    // If before 20:00, start at 20:00 of the day before yesterday and end at 20:00 yesterday
-    startOfDay.setDate(startOfDay.getDate() - 2);
-    startOfDay.setHours(20, 0, 0, 0);
-    endOfDay.setDate(endOfDay.getDate() - 1);
-    endOfDay.setHours(20, 0, 0, 0);
-  }
-
-  // Query for requests within the calculated time range
+  // Fetch resident requests
   const residentRequests = await prisma.residentRequest.findMany({
-    where: {
-      requestedTimeSlot: {
-        startTime: { gte: startOfDay, lte: endOfDay },
-      },
-    },
     include: {
       user: { select: { id: true, name: true, email: true } },
-      requestedTimeSlot: true, // Include the requested time slot details
-      address: { select: { latitude: true, longitude: true, city: true } }, // Include lat/lon
+      requestedTimeSlot: true,
+      address: true, // Include address details
     },
   });
 
-  // Return the data as a JSON response
-  return NextResponse.json(residentRequests);
+  // Enrich addresses with mock googleAddressComponents and geometry
+  const enrichedRequests = residentRequests
+    .map((request) => {
+      if (!request.address) {
+        console.warn(`Request ${request.id} is missing address information.`);
+        return null;
+      }
+
+      // Mock googleAddressComponents and geometry dynamically
+      const mockGoogleAddressComponents = [
+        { long_name: request.address.streetName, short_name: request.address.streetName, types: ["route"] },
+        { long_name: request.address.streetNumber, short_name: request.address.streetNumber, types: ["street_number"] },
+        { long_name: request.address.city, short_name: request.address.city, types: ["locality"] },
+        { long_name: request.address.zipCode, short_name: request.address.zipCode, types: ["postal_code"] },
+      ];
+
+      const mockGeometry = {
+        location: new google.maps.LatLng(request.address.latitude, request.address.longitude),
+      };
+
+      const extractor = new GoogleAddressComponentsExtractor(
+        mockGoogleAddressComponents,
+        mockGeometry as google.maps.places.PlaceGeometry
+      );
+
+      const standardizedAddress = extractor.extract();
+
+      return {
+        ...request,
+        address: {
+          ...request.address,
+          ...standardizedAddress, // Overwrite or add standardized fields
+        },
+      };
+    })
+    .filter((req): req is NonNullable<typeof req> => !!req); // Filter out nulls
+
+  // If there are less than two requests, skip route optimization
+  if (enrichedRequests.length < 2) {
+    return NextResponse.json(enrichedRequests);
+  }
+
+  // Compute route matrix
+  const locations = enrichedRequests.map((req) => ({
+    latitude: req.address.latitude,
+    longitude: req.address.longitude,
+  }));
+
+  try {
+    const routes = await computeRouteMatrix({
+      origins: locations,
+      destinations: locations,
+      travelMode: "DRIVE",
+    });
+
+    // Append route details to enriched requests
+    const updatedRequests = enrichedRequests.map((request, index) => ({
+      ...request,
+      route: routes.find((route) => route.originIndex === index),
+    }));
+
+    return NextResponse.json(updatedRequests);
+  } catch (error) {
+    console.error("Error fetching route matrix:", error);
+    return NextResponse.error();
+  }
 }

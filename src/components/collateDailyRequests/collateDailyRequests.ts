@@ -1,3 +1,4 @@
+import { computeRouteMatrix } from "@/lib/utils/google-routes";
 import { ResidentRequestCollation } from "../../types/resident-request-collation";
 import { getTimeSlotHours } from "@/lib/utils/time-slot/time-slot";
 import { TimeSlot } from "@/types/time-slot";
@@ -15,7 +16,7 @@ export async function fetchDailyRequests(): Promise<ResidentRequestCollation[]> 
   }
 }
 
-// match time slor
+// Match time slot
 function determineTimeSlot(startTime: number): TimeSlot | null {
   for (const timeSlot of Object.values(TimeSlot)) {
     const [startHour, endHour] = getTimeSlotHours(timeSlot);
@@ -49,6 +50,31 @@ export async function collateDailyRequests(): Promise<Record<TimeSlot, ResidentR
       groupedRequests[timeSlot].push(request);
     } else {
       console.warn(`Request ${request.id} does not fall into any defined time slot.`);
+    }
+  }
+
+  // Perform route optimization for each time slot
+  for (const [timeSlot, requests] of Object.entries(groupedRequests)) {
+    if (requests.length > 1) {
+      const locations = requests.map((req) => ({
+        latitude: req.address.latitude,
+        longitude: req.address.longitude,
+      }));
+
+      try {
+        const routes = await computeRouteMatrix({
+          origins: locations,
+          destinations: locations,
+          travelMode: "DRIVE",
+        });
+
+        groupedRequests[timeSlot as TimeSlot] = requests.map((request, index) => ({
+          ...request,
+          route: routes.find((route) => route.originIndex === index),
+        }));
+      } catch (error) {
+        console.error(`Error optimizing routes for time slot ${timeSlot}:`, error);
+      }
     }
   }
 
