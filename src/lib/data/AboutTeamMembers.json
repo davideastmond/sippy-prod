@@ -3,57 +3,56 @@
     "name": "David Eastmond",
     "role": "Software Developer",
     "description": "CO-founder of Sippy",
-    "image": "",
-    "linkedin": "#",
-    "github": "#"
+    "image": "/assets/images/members/davide.png",
+    "linkedin": "https://www.linkedin.com/in/david-eastmond-2783ab18a/",
+    "github": "https://github.com/davideastmond"
   },
   {
     "name": "Eoin McDonnell",
     "role": "Software Developer",
     "description": "CO-founder of Sippy",
-    "image": "",
-    "linkedin": "#",
-    "github": "#"
+    "image": "/assets/images/members/eoin.png",
+    "linkedin": "https://www.linkedin.com/in/mcdonnell-eoin/",
+    "github": "https://github.com/oldmcdonnell"
   },
   {
     "name": "Mahyar Erfanian",
     "role": "Software Developer",
     "description": "CO-founder of Sippy",
-    "image": "",
-    "linkedin": "#",
-    "github": "#"
+    "image": "/assets/images/members/mahyar.png",
+    "linkedin": "https://www.linkedin.com/in/mahyar-erfanian-67968279/",
+    "github": "https://github.com/Mahyar-98"
   },
   {
-    "name": "Nandor",
+    "name": "Nandor Nagy",
     "role": "Software Developer",
     "description": "CO-founder of Sippy",
-    "image": "",
-    "linkedin": "#",
-    "github": "#"
+    "image": "/assets/images/members/nandor.png",
+    "linkedin": "https://www.linkedin.com/in/nandornagylinked/",
+    "github": "https://github.com/n3ndor"
   },
   {
     "name": "Franklin Macedo",
     "role": "Software Developer",
     "description": "Ex co-founder of Sippy",
-    "image": "",
-    "linkedin": "#",
-    "github": "#"
+    "image": "/assets/images/members/franklin.png",
+    "linkedin": "https://linkedin.com/in/franklin-md",
+    "github": "https://github.com/frankdias92"
   },
-
   {
     "name": "Suruchi Patki",
     "role": "Scrum Master",
     "description": "CO-founder of Sippy",
-    "image": "",
-    "linkedin": "#",
-    "github": "#"
+    "image": "/assets/images/members/suruchi.png",
+    "linkedin": "https://www.linkedin.com/in/suruchi-patki-b0710b195/",
+    "github": "https://github.com/Supatki"
   },
   {
     "name": "David Hyppolite",
     "role": "Software Developer",
     "description": "Voyager guide at Sippy",
-    "image": "",
-    "linkedin": "#",
-    "github": "#"
+    "image": "/assets/images/members/davidh.png",
+    "linkedin": "https://www.linkedin.com/in/dhayv/",
+    "github": "https://github.com/dhayv"
   }
 ]

@@ -29,13 +29,15 @@ export default function AboutUs() {
               className="bg-white shadow-md rounded-lg p-6 text-center"
             >
               {member.image ? (
-                <Image
-                  src={member.image}
-                  alt={member.name}
-                  width={150}
-                  height={150}
-                  className="rounded-full mx-auto"
-                />
+                <div className="w-36 h-36 mx-auto rounded-full overflow-hidden">
+                  <Image
+                    src={member.image}
+                    alt={member.name}
+                    width={150}
+                    height={150}
+                    className="object-cover w-full h-full"
+                  />
+                </div>
               ) : (
                 <div className="w-36 h-36 bg-gray-200 rounded-full mx-auto"></div>
               )}
