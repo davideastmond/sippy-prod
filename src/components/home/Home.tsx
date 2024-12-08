@@ -1,5 +1,4 @@
 import HomeFeature from "./sections/HomeFeature";
-import ContactForm from "./sections/ContactForm";
 import Testimonials from "./sections/Testimonials";
 import Hero from "./sections/Hero";
 import Analytics from "./sections/Analytics";
@@ -73,21 +72,6 @@ const Home = () => {
       {/* Testimonials Section */}
       <section>
         <Testimonials />
-      </section>
-      {/* Contact Section */}
-      <section className="flex overflow-hidden flex-col justify-center items-center pb-24 w-full bg-white max-md:max-w-full">
-        <div className="flex flex-wrap gap-8 items-center pl-8 max-w-full w-[1280px] max-md:px-5">
-          <div className="flex flex-col grow shrink self-stretch my-auto min-w-[240px] w-[368px] max-md:max-w-full">
-            <h2 className="text-3xl font-bold text-neutral-700">
-              Start Your Solar Journey
-              <span className="block font-extrabold text-lime-600">TODAY</span>
-            </h2>
-            <p className="mt-4 text-lg leading-loose text-zinc-600">
-              Take the first step toward clean, renewable energy
-            </p>
-          </div>
-          <ContactForm />
-        </div>
       </section>
       <Footer />
     </main>
