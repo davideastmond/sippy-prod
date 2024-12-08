@@ -1,5 +1,6 @@
 "use client";
 
+import { Loader } from "@googlemaps/js-api-loader";
 import { parseDate } from "@internationalized/date";
 import { DatePicker } from "@nextui-org/react";
 import dayjs from "dayjs";
@@ -8,6 +9,12 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import RouteList from "./Route-list";
 
+const loader = new Loader({
+  apiKey: process.env.NEXT_PUBLIC_GOOGLEMAPS_API_KEY!,
+  version: "weekly",
+  libraries: ["places", "maps"],
+});
+
 export default function RouteManager() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -15,11 +22,40 @@ export default function RouteManager() {
     parseDate(dayjs().format("YYYY-MM-DD"))
   );
 
+  const [googleMap, setGoogleMap] = useState<any>(null);
+
   useEffect(() => {
     if (status === "unauthenticated") {
       router.replace("/authenticate");
     }
   }, [status, router]);
+
+  useEffect(() => {
+    const loadMap = async () => {
+      const mapOptions: google.maps.MapOptions = {
+        center: { lat: 34.053715, lng: -118.242653 }, // Focus on LA city hall by default
+        zoom: 12,
+        mapId: "gmap",
+      };
+      const { Map } = await loader.importLibrary("maps");
+      const { AdvancedMarkerElement } = await loader.importLibrary("marker");
+
+      const htmlElement = document.getElementById("gmap") as HTMLElement;
+      if (htmlElement === null) return;
+      const map = new Map(htmlElement, mapOptions);
+      setGoogleMap(map);
+
+      new AdvancedMarkerElement({
+        position: mapOptions.center,
+        map: map,
+      });
+
+      return () => {
+        setGoogleMap(null);
+      };
+    };
+    loadMap();
+  }, []);
 
   return (
     <>
@@ -43,9 +79,10 @@ export default function RouteManager() {
               </div>
             </div>
           </div>
-          <div className="flex">
+          <div className="flex gap-20 flex-wrap">
             {/* List of visits on the left, google map on the right */}
             <RouteList />
+            <div className="h-[300px] w-[500px]" id="gmap"></div>
           </div>
         </div>
       ) : (
