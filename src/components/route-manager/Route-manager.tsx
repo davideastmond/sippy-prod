@@ -1,13 +1,19 @@
 "use client";
 
+import { parseDate } from "@internationalized/date";
+import { DatePicker } from "@nextui-org/react";
+import dayjs from "dayjs";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import RouteList from "./Route-list";
 
 export default function RouteManager() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [modalOpen, setModalOpen] = useState(false);
+  const [dateValue, setDateValue] = useState(
+    parseDate(dayjs().format("YYYY-MM-DD"))
+  );
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -22,29 +28,24 @@ export default function RouteManager() {
           <div>
             <h1 className="text-3xl font-bold text-center">Route Manager</h1>
           </div>
-          <div className="my-4 flex justify-center lg:justify-end">
-            {/* Options menu that contains button */}
-            <button
-              className="text-white bg-[#1e3a89] p-2 rounded-md self-center"
-              onClick={() => setModalOpen(true)}
-            >
-              New Optimized Route...
-            </button>
+          <div className="my-4">
+            <div>
+              <DatePicker
+                className="max-w-[284px]"
+                description={"Choose a date and click 'Generate Route'"}
+                value={dateValue}
+                onChange={setDateValue}
+              />
+              <div className="mt-6">
+                <button className="bg-simmpy-blue h-[28px] px-2 rounded-md">
+                  <span className="text-white text-sm">Generate Route</span>
+                </button>
+              </div>
+            </div>
           </div>
-          <div className="relative overflow-x-auto mt-6 p-2 lg:flex lg:justify-center">
-            <table className="w-full text-sm text-left rtl:text-right text-gray-500">
-              <thead className="text-xs text-gray-700 bg-simmpy-gray-100 uppercase">
-                <tr>
-                  <th scope="col" className="py-3">
-                    Date
-                  </th>
-                  <th scope="col" className="py-3">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody></tbody>
-            </table>
+          <div className="flex">
+            {/* List of visits on the left, google map on the right */}
+            <RouteList />
           </div>
         </div>
       ) : (
