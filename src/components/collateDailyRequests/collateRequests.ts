@@ -2,7 +2,6 @@ import { ResidentRequestCollation } from "../../types/resident-request-collation
 import { getTimeSlotHours } from "@/lib/utils/time-slot/time-slot";
 import { TimeSlot } from "@/types/time-slot";
 
-
 export async function fetchDailyRequests(): Promise<ResidentRequestCollation[]> {
   try {
     const response = await fetch("/api/request-schedule");
@@ -16,10 +15,22 @@ export async function fetchDailyRequests(): Promise<ResidentRequestCollation[]> 
   }
 }
 
-export async function collateDailyRequests(): Promise<ResidentRequestCollation[]> {
+// match time slor
+function determineTimeSlot(startTime: number): TimeSlot | null {
+  for (const timeSlot of Object.values(TimeSlot)) {
+    const [startHour, endHour] = getTimeSlotHours(timeSlot);
+    if (startTime >= startHour && startTime < endHour) {
+      return timeSlot;
+    }
+  }
+  return null; // No matching time slot
+}
+
+export async function collateDailyRequests(): Promise<Record<TimeSlot, ResidentRequestCollation[]>> {
   const requests = await fetchDailyRequests();
 
-  const groupedRequests: Record<string, ResidentRequestCollation[]> = {
+  // Use `Record<TimeSlot, ResidentRequestCollation[]>` for strict typing
+  const groupedRequests: Record<TimeSlot, ResidentRequestCollation[]> = {
     [TimeSlot.Morning]: [],
     [TimeSlot.Daytime]: [],
     [TimeSlot.Evening]: [],
@@ -32,14 +43,14 @@ export async function collateDailyRequests(): Promise<ResidentRequestCollation[]
     }
 
     const startTime = new Date(request.requestedTimeSlot.startTime).getHours();
-    for (const timeSlot of Object.values(TimeSlot)) {
-      const [startHour, endHour] = getTimeSlotHours(timeSlot);
-      if (startTime >= startHour && startTime < endHour) {
-        groupedRequests[timeSlot].push(request);
-        break;
-      }
+    const timeSlot = determineTimeSlot(startTime);
+
+    if (timeSlot) {
+      groupedRequests[timeSlot].push(request);
+    } else {
+      console.warn(`Request ${request.id} does not fall into any defined time slot.`);
     }
   }
 
-  return Object.values(groupedRequests).flat();
+  return groupedRequests;
 }
