@@ -7,10 +7,9 @@ import { requestStatusColorMap } from "@/lib/utils/request-status/request-status
 import { AllUserRequestsAdminGetResponse } from "@/types/api-responses/admin-resident-requests-api-response";
 import { RequestStatus } from "@prisma/client";
 import { ResidentRequestService } from "app/services/resident-request-service";
-import { debounce } from "lodash";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import FormattedTimeSlotDateTime from "../formatted-time-slot-date-time.tsx/FormattedTimeSlotDateTime";
 
 const MAX_TAKE = 10; // This is the number of requests to fetch per page
