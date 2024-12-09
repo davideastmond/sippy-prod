@@ -1,36 +1,37 @@
-import { NextResponse } from "next/server";
-import { RequestStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { NextResponse } from "next/server";
 
-export async function adminGetResidentsRequests (status: RequestStatus){
-
-  
-    const validStatuses: RequestStatus[] = [
-      RequestStatus.COMPLETED,
-      RequestStatus.PENDING,
-      RequestStatus.CANCELED,
-    ];
-   
-   
-    if (!validStatuses.includes(status as RequestStatus)) {
-      return NextResponse.json({ error: "Invalid status parameter" }, { status: 400 });
-    }
-   
-    try {
-      const residentRequests = await prisma.residentRequest.findMany({
-        where: { status: status as RequestStatus }, 
-        include: {
-          user: true, 
-          requestedTimeSlot: true, 
+export async function adminGetResidentsRequests({
+  take,
+  skip,
+}: {
+  take: number;
+  skip: number;
+}) {
+  try {
+    // Simply get all resident requests with pagination.
+    const count = await prisma.residentRequest.count();
+    const residentRequests = await prisma.residentRequest.findMany({
+      select: {
+        id: true,
+        requestedTimeSlot: { select: { startTime: true, endTime: true } },
+        assignedTimeSlot: { select: { startTime: true, endTime: true } },
+        address: true,
+        status: true,
+        createdAt: true,
+        user: {
+          select: { id: true, name: true, email: true, phoneNumber: true },
         },
-      });
-   
-      return residentRequests;
-    } catch (error) {
-      console.error("Error fetching resident request:", error);
-      return NextResponse.json(
-        { error: "Failed to fetch resident request" },
-        { status: 500 }
-      );  
-    }
+      },
+      skip: skip,
+      take: take,
+    });
+    return { residentRequests, count };
+  } catch (error) {
+    console.log("Error fetching resident request:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch resident request" },
+      { status: 500 }
+    );
+  }
 }

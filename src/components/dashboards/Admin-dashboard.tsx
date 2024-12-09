@@ -1,265 +1,292 @@
 "use client";
 
+import SearchRequestsFilterPanel from "@/components/search-requests-filter-panel/Search-requests-filter-panel";
+import Spinner from "@/components/spinner/Spinner";
+import { formatPhoneNumber } from "@/lib/utils/phone-number/format-phone-number";
+import { requestStatusColorMap } from "@/lib/utils/request-status/request-status-color-map";
+import { AllUserRequestsAdminGetResponse } from "@/types/api-responses/admin-resident-requests-api-response";
+import { RequestStatus } from "@prisma/client";
+import { ResidentRequestService } from "app/services/resident-request-service";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import Image from "next/image";
-import SearchRequests from "../searchRequests/SearchRequests";
-import { ResidentRequest, TimeSlot, User, RequestStatus } from "@prisma/client";
+import FormattedTimeSlotDateTime from "../formatted-time-slot-date-time.tsx/FormattedTimeSlotDateTime";
 
-type ExtendedResidentRequest = ResidentRequest & {
-  user: User;
-  requestedTimeSlot: TimeSlot;
-};
+const MAX_TAKE = 10; // This is the number of requests to fetch per page
+
 export default function AdminDashboard() {
   const router = useRouter();
   const { data: session, status } = useSession();
-  const [pendingRequests, setPendingRequests] = useState<ExtendedResidentRequest[]>([]);
-  const [completedRequests, setCompletedRequests] = useState<ExtendedResidentRequest[]>([]);
-  const [canceledRequests, setCanceledRequests] = useState<ExtendedResidentRequest[]>([]);
-  const [filteredPending, setFilteredPending] = useState<ExtendedResidentRequest[]>([]);
-  const [filteredCompleted, setFilteredCompleted] = useState<ExtendedResidentRequest[]>([]);
-  const [filteredCanceled, setFilteredCanceled] = useState<ExtendedResidentRequest[]>([]);
-  const [loading, setLoading] = useState(true);
+
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pageNumber, setPageNumber] = useState(0);
+  const [totalCount, setTotalCount] = useState(0);
+
+  const [userRequests, setUserRequests] = useState<
+    AllUserRequestsAdminGetResponse[]
+  >([]);
+
+  const [isSearching, setIsSearch] = useState(false);
+
   useEffect(() => {
     if (status === "unauthenticated") {
-      router.replace("/signup");
+      router.replace("/authenticate");
     }
   }, [status, router]);
 
   useEffect(() => {
-    if (session?.user?.isAdmin) {
-      const fetchRequests = async (status: RequestStatus) => {
-        try {
-          const response = await fetch(`/api/resident-request?status=${status}`);
-          const data: ExtendedResidentRequest[] = await response.json();
-
-          // Sort requests by createdAt date in descending order
-          return data.sort(
-            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-          );
-        } catch (error) {
-          console.error(`Error fetching ${status} resident requests:`, error);
-          setError(`Failed to load ${status} resident requests.`);
-          return [];
-        }
-      };
-
-      Promise.all([
-        fetchRequests(RequestStatus.PENDING),
-        fetchRequests(RequestStatus.COMPLETED),
-        fetchRequests(RequestStatus.CANCELED),
-      ]).then(([pending, completed, canceled]) => {
-        setPendingRequests(pending);
-        setFilteredPending(pending);
-        setCompletedRequests(completed);
-        setFilteredCompleted(completed);
-        setCanceledRequests(canceled);
-        setFilteredCanceled(canceled);
-        setLoading(false);
-      });
+    if (session?.user?.isAdmin && !isSearching) {
+      fetchAllRequests();
     }
-  }, [session?.user?.isAdmin]);
+  }, [session?.user?.isAdmin, pageNumber, isSearching]);
 
-  const handleSearch = (query: string) => {
-    const requestQuery = query.toLowerCase();
-
-    setFilteredPending(
-      pendingRequests.filter(
-        (request) =>
-          request.user.name.toLowerCase().includes(requestQuery) ||
-          request.user.email.toLowerCase().includes(requestQuery) ||
-          request.requestedTimeSlot.description?.toLowerCase().includes(requestQuery)
-      )
-    );
-    setFilteredCompleted(
-      completedRequests.filter(
-        (request) =>
-          request.user.name.toLowerCase().includes(requestQuery) ||
-          request.user.email.toLowerCase().includes(requestQuery) ||
-          request.requestedTimeSlot.description?.toLowerCase().includes(requestQuery)
-      )
-    );
-    setFilteredCanceled(
-      canceledRequests.filter(
-        (request) =>
-          request.user.name.toLowerCase().includes(requestQuery) ||
-          request.user.email.toLowerCase().includes(requestQuery) ||
-          request.requestedTimeSlot.description?.toLowerCase().includes(requestQuery)
-      )
-    );
+  const fetchAllRequests = async () => {
+    try {
+      setLoading(true);
+      const requests = await ResidentRequestService.adminGetAllRequests({
+        take: MAX_TAKE,
+        skip: pageNumber * MAX_TAKE,
+      });
+      setUserRequests(requests.residentRequests);
+      setTotalCount(requests.count);
+      setLoading(false);
+    } catch (error) {
+      console.log("Error fetching all requests:", error);
+      setError("Failed to fetch requests");
+      setLoading(false);
+    }
   };
 
-  const toggleRequestStatus = async (requestId: string, currentStatus: RequestStatus) => {
-    let newStatus: RequestStatus;
-    //swtching status 
-    switch (currentStatus) {
-      case RequestStatus.PENDING:
-        newStatus = RequestStatus.COMPLETED;
-        break;
-      case RequestStatus.COMPLETED:
-        newStatus = RequestStatus.PENDING;
-        break;
-      case RequestStatus.CANCELED:
-        newStatus = RequestStatus.PENDING;
-        break;
-      default:
-        return;
-    }
-
+  const handleSearch = async (
+    query: string,
+    filters: Record<string, boolean>
+  ) => {
     try {
-      const res = await fetch(`/api/resident-request/${requestId}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ status: newStatus }),
+      const allRequests = await ResidentRequestService.adminGetAllRequests({
+        take: MAX_TAKE,
+        skip: pageNumber * MAX_TAKE,
       });
 
-      if (!res.ok) {
-        throw new Error("Failed to update request status");
+      let filteredRequests = allRequests.residentRequests;
+
+      if (!filters.all) {
+        filteredRequests = filteredRequests.filter(
+          (request) =>
+            (filters.completed && request.status === "COMPLETED") ||
+            (filters.pending && request.status === "PENDING") ||
+            (filters.canceled && request.status === "CANCELED")
+        );
       }
 
-      // Refresh requests after update
-      const updatedPending = await fetch(`/api/resident-request?status=${RequestStatus.PENDING}`).then((res) =>
-        res.json()
-      );
-      const updatedCompleted = await fetch(`/api/resident-request?status=${RequestStatus.COMPLETED}`).then((res) =>
-        res.json()
-      );
-      const updatedCanceled = await fetch(`/api/resident-request?status=${RequestStatus.CANCELED}`).then((res) =>
-        res.json()
-      );
+      if (query.trim()) {
+        filteredRequests = filteredRequests.filter(
+          (request) =>
+            request.user.name.toLowerCase().includes(query.toLowerCase()) ||
+            request.user.email.toLowerCase().includes(query.toLowerCase())
+        );
+      }
 
-      setPendingRequests(updatedPending);
-      setFilteredPending(updatedPending);
-      setCompletedRequests(updatedCompleted);
-      setFilteredCompleted(updatedCompleted);
-      setCanceledRequests(updatedCanceled);
-      setFilteredCanceled(updatedCanceled);
+      setUserRequests(filteredRequests);
+      setTotalCount(filteredRequests.length);
     } catch (error) {
-      console.error("Error updating request status:", error);
-      setError("Failed to update request status.");
+      console.error("Error in handleSearch:", error);
+      setUserRequests([]);
+      setTotalCount(0);
     }
   };
 
-  if (error) {
-    return <p className="text-red-500">{error}</p>;
-  }
+  const handlePagination = (direction: "forward" | "backward") => {
+    if (direction === "forward") {
+      if ((pageNumber + 1) * MAX_TAKE > totalCount) return;
+      setPageNumber((prev) => prev + 1);
+    } else {
+      if (pageNumber === 0) return;
+      setPageNumber((prev) => prev - 1);
+    }
+  };
+
+  const handleUpdateRequestStatus = async (
+    requestStatus: RequestStatus,
+    requestId: string
+  ) => {
+    try {
+      setLoading(true);
+      // Do an admin update action to the current request
+      await ResidentRequestService.patchRequestStatusById(
+        requestId,
+        requestStatus
+      );
+
+      await fetchAllRequests();
+      setLoading(false);
+    } catch (error) {
+      console.log("Error updating request status:", error);
+      setError("Failed to update request status");
+      setLoading(false);
+    }
+  };
+
+  const handleCancelSearch = async () => {
+    setIsSearch(false);
+    setPageNumber(0);
+    await fetchAllRequests();
+  };
 
   if (loading) {
-    return <p className="text-gray-500">Loading Resident Requests...</p>;
+    return (
+      <div className="flex justify-center mt-[10%]">
+        <Spinner />
+      </div>
+    );
   }
- 
-  if (loading) {
-    return <p className="text-gray-500">Loading Resident Requests...</p>;
-  }
- 
+
   return (
     <>
       {session?.user?.isAdmin ? (
-        <div className="flex flex-wrap">
-          <div className="w-full md:w-2/3 p-6 bg-white rounded-lg shadow-md dark:bg-simmpy-gray-900">
-            <h1 className="text-3xl font-bold text-simmpy-green">Admin Dashboard</h1>
-
-            {/* Search Bar */}
-            <SearchRequests onSearch={handleSearch} />
-
-            {/* Pending Requests */}
-            <div><h2 className="text-xl font-bold text-simmpy-gray-800 mb-4">Pending Requests</h2>
-              {filteredPending.length > 0 ? (
-                <ul className="mt-4 space-y-4">
-                  {filteredPending.map((request) => (
-                    <li key={request.id} className="p-4 bg-simmpy-gray-100 rounded-lg shadow">
-                      <p>
-                        User: {request.user.name} ({request.user.email})
-                      </p>
-                      <p>
-                        Time:{" "}
-                        {new Date(request.requestedTimeSlot.startTime).toLocaleTimeString()} -{" "}
-                        {new Date(request.requestedTimeSlot.endTime).toLocaleTimeString()}
-                      </p>
-                      <button
-                        onClick={() => toggleRequestStatus(request.id, request.status)}
-                        className="text-simmpy-green underline"
-                      >
-                        Mark as Complete
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p>No pending requests</p>
-              )}
-            </div>
-
-            {/* Completed Requests */}
-            <div>
-              <h2 className="text-xl font-bold text-simmpy-gray-800 mb-4">Completed Requests</h2>
-              {filteredCompleted.length > 0 ? (
-                <ul className="mt-4 space-y-4">
-                  {filteredCompleted.map((request) => (
-                    <li key={request.id} className="p-4 bg-simmpy-gray-100 rounded-lg shadow">
-                      <p>
-                        User: {request.user.name} ({request.user.email})
-                      </p>
-                      <p>
-                        Time:{" "}
-                        {new Date(request.requestedTimeSlot.startTime).toLocaleTimeString()} -{" "}
-                        {new Date(request.requestedTimeSlot.endTime).toLocaleTimeString()}
-                      </p>
-                      <button
-                        onClick={() => toggleRequestStatus(request.id, request.status)}
-                        className="text-simmpy-yellow underline"
-                      >
-                        Mark as Pending
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p>No completed requests</p>
-              )}
-            </div>
-
-            {/* Canceled Requests */}
-            <h2 className="text-xl font-bold text-simmpy-gray-800 mb-4">Canceled Requests</h2>
-            <div>
-              {filteredCanceled.length > 0 ? (
-                <ul className="mt-4 space-y-4">
-                  {filteredCanceled.map((request) => (
-                    <li key={request.id} className="p-4 bg-simmpy-gray-100 rounded-lg shadow">
-                      <p>
-                        User: {request.user.name} ({request.user.email})
-                      </p>
-                      <p>
-                        Time:{" "}
-                        {new Date(request.requestedTimeSlot.startTime).toLocaleTimeString()} -{" "}
-                        {new Date(request.requestedTimeSlot.endTime).toLocaleTimeString()}
-                      </p>
-                      <button
-                        onClick={() => toggleRequestStatus(request.id, request.status)}
-                        className="text-simmpy-green underline"
-                      >
-                        Reopen as Pending
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p>No canceled requests</p>
-              )}
-            </div>
+        <div className="p-2">
+          <h1 className="py-4">Welcome, {session?.user?.name} (Admin) </h1>
+          <div>
+            <h1 className="text-3xl font-bold text-center">Requests</h1>
           </div>
-          <div className="w-full md:w-1/3 p-6">
-            <Image
-              src="/assets/images/MapPlaceholder.png"
-              alt="Map Placeholder"
-              width={400}
-              height={400}
-              className="rounded-lg shadow-md"
-            />
+          <div className="mb-32">
+            {/* Search and filter panel */}
+            <SearchRequestsFilterPanel onSearch={handleSearch} />
+            {isSearching && (
+              <button
+                onClick={handleCancelSearch}
+                className="text-simmpy-red text-sm"
+              >
+                Clear Search
+              </button>
+            )}
+          </div>
+          <div className="relative overflow-x-auto mt-6 p-2 lg:flex lg:justify-center">
+            <table className="w-full text-sm text-left rtl:text-right text-gray-500">
+              <thead className="text-xs text-gray-700 bg-simmpy-gray-100 uppercase">
+                <tr>
+                  <th scope="col" className="py-3">
+                    Name
+                  </th>
+                  <th scope="col" className="py-3 hidden lg:table-cell">
+                    Email
+                  </th>
+                  <th scope="col" className="py-3 hidden lg:table-cell">
+                    Phone#
+                  </th>
+                  <th scope="col" className="py-3">
+                    Service Address
+                  </th>
+                  <th scope="col" className="py-3">
+                    Req. Time Slot
+                  </th>
+                  <th scope="col" className="py-3">
+                    Confirmed ETA
+                  </th>
+                  <th scope="col" className="py-3">
+                    Status
+                  </th>
+                  <th scope="col" className="py-3">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {userRequests?.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="text-center text-gray-500 py-4">
+                      No requests found
+                    </td>
+                  </tr>
+                ) : (
+                  userRequests.map((request) => (
+                    <tr
+                      className="bg-white border-b hover:cursor-pointer hover:bg-gray-50"
+                      key={request?.id}
+                    >
+                      <td>{request.user.name}</td>
+                      <td className="hidden lg:table-cell">
+                        {request.user.email}
+                      </td>
+                      <td className="hidden lg:table-cell">
+                        {formatPhoneNumber(request.user.phoneNumber!)}
+                      </td>
+                      <td>
+                        {request.address?.streetNumber}{" "}
+                        {request.address?.streetName} {request.address?.city}
+                      </td>
+                      <td>
+                        <FormattedTimeSlotDateTime
+                          start={request.requestedTimeSlot.startTime}
+                          end={request.requestedTimeSlot.endTime}
+                        />
+                      </td>
+                      <td>
+                        <FormattedTimeSlotDateTime
+                          start={request.assignedTimeSlot?.startTime}
+                          end={request.assignedTimeSlot?.endTime}
+                        />
+                      </td>
+                      <td
+                        className={`${
+                          requestStatusColorMap[request.status]
+                        } text-center`}
+                      >
+                        {request.status}
+                      </td>
+                      <td>
+                        <ActionButtons
+                          request={request}
+                          onActionButtonClicked={(action: RequestStatus) =>
+                            handleUpdateRequestStatus(action, request.id)
+                          }
+                        />
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+          <div>
+            {/* Pagination Section */}
+            <div className="flex flex-col items-center">
+              {/* <!-- Help text --> */}
+              <span className="text-sm text-gray-700">
+                Showing{" "}
+                <span className="font-semibold text-gray-900">
+                  {pageNumber * MAX_TAKE + 1}
+                </span>{" "}
+                to{" "}
+                <span className="font-semibold text-gray-900">
+                  {pageNumber * MAX_TAKE + userRequests.length}
+                </span>{" "}
+                of{" "}
+                <span className="font-semibold text-gray-900">
+                  {totalCount}
+                </span>{" "}
+                Entries
+              </span>
+              {/* <!-- Buttons --> */}
+              <div className="inline-flex mt-2 xs:mt-0">
+                <button
+                  onClick={() => handlePagination("backward")}
+                  className="flex items-center justify-center px-3 h-8 text-sm font-medium text-white bg-gray-800 rounded-s hover:bg-gray-900"
+                >
+                  Prev
+                </button>
+                <button
+                  onClick={() => handlePagination("forward")}
+                  className="flex items-center justify-center px-3 h-8 text-sm font-medium text-white bg-gray-800 border-0 border-s border-gray-700 rounded-e hover:bg-gray-900"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+            <div>
+              {/* Errors */}
+              {error && <p className="text-red-500">{error}</p>}
+            </div>
           </div>
         </div>
       ) : (
@@ -270,3 +297,42 @@ export default function AdminDashboard() {
     </>
   );
 }
+
+const ActionButtons = ({
+  request,
+  onActionButtonClicked,
+}: {
+  request: AllUserRequestsAdminGetResponse;
+  onActionButtonClicked: (requestStatus: RequestStatus) => void;
+}) => {
+  if (request.status === RequestStatus.PENDING) {
+    return (
+      <div className="flex flex-col">
+        <button
+          className="px-2 py-1 text-simmpy-green"
+          onClick={() => onActionButtonClicked(RequestStatus.COMPLETED)}
+        >
+          Mark Completed
+        </button>
+        <button
+          onClick={() => onActionButtonClicked(RequestStatus.CANCELED)}
+          className="px-2 py-1 text-simmpy-red"
+        >
+          Mark Canceled
+        </button>
+      </div>
+    );
+  }
+  if (request.status === RequestStatus.COMPLETED) {
+    return (
+      <div className="flex justify-center">
+        <button
+          className="px-2 py-1 text-simmpy-green"
+          onClick={() => onActionButtonClicked(RequestStatus.PENDING)}
+        >
+          Move back to pending
+        </button>
+      </div>
+    );
+  }
+};
