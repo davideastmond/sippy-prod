@@ -2,7 +2,14 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { computeRouteMatrix } from "@/lib/utils/google-routes";
 
-function optimizeRoute(routeMatrix: Array<Array<number>>): number[] {
+interface Route {
+  originIndex: number;
+  destinationIndex: number;
+  duration: string;
+  condition: string;
+}
+
+function optimizeRoute(routeMatrix: number[][]): number[] {
   const numLocations = routeMatrix.length;
   const visited = new Set<number>();
   const order: number[] = [];
@@ -30,7 +37,6 @@ function optimizeRoute(routeMatrix: Array<Array<number>>): number[] {
 
 export async function GET() {
   try {
-    // Step 1: Fetch only pending resident requests
     const residentRequests = await prisma.residentRequest.findMany({
       where: { status: "PENDING" },
       include: {
@@ -40,9 +46,9 @@ export async function GET() {
       },
     });
 
-    // Step 2: Group requests by day
+    // Group requests by day
     const requestsByDay = residentRequests.reduce((acc, request) => {
-      if (!request.address) return acc; // Skip requests with null addresses
+      if (!request.address) return acc; // Skip requests without addresses
       const day = new Date(request.requestedTimeSlot.startTime).toISOString().split("T")[0];
       acc[day] = acc[day] || [];
       acc[day].push(request);
@@ -76,30 +82,48 @@ export async function GET() {
         continue;
       }
 
-      // Create route matrix
-      const routeMatrix = Array.from({ length: locations.length }, () =>
+      // Create a route map
+      const routeMap: Record<string, Route> = routes.reduce((map, route) => {
+        map[`${route.originIndex}-${route.destinationIndex}`] = route;
+        return map;
+      }, {} as Record<string, Route>);
+
+      // Initialize route matrix
+      const routeMatrix: number[][] = Array.from({ length: locations.length }, () =>
         Array(locations.length).fill(Infinity)
       );
 
       routes.forEach((route) => {
-        routeMatrix[route.originIndex][route.destinationIndex] = route.duration;
+        const durationInSeconds = parseInt(route.duration.replace("s", ""), 10); // Convert "160s" to 160
+        routeMatrix[route.originIndex][route.destinationIndex] = durationInSeconds;
       });
 
       // Optimize route
       const optimizedOrder = optimizeRoute(routeMatrix);
 
       // Reorder requests
-      const optimizedRequests = optimizedOrder.map((index) => ({
-        ...requests[index],
-        route: {
-          originIndex: index,
-          destinationIndex: optimizedOrder[(optimizedOrder.indexOf(index) + 1) % optimizedOrder.length],
-          duration: routeMatrix[index][
-            optimizedOrder[(optimizedOrder.indexOf(index) + 1) % optimizedOrder.length]
-          ],
-          condition: "ROUTE_EXISTS",
-        },
-      }));
+      const optimizedRequests = optimizedOrder.map((index) => {
+        const nextIndex = (index + 1) % requests.length;
+        const routeKey = `${index}-${nextIndex}`;
+        const route = routeMap[routeKey];
+
+        return {
+          ...requests[index],
+          route: route
+            ? {
+                originIndex: route.originIndex,
+                destinationIndex: route.destinationIndex,
+                duration: route.duration,
+                condition: route.condition,
+              }
+            : {
+                originIndex: index,
+                destinationIndex: nextIndex,
+                duration: "0s",
+                condition: "FAILED",
+              },
+        };
+      });
 
       optimizedResults.push(...optimizedRequests);
     }
