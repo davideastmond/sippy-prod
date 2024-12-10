@@ -1,4 +1,4 @@
-import { ResidentRequestCollation } from "../../types/resident-request-collation";
+import { ResidentRequestCollation } from "@/types/resident-request-collation";
 
 export async function fetchDailyRequests(): Promise<Record<string, ResidentRequestCollation[]>> {
   try {
