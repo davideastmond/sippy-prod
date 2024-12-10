@@ -1,5 +1,6 @@
 import { authOptions } from "@/auth";
 import { residentRequestStatusUpdateValidationSchema } from "@/lib/validation-schemas/resident-request-status-update-validation-schema";
+import { sendStatusUpdateEmail } from '@/lib/mailer/email-senders/update-request-email-sender';
 import { ResidentRequestStatusUpdateApiRequest } from "@/types/resident-request-status-update-api-request";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
@@ -38,6 +39,14 @@ export async function PATCH(
   if (session.user.isAdmin) {
     try {
       await updateResidentRequestStatusFromAdmin(requestId, status);
+
+      // Sending the status update email
+      await sendStatusUpdateEmail({
+        email: session.user.email!,
+        requestId,
+        status,
+      });
+      
       return NextResponse.json({
         message: "Resident request was updated by admin",
       });
@@ -51,6 +60,14 @@ export async function PATCH(
   // Otherwise this is a user request
   try {
     await updateResidentRequestStatusFromUser(requestId, status);
+
+    // Sending the status update email
+    await sendStatusUpdateEmail({
+      email: session.user.email!,
+      requestId,
+      status,
+    });
+
     return NextResponse.json({
       message: "Resident request was updated by user",
     });
