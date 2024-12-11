@@ -1,9 +1,12 @@
+import Spinner from "@/components/spinner/Spinner";
+
 interface ButtonTextProps {
   text: string;
   color: "Green" | "Yellow" | "Red";
   name?: string;
   disabled?: boolean;
   paddingX?: 2 | 4;
+  busy?: boolean;
   onClick?: () => void;
 }
 
@@ -14,6 +17,7 @@ export function ButtonText({
   name,
   disabled,
   paddingX,
+  busy,
   ...rest
 }: ButtonTextProps) {
   return (
@@ -29,6 +33,7 @@ export function ButtonText({
       disabled={disabled}
       {...rest}
     >
+      {busy && <Spinner />}
       {text}
     </button>
   );
