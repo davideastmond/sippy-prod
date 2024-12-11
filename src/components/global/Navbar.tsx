@@ -95,8 +95,9 @@ export default function Navbar() {
               </Link>
             )}
           </div>
-          {/* The logic below renders a logout but if user is authenticated. If user is not authenticated, the get started button links to /authenticate.
+          {/* If user is not authenticated, the get started button links to /authenticate.
             if user is authenticated, the get started button links to /resident-request/new to create a new request.
+            The get started button is not rendered on the resident-request/new page
           */}
           <div className="flex flex-col md:flex-row items-center gap-4 px-4 md:px-0 mt-4 md:mt-0">
             {pathname !== "/authenticate" &&
@@ -114,6 +115,7 @@ export default function Navbar() {
                   </button>
                 </Link>
               )}
+            {/* Logout button is rendered when user is authenticated */}
             {status === "authenticated" && (
               <button
                 onClick={handleSignOut}
