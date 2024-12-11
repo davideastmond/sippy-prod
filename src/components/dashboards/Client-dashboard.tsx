@@ -57,7 +57,7 @@ export default function ClientDashboard() {
   const [selectedRequest, setSelectedRequest] =
     useState<ResidentRequest | null>(null);
   const prevRequestsRef = useRef<ResidentRequest[]>([]);
-  const [isFetching, setIsFetching] = useState(false);
+  const isFetchingRef = useRef(false);
   const [isModalClosing, setIsModalClosing] = useState(false);
 
   const handleCloseModal = () => {
@@ -68,22 +68,47 @@ export default function ClientDashboard() {
     }, 300);
   };
 
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      router.replace("/authenticate");
-    }
-  }, [status, router]);
+  const detectStatusChanges = useCallback(
+    (prevRequests: ResidentRequest[], currentRequests: ResidentRequest[]) => {
+      currentRequests.forEach((currentRequest) => {
+        const prevRequest = prevRequests.find(
+          (req) => req.id === currentRequest.id
+        );
 
-  const fetchResidentRequestsForUser = useCallback(
-    async (isPolling = false) => {
-      try {
-        if (!session || !session.user?.id || session.user.isAdmin) {
+        if (!prevRequest || prevRequest.status === currentRequest.status) {
           return;
         }
 
-        if (isFetching) return;
-        setIsFetching(true);
+        const addressInfo = currentRequest.address
+          ? `${currentRequest.address.city}, ${currentRequest.address.streetName}`
+          : "Unknown Address";
 
+        if (currentRequest.status === "COMPLETED") {
+          toast.success(`Request at ${addressInfo} is completed!`);
+        } else if (currentRequest.status === "PENDING") {
+          toast.warn(`Request at ${addressInfo} is now pending.`);
+        } else if (currentRequest.status === "CANCELED") {
+          toast.error(`Request at ${addressInfo} has been canceled.`);
+        }
+      });
+    },
+    []
+  );
+
+  const fetchResidentRequestsForUser = useCallback(
+    async (isPolling = false) => {
+      if (
+        !session ||
+        !session.user?.id ||
+        session.user.isAdmin ||
+        isFetchingRef.current
+      ) {
+        return;
+      }
+
+      isFetchingRef.current = true;
+
+      try {
         const res =
           await ResidentRequestService.getResidentRequestsByAuthenticatedUser(
             session.user.id
@@ -107,59 +132,30 @@ export default function ClientDashboard() {
           toast.error("Failed to fetch requests. Please try again.");
         }
       } finally {
-        setIsFetching(false);
+        isFetchingRef.current = false;
         setIsLoading(false);
       }
     },
-    [session, isFetching]
+    [session, detectStatusChanges]
   );
 
   useEffect(() => {
-    if (session?.user?.isAdmin) {
-      router.replace("/dashboard/admin");
-      return;
+    if (status === "unauthenticated") {
+      router.replace("/authenticate");
     }
-
-    if (session?.user?.id) {
-      fetchResidentRequestsForUser();
-    }
-  }, [session?.user, router, fetchResidentRequestsForUser]);
+  }, [status, router]);
 
   useEffect(() => {
+    if (!session?.user?.id || session?.user?.isAdmin) return;
+
+    fetchResidentRequestsForUser();
+
     const interval = setInterval(() => {
-      if (session?.user?.id && !session?.user?.isAdmin) {
-        fetchResidentRequestsForUser(true);
-      }
+      fetchResidentRequestsForUser(true);
     }, 3000);
+
     return () => clearInterval(interval);
   }, [session?.user?.id, session?.user?.isAdmin, fetchResidentRequestsForUser]);
-
-  const detectStatusChanges = (
-    prevRequests: ResidentRequest[],
-    currentRequests: ResidentRequest[]
-  ) => {
-    currentRequests.forEach((currentRequest) => {
-      const prevRequest = prevRequests.find(
-        (req) => req.id === currentRequest.id
-      );
-
-      if (!prevRequest || prevRequest.status === currentRequest.status) {
-        return;
-      }
-
-      const addressInfo = currentRequest.address
-        ? `${currentRequest.address.city}, ${currentRequest.address.streetName}`
-        : "Unknown Address";
-
-      if (currentRequest.status === "COMPLETED") {
-        toast.success(`Request at ${addressInfo} is completed!`);
-      } else if (currentRequest.status === "PENDING") {
-        toast.warn(`Request at ${addressInfo} is now pending.`);
-      } else if (currentRequest.status === "CANCELED") {
-        toast.error(`Request at ${addressInfo} has been canceled.`);
-      }
-    });
-  };
 
   const handleCancelPendingRequest = async (requestId: string) => {
     try {
@@ -185,7 +181,10 @@ export default function ClientDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 py-10">
+    <div
+      className="min-h-screen bg-gray-100 py-10"
+      style={{ minHeight: "calc(100vh - 72px)" }} //Navbar
+    >
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar />
       <div className="max-w-6xl mx-auto px-4">
         <h1 className="text-4xl font-bold text-center mb-8">My Requests</h1>
