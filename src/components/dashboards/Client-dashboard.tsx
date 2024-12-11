@@ -2,11 +2,15 @@
 
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import Spinner from "@/components/spinner/Spinner";
 import { ResidentRequestService } from "app/services/resident-request-service";
 import "react-toastify/dist/ReactToastify.css";
+
+import { UserResidentRequestsApiResponse } from "@/types/api-responses/user-resident-requests-api-response";
+
+type ResidentRequest = UserResidentRequestsApiResponse["requests"][number];
 
 const statusToColorMap: Record<
   string,
@@ -22,16 +26,21 @@ const statusToColorMap: Record<
     bg: "bg-yellow-50",
     text: "text-yellow-600",
   },
-  CANCELED: { border: "border-red-500", bg: "bg-red-50", text: "text-red-600" },
+  CANCELED: {
+    border: "border-red-500",
+    bg: "bg-red-50",
+    text: "text-red-600",
+  },
 };
 
-const formatTime = (time: string) => {
-  const date = new Date(time);
+const formatTime = (time: string | Date) => {
+  const date = typeof time === "string" ? new Date(time) : time;
   return date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
 };
 
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
+const formatDate = (dateString: string | Date) => {
+  const date =
+    typeof dateString === "string" ? new Date(dateString) : dateString;
   return date.toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
@@ -43,10 +52,11 @@ export default function ClientDashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
-  const [requestsForUser, setRequestsForUser] = useState<any[]>([]);
+  const [requestsForUser, setRequestsForUser] = useState<ResidentRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedRequest, setSelectedRequest] = useState<any | null>(null);
-  const prevRequestsRef = useRef<any[]>([]);
+  const [selectedRequest, setSelectedRequest] =
+    useState<ResidentRequest | null>(null);
+  const prevRequestsRef = useRef<ResidentRequest[]>([]);
   const [isFetching, setIsFetching] = useState(false);
   const [isModalClosing, setIsModalClosing] = useState(false);
 
@@ -64,6 +74,46 @@ export default function ClientDashboard() {
     }
   }, [status, router]);
 
+  const fetchResidentRequestsForUser = useCallback(
+    async (isPolling = false) => {
+      try {
+        if (!session || !session.user?.id || session.user.isAdmin) {
+          return;
+        }
+
+        if (isFetching) return;
+        setIsFetching(true);
+
+        const res =
+          await ResidentRequestService.getResidentRequestsByAuthenticatedUser(
+            session.user.id
+          );
+
+        const sortedRequests = res.requests.sort((a, b) => {
+          return (
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
+        });
+
+        if (prevRequestsRef.current) {
+          detectStatusChanges(prevRequestsRef.current, sortedRequests);
+        }
+
+        prevRequestsRef.current = sortedRequests;
+        setRequestsForUser(sortedRequests);
+      } catch (error) {
+        console.error("Error fetching resident requests:", error);
+        if (!isPolling) {
+          toast.error("Failed to fetch requests. Please try again.");
+        }
+      } finally {
+        setIsFetching(false);
+        setIsLoading(false);
+      }
+    },
+    [session, isFetching]
+  );
+
   useEffect(() => {
     if (session?.user?.isAdmin) {
       router.replace("/dashboard/admin");
@@ -73,7 +123,7 @@ export default function ClientDashboard() {
     if (session?.user?.id) {
       fetchResidentRequestsForUser();
     }
-  }, [session?.user]);
+  }, [session?.user, router, fetchResidentRequestsForUser]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -82,46 +132,12 @@ export default function ClientDashboard() {
       }
     }, 3000);
     return () => clearInterval(interval);
-  }, [session?.user?.id]);
+  }, [session?.user?.id, session?.user?.isAdmin, fetchResidentRequestsForUser]);
 
-  const fetchResidentRequestsForUser = async (isPolling = false) => {
-    try {
-      if (!session || !session.user?.id || session.user.isAdmin) {
-        return;
-      }
-
-      if (isFetching) return;
-      setIsFetching(true);
-
-      const res =
-        await ResidentRequestService.getResidentRequestsByAuthenticatedUser(
-          session.user.id
-        );
-
-      const sortedRequests = res.requests.sort((a, b) => {
-        return (
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-      });
-
-      if (prevRequestsRef.current) {
-        detectStatusChanges(prevRequestsRef.current, sortedRequests);
-      }
-
-      prevRequestsRef.current = sortedRequests;
-      setRequestsForUser(sortedRequests);
-    } catch (error) {
-      console.error("Error fetching resident requests:", error);
-      if (!isPolling) {
-        toast.error("Failed to fetch requests. Please try again.");
-      }
-    } finally {
-      setIsFetching(false);
-      setIsLoading(false);
-    }
-  };
-
-  const detectStatusChanges = (prevRequests: any[], currentRequests: any[]) => {
+  const detectStatusChanges = (
+    prevRequests: ResidentRequest[],
+    currentRequests: ResidentRequest[]
+  ) => {
     currentRequests.forEach((currentRequest) => {
       const prevRequest = prevRequests.find(
         (req) => req.id === currentRequest.id
@@ -131,7 +147,10 @@ export default function ClientDashboard() {
         return;
       }
 
-      const addressInfo = `${currentRequest.address.city}, ${currentRequest.address.streetName}`;
+      const addressInfo = currentRequest.address
+        ? `${currentRequest.address.city}, ${currentRequest.address.streetName}`
+        : "Unknown Address";
+
       if (currentRequest.status === "COMPLETED") {
         toast.success(`Request at ${addressInfo} is completed!`);
       } else if (currentRequest.status === "PENDING") {
@@ -189,7 +208,8 @@ export default function ClientDashboard() {
                 </p>
               </div>
               <p className="text-gray-700 mb-2">
-                {request.address.city}, {request.address.streetName}
+                {request.address?.city || "Unknown City"},{" "}
+                {request.address?.streetName || "Unknown Street"}
               </p>
               <h2
                 className={`text-2xl font-bold uppercase ${
@@ -219,9 +239,10 @@ export default function ClientDashboard() {
             </h2>
             <div className="space-y-4">
               <p className="text-lg">
-                <strong>Address:</strong> {selectedRequest.address.streetNumber}{" "}
-                {selectedRequest.address.streetName},{" "}
-                {selectedRequest.address.city}
+                <strong>Address:</strong>{" "}
+                {selectedRequest.address?.streetNumber || "Unknown"}{" "}
+                {selectedRequest.address?.streetName || "Unknown"},{" "}
+                {selectedRequest.address?.city || "Unknown"}
               </p>
               <p className="text-lg">
                 <strong>Requested Time Slot:</strong>{" "}
