@@ -1,4 +1,5 @@
 "use client";
+
 import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
@@ -6,7 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 
 export default function Navbar() {
-  const { status } = useSession();
+  const { data: session, status } = useSession();
   const router = useRouter();
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -94,7 +95,9 @@ export default function Navbar() {
               </Link>
             )}
           </div>
-
+          {/* The logic below renders a logout but if user is authenticated. If user is not authenticated, the get started button links to /authenticate.
+            if user is authenticated, the get started button links to /resident-request/new to create a new request.
+          */}
           <div className="flex flex-col md:flex-row items-center gap-4 px-4 md:px-0 mt-4 md:mt-0">
             {pathname !== "/authenticate" &&
               pathname !== "/resident-request/new" && (
