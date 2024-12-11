@@ -143,7 +143,7 @@ export function SubmissionForm() {
   // Grab the user's email from the session user
   useEffect(() => {
     if (session?.user?.email) {
-      setFormData({ email: session.user.email });
+      setFormData({ email: session.user.email, name: session.user.name! });
     }
   }, [session?.user?.email]);
 
@@ -191,6 +191,7 @@ export function SubmissionForm() {
             color="Green"
             name="next"
             disabled={isBusy}
+            busy={isBusy}
           />
         </form>
         {submitError && (
