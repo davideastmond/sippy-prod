@@ -3,9 +3,7 @@ const MAX_REQUESTS_PER_SLOT = 3;
 
 /**
  * This returns if a requested time slot is available.
- * We may use this differently than the above function. This is
- * used to help enabled / disable the time-range picker on the submission request form
- * @param startTime
+ * This is used to help enabled / disable the time-range picker on the submission request form * @param startTime
  * @returns
  */
 export async function isRequestedTimeSlotAvailable(
