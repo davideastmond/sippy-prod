@@ -1,20 +1,29 @@
 export interface ResidentRequestCollation {
-  id: string;
-  requestedTimeSlot: { startTime: string; endTime: string }; // Time slot details
+  id: string; // Unique identifier for the request
+  requestedTimeSlot: { 
+    startTime: string; // Start Time
+    endTime: string;   // End Time
+  }; 
   address: {
-    latitude: number; // Latitude from the database
-    longitude: number; // Longitude from the database
-    city: string;
-    streetName?: string;
-    streetNumber?: string;
-    zipCode?: string;
-    googleAddressComponents?: google.maps.GeocoderAddressComponent[]; // Add this if using Google Geocoding results
-    geometry?: google.maps.places.PlaceGeometry; // Add this if processing geometry
+    latitude: number; // lat num
+    longitude: number; // long num
+    city: string; // City name
+    streetName: string; // validation: Street name
+    streetNumber: string; // validation: Street number
+    zipCode: string; // validation: Postal code
+    googleAddressComponents?: google.maps.GeocoderAddressComponent[]; 
+    // validation: Address components from Google Geocoding API
+    geometry?: google.maps.places.PlaceGeometry; 
+    // 
   };
   user: {
-    id: string;
-    name: string;
-    email: string;
+    id: string; // Unique identifier for the user associated with the request
+    name: string; // User's full name
+    email: string; // User's email address
   };
-  distanceFromPrevious?: number; 
+  distanceFromPrevious?: number; // Optional: Distance from the previous address in meters
+  routeDetails?: { 
+    startIndex: number; // Optional: Index of the starting point in the route
+    endIndex: number;   // Optional: Index of the ending point in the route
+  };
 }
