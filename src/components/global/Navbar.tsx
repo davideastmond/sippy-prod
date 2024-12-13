@@ -3,11 +3,11 @@
 import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 
 export default function Navbar() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -95,22 +95,35 @@ export default function Navbar() {
               </Link>
             )}
           </div>
-
+          {/* If user is not authenticated, the get started button links to /authenticate.
+            if user is authenticated, the get started button links to /resident-request/new to create a new request.
+            The get started button is not rendered on the resident-request/new page
+          */}
           <div className="flex flex-col md:flex-row items-center gap-4 px-4 md:px-0 mt-4 md:mt-0">
-            {status === "authenticated" ? (
+            {pathname !== "/authenticate" &&
+              pathname !== "/resident-request/new" && (
+                <Link
+                  href={`${
+                    status === "unauthenticated"
+                      ? "/authenticate"
+                      : "/resident-request/new"
+                  }`}
+                  onClick={handleLinkClick}
+                >
+                  <button className="px-4 py-2 text-white bg-simmpy-green hover:bg-green-600 rounded">
+                    Get Started
+                  </button>
+                </Link>
+              )}
+            {/* Logout button is rendered when user is authenticated */}
+            {status === "authenticated" && (
               <button
                 onClick={handleSignOut}
                 className="px-4 py-2 text-white bg-simmpy-gray-800 hover:bg-simmpy-gray-600 rounded"
               >
                 Log out
               </button>
-            ) : pathname !== "/authenticate" ? (
-              <Link href="/authenticate" onClick={handleLinkClick}>
-                <button className="px-4 py-2 text-white bg-simmpy-green hover:bg-green-600 rounded">
-                  Get Started
-                </button>
-              </Link>
-            ) : null}
+            )}
           </div>
         </div>
       </div>
