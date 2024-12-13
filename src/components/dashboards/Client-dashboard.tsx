@@ -1,245 +1,277 @@
 "use client";
-import { ButtonText } from "@/components/buttonText";
-import FormattedTimeSlotDateTime from "@/components/formatted-time-slot-date-time.tsx/FormattedTimeSlotDateTime";
-import Spinner from "@/components/spinner/Spinner";
-import { requestStatusColorMap } from "@/lib/utils/request-status/request-status-color-map";
-import { UserResidentRequestsApiResponse } from "@/types/api-responses/user-resident-requests-api-response";
-import { RequestStatus } from "@prisma/client";
-import { ResidentRequestService } from "app/services/resident-request-service";
+
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
+import { toast, ToastContainer } from "react-toastify";
+import Spinner from "@/components/spinner/Spinner";
+import { ResidentRequestService } from "app/services/resident-request-service";
+import "react-toastify/dist/ReactToastify.css";
+
+import { UserResidentRequestsApiResponse } from "@/types/api-responses/user-resident-requests-api-response";
+
+type ResidentRequest = UserResidentRequestsApiResponse["requests"][number];
+
+const statusToColorMap: Record<
+  string,
+  { border: string; bg: string; text: string }
+> = {
+  COMPLETED: {
+    border: "border-green-500",
+    bg: "bg-green-50",
+    text: "text-green-600",
+  },
+  PENDING: {
+    border: "border-yellow-500",
+    bg: "bg-yellow-50",
+    text: "text-yellow-600",
+  },
+  CANCELED: {
+    border: "border-red-500",
+    bg: "bg-red-50",
+    text: "text-red-600",
+  },
+};
+
+const formatTime = (time: string | Date) => {
+  const date = typeof time === "string" ? new Date(time) : time;
+  return date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+};
+
+const formatDate = (dateString: string | Date) => {
+  const date =
+    typeof dateString === "string" ? new Date(dateString) : dateString;
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+};
+
 export default function ClientDashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
-  const [requestsForUser, setRequestsForUser] =
-    useState<UserResidentRequestsApiResponse>();
-
+  const [requestsForUser, setRequestsForUser] = useState<ResidentRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [requestIdToCancel, setRequestIdToCancel] = useState<null | string>(
-    null
-  );
-  const [apiError, setApiError] = useState<null | string>(null);
-  useEffect(() => {
-    if (session?.user?.isAdmin) {
-      router.replace("/dashboard/admin");
-    }
-  }, [session?.user?.isAdmin, router]);
+  const [selectedRequest, setSelectedRequest] =
+    useState<ResidentRequest | null>(null);
+  const prevRequestsRef = useRef<ResidentRequest[]>([]);
+  const isFetchingRef = useRef(false);
+  const [isModalClosing, setIsModalClosing] = useState(false);
 
-  useEffect(() => {
-    // Fetch the residents requests
-    if (session?.user?.id) {
-      fetchResidentRequestsForUser();
-    }
-  }, [session?.user?.id]);
-
-  const fetchResidentRequestsForUser = async () => {
-    try {
-      setIsLoading(true);
-      const res =
-        await ResidentRequestService.getResidentRequestsByAuthenticatedUser(
-          session!.user!.id!
-        );
-
-      const sortedRequests = res.requests.sort((a, b) => {
-        return (
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-      });
-      setRequestsForUser({ ...res, requests: sortedRequests });
-      setIsLoading(false);
-    } catch (error) {
-      console.error(error);
-      setApiError("Failed to fetch requests");
-      setIsLoading(false);
-    }
+  const handleCloseModal = () => {
+    setIsModalClosing(true);
+    setTimeout(() => {
+      setSelectedRequest(null);
+      setIsModalClosing(false);
+    }, 300);
   };
+
+  const detectStatusChanges = useCallback(
+    (prevRequests: ResidentRequest[], currentRequests: ResidentRequest[]) => {
+      currentRequests.forEach((currentRequest) => {
+        const prevRequest = prevRequests.find(
+          (req) => req.id === currentRequest.id
+        );
+
+        if (!prevRequest || prevRequest.status === currentRequest.status) {
+          return;
+        }
+
+        const addressInfo = currentRequest.address
+          ? `${currentRequest.address.city}, ${currentRequest.address.streetName}`
+          : "Unknown Address";
+
+        if (currentRequest.status === "COMPLETED") {
+          toast.success(`Request at ${addressInfo} is completed!`);
+        } else if (currentRequest.status === "PENDING") {
+          toast.warn(`Request at ${addressInfo} is now pending.`);
+        } else if (currentRequest.status === "CANCELED") {
+          toast.error(`Request at ${addressInfo} has been canceled.`);
+        }
+      });
+    },
+    []
+  );
+
+  const fetchResidentRequestsForUser = useCallback(
+    async (isPolling = false) => {
+      if (
+        !session ||
+        !session.user?.id ||
+        session.user.isAdmin ||
+        isFetchingRef.current
+      ) {
+        return;
+      }
+
+      isFetchingRef.current = true;
+
+      try {
+        const res =
+          await ResidentRequestService.getResidentRequestsByAuthenticatedUser(
+            session.user.id
+          );
+
+        const sortedRequests = res.requests.sort((a, b) => {
+          return (
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
+        });
+
+        if (prevRequestsRef.current) {
+          detectStatusChanges(prevRequestsRef.current, sortedRequests);
+        }
+
+        prevRequestsRef.current = sortedRequests;
+        setRequestsForUser(sortedRequests);
+      } catch (error) {
+        console.error("Error fetching resident requests:", error);
+        if (!isPolling) {
+          toast.error("Failed to fetch requests. Please try again.");
+        }
+      } finally {
+        isFetchingRef.current = false;
+        setIsLoading(false);
+      }
+    },
+    [session, detectStatusChanges]
+  );
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.replace("/authenticate");
+    } else if (session?.user?.isAdmin) {
+      router.replace("/dashboard/admin");
+    } else {
+      router.replace("/dashboard");
+    }
+  }, [status, session?.user?.isAdmin, router]);
+
+  useEffect(() => {
+    if (!session?.user?.id || session?.user?.isAdmin) return;
+
+    fetchResidentRequestsForUser();
+
+    const interval = setInterval(() => {
+      fetchResidentRequestsForUser(true);
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [session?.user?.id, session?.user?.isAdmin, fetchResidentRequestsForUser]);
 
   const handleCancelPendingRequest = async (requestId: string) => {
     try {
       await ResidentRequestService.patchRequestStatusById(
         requestId,
-        RequestStatus.CANCELED
+        "CANCELED"
       );
-
-      // Refresh the requests to update the status
+      toast.error("Request successfully canceled.");
       await fetchResidentRequestsForUser();
+      setSelectedRequest(null);
     } catch (error) {
-      setApiError("Failed to cancel request");
+      toast.error("Failed to cancel request. Please try again.");
       console.error(error);
     }
   };
 
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      router.replace("/authenticate");
-    }
-  }, [status, router]);
-
   if (isLoading) {
     return (
-      <div className="flex justify-center mt-[10%]">
+      <div className="flex justify-center items-center h-screen bg-gray-50">
         <Spinner />
       </div>
     );
   }
+
   return (
-    <div className="p-2">
-      <h1 className="py-4">Welcome, {session?.user?.name} </h1>
-      <div>
-        <h1 className="text-3xl font-bold text-center">My Requests</h1>
-      </div>
-      <div className="relative overflow-x-auto mt-6 p-2 lg:flex lg:justify-center">
-        <table className="w-full text-sm text-left rtl:text-right text-gray-500 lg:max-w-[800px]">
-          <thead className="text-xs text-gray-700 bg-simmpy-gray-100 uppercase">
-            <tr>
-              <th scope="col" className="py-3">
-                Address
-              </th>
-              <th scope="col" className="py-3">
-                Req. Time Slot
-              </th>
-              <th scope="col" className="py-3">
-                Confirmed ETA
-              </th>
-              <th scope="col" className="py-3">
-                Status
-              </th>
-              <th scope="col" className="py-3">
-                Action
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {requestsForUser?.requests.map((request) => (
-              <tr
-                className="bg-white border-b hover:cursor-pointer hover:bg-gray-50"
-                key={request?.id}
-              >
-                <td>
-                  {request.address?.streetNumber} {request.address?.streetName},{" "}
-                  {request.address?.city}
-                </td>
-                <td>
-                  <FormattedTimeSlotDateTime
-                    start={request.requestedTimeSlot?.startTime}
-                    end={request.requestedTimeSlot?.endTime}
-                  />
-                </td>
-                <td>
-                  <FormattedTimeSlotDateTime
-                    start={request.assignedTimeSlot?.startTime}
-                    end={request.assignedTimeSlot?.endTime}
-                  />
-                </td>
-                <td
-                  className={`${
-                    requestStatusColorMap[request.status]
-                  } text-center`}
-                >
-                  {request.status}
-                </td>
-                <td>
-                  {request.status === RequestStatus.PENDING && (
-                    <button
-                      className="text-simmpy-red pl-2"
-                      onClick={() => {
-                        setRequestIdToCancel(request.id!);
-                        setModalOpen(true);
-                      }}
-                    >
-                      Cancel
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))}
-            {requestsForUser?.requests.length === 0 && (
-              <tr>
-                <td colSpan={4} className="text-center py-4">
-                  No requests found
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-        {apiError && (
-          <div
-            className="flex items-center p-4 mb-4 mt-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400"
-            role="alert"
-          >
-            <svg
-              className="flex-shrink-0 inline w-4 h-4 me-3"
-              aria-hidden="true"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="currentColor"
-              viewBox="0 0 20 20"
+    <div
+      className="min-h-screen bg-gray-100 py-10"
+      style={{ minHeight: "calc(100vh - 72px)" }} //Navbar
+    >
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar />
+      <div className="max-w-6xl mx-auto px-4">
+        <h1 className="text-4xl font-bold text-center mb-8">My Requests</h1>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {requestsForUser.map((request) => (
+            <div
+              key={request.id}
+              className={`rounded-lg shadow-lg p-6 hover:shadow-xl transition relative flex flex-col border-4 cursor-pointer ${
+                statusToColorMap[request.status].border
+              } ${statusToColorMap[request.status].bg}`}
+              onClick={() => setSelectedRequest(request)}
             >
-              <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
-            </svg>
-            <span className="sr-only">Info</span>
-            <div>
-              <span className="font-medium">There was an error.</span>
-              {apiError}
+              <div className="flex justify-between w-full mb-4">
+                <p className="text-gray-600 font-medium">
+                  {formatDate(request.requestedTimeSlot.startTime)}
+                </p>
+                <p className="text-gray-600 font-medium">
+                  {formatTime(request.requestedTimeSlot.startTime)} -{" "}
+                  {formatTime(request.requestedTimeSlot.endTime)}
+                </p>
+              </div>
+              <p className="text-gray-700 mb-2">
+                {request.address?.city || "Unknown City"},{" "}
+                {request.address?.streetName || "Unknown Street"}
+              </p>
+              <h2
+                className={`text-2xl font-bold uppercase ${
+                  statusToColorMap[request.status].text
+                }`}
+              >
+                {request.status}
+              </h2>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {selectedRequest && (
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
+          <div
+            className={`bg-white rounded-lg shadow-lg p-8 w-full max-w-3xl border-t-8 ${
+              statusToColorMap[selectedRequest.status].border
+            } ${isModalClosing ? "animate-shrink" : "animate-grow"}`}
+          >
+            <h2
+              className={`text-3xl font-bold mb-6 ${
+                statusToColorMap[selectedRequest.status].text
+              }`}
+            >
+              {selectedRequest.status} Details
+            </h2>
+            <div className="space-y-4">
+              <p className="text-lg">
+                <strong>Address:</strong>{" "}
+                {selectedRequest.address?.streetNumber || "Unknown"}{" "}
+                {selectedRequest.address?.streetName || "Unknown"},{" "}
+                {selectedRequest.address?.city || "Unknown"}
+              </p>
+              <p className="text-lg">
+                <strong>Requested Time Slot:</strong>{" "}
+                {formatTime(selectedRequest.requestedTimeSlot.startTime)} -{" "}
+                {formatTime(selectedRequest.requestedTimeSlot.endTime)}
+              </p>
+            </div>
+            <div className="flex justify-between gap-4 mt-6">
+              {selectedRequest.status === "PENDING" && (
+                <button
+                  className="bg-red-500 text-white px-6 py-3 rounded-lg shadow-md hover:bg-red-600 transition"
+                  onClick={() => handleCancelPendingRequest(selectedRequest.id)}
+                >
+                  Cancel Request
+                </button>
+              )}
+              <button
+                className="bg-gray-300 text-gray-700 px-6 py-3 rounded-lg shadow-md hover:bg-gray-400 transition ml-auto"
+                onClick={handleCloseModal}
+              >
+                Close
+              </button>
             </div>
           </div>
-        )}
-      </div>
-      {modalOpen && requestIdToCancel && (
-        <CancelAppointmentModal
-          onCancel={() => {
-            setModalOpen(false);
-            setRequestIdToCancel(null);
-          }}
-          onConfirm={() => {
-            handleCancelPendingRequest(requestIdToCancel);
-            setModalOpen(false);
-          }}
-        />
+        </div>
       )}
     </div>
   );
 }
-
-// Should we factor this out into a separate component?
-const CancelAppointmentModal = ({
-  onConfirm,
-  onCancel,
-}: {
-  onConfirm: () => void;
-  onCancel: () => void;
-}) => {
-  return (
-    <div className="absolute w-full top-[0] h-full bg-simmpy-gray-900/60">
-      <div className="modal-box w-full max-w-[800px] lg:ml-[30%] bg-simmpy-gray-600 p-4 rounded-md mt-[20vh]">
-        <p className="text-simmpy-gray-100 text-center text-lg">
-          Choosing cancel will cancel your pending appointment. This cannot be
-          undone.
-        </p>
-        <p className="text-simmpy-gray-100 text-center text-lg">
-          Are you sure you want to cancel your appointment?
-        </p>
-        <div className="flex justify-end gap-x-4 mt-4">
-          <div>
-            <ButtonText
-              text="Yes-cancel"
-              color="Red"
-              paddingX={4}
-              onClick={() => onConfirm()}
-            />
-          </div>
-          <div>
-            <ButtonText
-              text="Go back"
-              color="Green"
-              paddingX={4}
-              onClick={() => onCancel()}
-            />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};

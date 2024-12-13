@@ -33,8 +33,12 @@ export default function AdminDashboard() {
   useEffect(() => {
     if (status === "unauthenticated") {
       router.replace("/authenticate");
+    } else if (session?.user?.isAdmin) {
+      router.replace("/dashboard/admin");
+    } else {
+      router.replace("/dashboard");
     }
-  }, [status, router]);
+  }, [status, session?.user?.isAdmin, router]);
 
   useEffect(() => {
     if (session?.user?.isAdmin && !isSearching) {
