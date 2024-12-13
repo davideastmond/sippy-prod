@@ -118,9 +118,11 @@ export async function GET(req: NextRequest) {
   if (session.user.isAdmin) {
     const take = searchParams.get("take");
     const skip = searchParams.get("skip");
+    const date = searchParams.get("date");
 
     try {
       const residentRequests = await adminGetResidentsRequests({
+        date: dayjs(date).isValid() ? date! : null,
         take: parseInt(take!, 10),
         skip: parseInt(skip!, 10),
       });
