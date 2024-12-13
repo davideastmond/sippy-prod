@@ -8,7 +8,6 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import RouteList from "./Route-list";
 import { googleMapsLoader } from "@/services/collateDailyRequests/loader";
-// import { collateDailyRequests } from "@/services/collateDailyRequests/collateDailyRequests";
 import { generateRoutes } from "@/services/collateDailyRequests/generateRoutes";
 import { ResidentRequestCollation } from "@/types/resident-request-collation";
 
