@@ -7,6 +7,7 @@ import { requestStatusColorMap } from "@/lib/utils/request-status/request-status
 import { AllUserRequestsAdminGetResponse } from "@/types/api-responses/admin-resident-requests-api-response";
 import { RequestStatus } from "@prisma/client";
 import { ResidentRequestService } from "app/services/resident-request-service";
+import dayjs from "dayjs";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -29,6 +30,10 @@ export default function AdminDashboard() {
 
   const [isSearching, setIsSearch] = useState(false);
 
+  // This state will be updated when the user selects a date from the search calendar in the search panel
+  // Defaults to current date
+  const [date, setDate] = useState<string>(dayjs().format("YYYY-MM-DD"));
+
   useEffect(() => {
     if (status === "unauthenticated") {
       router.replace("/authenticate");
@@ -49,6 +54,7 @@ export default function AdminDashboard() {
     try {
       setLoading(true);
       const requests = await ResidentRequestService.adminGetAllRequests({
+        date,
         take: MAX_TAKE,
         skip: pageNumber * MAX_TAKE,
       });
@@ -64,10 +70,13 @@ export default function AdminDashboard() {
 
   const handleSearch = async (
     query: string,
-    filters: Record<string, boolean>
+    filters: Record<string, boolean>,
+    date?: string
   ) => {
+    setDate(date!);
     try {
       const allRequests = await ResidentRequestService.adminGetAllRequests({
+        date,
         take: MAX_TAKE,
         skip: pageNumber * MAX_TAKE,
       });
@@ -156,6 +165,7 @@ export default function AdminDashboard() {
           <div className="mb-32">
             {/* Search and filter panel */}
             <SearchRequestsFilterPanel onSearch={handleSearch} />
+
             {isSearching && (
               <button
                 onClick={handleCancelSearch}
