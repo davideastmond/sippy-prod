@@ -1,7 +1,9 @@
 import { AllUserRequestsAdminGetResponse } from "@/types/api-responses/admin-resident-requests-api-response";
+import { RequestedAvailabilityApiResponse } from "@/types/api-responses/requested-timeslot-availability-api-response.ts/requested-availability-api-response";
 import { UserResidentRequestsApiResponse } from "@/types/api-responses/user-resident-requests-api-response";
 import { ResidentReqestApiRequest } from "@/types/resident-request-api-request";
 import { RequestStatus } from "@prisma/client";
+import dayjs from "dayjs";
 
 type AllResidentRequestsAdminGetResponseWithCount = {
   residentRequests: AllUserRequestsAdminGetResponse[];
@@ -79,5 +81,18 @@ export const ResidentRequestService = {
       };
     }
     return { residentRequests: [], count: 0 };
+  },
+  getAvailableTimeSlotsByDate: async (
+    date: Date
+  ): Promise<RequestedAvailabilityApiResponse> => {
+    const parsedDate = dayjs(date).format("YYYY-MM-DD").toString();
+
+    const response = await fetch(
+      `/api/resident-request/schedule?date=${parsedDate}`
+    );
+    if (!response.ok) {
+      throw new Error("Failed to get available time slots");
+    }
+    return response.json();
   },
 };
