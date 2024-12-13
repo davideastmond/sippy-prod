@@ -6,6 +6,8 @@ import { assignRequestedTimeSlot } from "@/lib/utils/time-slot/time-slot-assigne
 import { residentRequestValidationSchema } from "@/lib/validation-schemas/submission-request-validation-schemas";
 import { ResidentReqestApiRequest } from "@/types/resident-request-api-request";
 import { Address } from "@prisma/client";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { ZodError } from "zod";
@@ -49,7 +51,9 @@ export async function POST(req: NextRequest) {
 
   // This route is assuming that external users are submitting the request on their own behalf
   // Find the user in the database by e-mail, update their name to the one they entered on the form
+
   try {
+    dayjs.extend(utc);
     await prisma.user.update({
       where: { email: session.user!.email! },
       data: {
@@ -60,8 +64,8 @@ export async function POST(req: NextRequest) {
           create: {
             requestedTimeSlot: {
               create: {
-                startTime: startTime,
-                endTime: endTime,
+                startTime: dayjs(startTime).utc().toDate(),
+                endTime: dayjs(endTime).utc().toDate(),
               },
             },
             address: {
