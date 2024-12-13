@@ -1,15 +1,12 @@
-import { googleMapsLoader } from "./loader";
 import { ResidentRequestCollation } from "@/types/resident-request-collation";
 
 export async function collateDailyRequests(
   requests: Record<string, ResidentRequestCollation[]>
-) {
+): Promise<ResidentRequestCollation[]> {
   try {
-    // Load the Google Maps API using the shared loader
-    await googleMapsLoader.load();
-
-    // Initialize DirectionsService
     const directionsService = new google.maps.DirectionsService();
+
+    const allRoutes: ResidentRequestCollation[] = [];
 
     for (const [key, collations] of Object.entries(requests)) {
       if (collations.length < 2) {
@@ -40,16 +37,33 @@ export async function collateDailyRequests(
         travelMode: google.maps.TravelMode.DRIVING,
       };
 
-      // Compute the route
-      directionsService.route(routeRequest, (result, status) => {
-        if (status === google.maps.DirectionsStatus.OK && result?.routes[0]) {
-          console.info(`Route for ${key} computed successfully:`, result.routes[0]);
-          // Process route data as needed here
-        } else {
-          console.error(`Failed to compute route for ${key}:`, status);
-        }
-      });
+      try {
+        // Compute the route
+        const result = await new Promise<google.maps.DirectionsResult>((resolve, reject) =>
+          directionsService.route(routeRequest, (result, status) => {
+            if (status === google.maps.DirectionsStatus.OK && result) {
+              resolve(result);
+            } else {
+              reject(new Error(`Failed to compute route for ${key}: ${status}`));
+            }
+          })
+        );
+
+        console.info(`Route for ${key} computed successfully:`, result.routes[0]);
+
+        // Add processed route data to allRoutes
+        allRoutes.push(
+          ...collations.map((collation) => ({
+            ...collation,
+            routeInfo: result.routes[0], // Add custom processing as needed
+          }))
+        );
+      } catch (routeError) {
+        console.error(routeError);
+      }
     }
+
+    return allRoutes;
   } catch (error) {
     console.error("Error processing routes with Google Maps API:", error);
     throw error;

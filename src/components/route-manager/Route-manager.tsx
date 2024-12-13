@@ -7,8 +7,9 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import RouteList from "./Route-list";
-import { loader } from "@/services/loader";
-import { generateRoutes } from "@/services/collateDailyRequests/";
+import { googleMapsLoader } from "@/services/collateDailyRequests/loader";
+// import { collateDailyRequests } from "@/services/collateDailyRequests/collateDailyRequests";
+import { generateRoutes } from "@/services/collateDailyRequests/generateRoutes";
 import { ResidentRequestCollation } from "@/types/resident-request-collation";
 
 export default function RouteManager() {
@@ -17,35 +18,15 @@ export default function RouteManager() {
   const [dateValue, setDateValue] = useState(
     parseDate(dayjs().format("YYYY-MM-DD"))
   );
-
-  const [googleMap, setGoogleMap] = useState<any>(null);
+  const [googleMap, setGoogleMap] = useState<google.maps.Map | null>(null);
 
   useEffect(() => {
     if (status === "unauthenticated") {
       webRouter.replace("/authenticate");
     }
   }, [status, webRouter]);
-/**
- * 
- */
-  useEffect(() => {
-    async function initMap() {
-      const mapElement = document.getElementById("gmap") as HTMLElement;
-      if (!mapElement) return;
 
-      await loader.load();
-
-      const map = new google.maps.Map(mapElement, {
-        center: { lat: -34.397, lng: 150.644 },
-        zoom: 8,
-      });
-      setGoogleMap(map);
-    }
-
-    initMap();
-  }, [googleMap]);
-
-  const handleGenerateRoutes = async () => {
+  const handlegenerateRoutes = async () => {
     const requests: Record<string, ResidentRequestCollation[]> = {
       "2024-12-12": [
         {
@@ -58,6 +39,9 @@ export default function RouteManager() {
             latitude: 37.7749,
             longitude: -122.4194,
             city: "San Francisco",
+            streetName: "Market Street",
+            streetNumber: "123",
+            zipCode: "94103",
           },
           user: { id: "101", name: "John Doe", email: "john@example.com" },
         },
@@ -67,10 +51,51 @@ export default function RouteManager() {
     try {
       const result = await generateRoutes(requests);
       console.log("Generated Routes:", result);
+
+      if (result.length > 0 && googleMap) {
+        const firstRequest = result[0];
+        const center = {
+          lat: firstRequest.address.latitude,
+          lng: firstRequest.address.longitude,
+        };
+
+        // Set map center dynamically
+        googleMap.setCenter(center);
+
+        // Add markers for each request
+        result.forEach((request) => {
+          new google.maps.Marker({
+            position: {
+              lat: request.address.latitude,
+              lng: request.address.longitude,
+            },
+            map: googleMap,
+            title: request.address.city,
+          });
+        });
+      }
     } catch (error) {
       console.error("Error generating routes:", error);
     }
   };
+
+  useEffect(() => {
+    async function initMap() {
+      const mapElement = document.getElementById("gmap") as HTMLElement;
+      if (!mapElement) return;
+
+      await googleMapsLoader.load();
+
+      const map = new google.maps.Map(mapElement, {
+        center: { lat: 0, lng: 0 }, // Default center
+        zoom: 8,
+      });
+
+      setGoogleMap(map);
+    }
+
+    initMap();
+  }, []);
 
   return (
     <>
@@ -89,7 +114,7 @@ export default function RouteManager() {
               />
               <div className="mt-6">
                 <button
-                  onClick={handleGenerateRoutes}
+                  onClick={handlegenerateRoutes}
                   className="bg-simmpy-blue h-[28px] px-2 rounded-md"
                 >
                   <span className="text-white text-sm">Generate Route</span>

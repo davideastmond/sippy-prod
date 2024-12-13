@@ -9,8 +9,8 @@ export interface ResidentRequestCollation {
     longitude: number; // long num
     city: string; // City name
     streetName: string; // validation: Street name
-    streetNumber: string; // validation: Street number
-    zipCode: string; // validation: Postal code
+    streetNumber: string; 
+    zipCode: string; 
     googleAddressComponents?: google.maps.GeocoderAddressComponent[]; 
     // validation: Address components from Google Geocoding API
     geometry?: google.maps.places.PlaceGeometry; 
