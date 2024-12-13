@@ -1,27 +1,28 @@
 "use client";
+
 import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useState } from "react";
- 
+
 export default function Navbar() {
-  const { status } = useSession();
+  const { data: session, status } = useSession();
   const router = useRouter();
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
- 
+
   const handleSignOut = async () => {
     await signOut();
     // Redirect to the home page
     router.push("/");
     setIsMenuOpen(false);
   };
- 
+
   const handleLinkClick = () => {
     setIsMenuOpen(false);
   };
- 
+
   return (
     <nav className="bg-white shadow-md w-full">
       <div className="container mx-auto flex justify-between items-center px-6 md:px-8 py-4">
@@ -32,7 +33,9 @@ export default function Navbar() {
             width={40}
             height={40}
           />
-          <Link href="/" className="text-simmpy-green font-bold text-lg">Sippy</Link>
+          <Link href="/" className="text-simmpy-green font-bold text-lg">
+            Sippy
+          </Link>
         </div>
         <button
           className="block md:hidden text-simmpy-gray-800 focus:outline-none"
@@ -49,7 +52,9 @@ export default function Navbar() {
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth="2"
-              d={isMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"}
+              d={
+                isMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"
+              }
             />
           </svg>
         </button>
@@ -59,7 +64,9 @@ export default function Navbar() {
           } absolute top-16 left-0 w-full md:static md:flex md:items-center justify-between bg-white md:bg-transparent`}
         >
           <div className="flex flex-col md:flex-row md:ml-16 gap-4 md:gap-8 items-center">
-            <Link href="/" className="hover:text-simmpy-green text-simmpy-gray-800"
+            <Link
+              href="/"
+              className="hover:text-simmpy-green text-simmpy-gray-800"
               onClick={handleLinkClick}
             >
               Home
@@ -79,30 +86,31 @@ export default function Navbar() {
               Contact
             </Link>
             {status === "authenticated" && (
-              <Link href="/dashboard" className="hover:text-simmpy-green text-simmpy-gray-800" onClick={handleLinkClick}>
+              <Link
+                href="/dashboard"
+                className="hover:text-simmpy-green text-simmpy-gray-800"
+                onClick={handleLinkClick}
+              >
                 Dashboard
               </Link>
             )}
           </div>
- 
-          <div className="flex flex-col md:flex-row items-center gap-4 px-4 md:px-0 mt-4 md:mt-0">
 
-            {pathname !== "/authenticate" ? (
+          <div className="flex flex-col md:flex-row items-center gap-4 px-4 md:px-0 mt-4 md:mt-0">
+            {status === "authenticated" ? (
+              <button
+                onClick={handleSignOut}
+                className="px-4 py-2 text-white bg-simmpy-gray-800 hover:bg-simmpy-gray-600 rounded"
+              >
+                Log out
+              </button>
+            ) : pathname !== "/authenticate" ? (
               <Link href="/authenticate" onClick={handleLinkClick}>
                 <button className="px-4 py-2 text-white bg-simmpy-green hover:bg-green-600 rounded">
                   Get Started
                 </button>
               </Link>
-            ) : (
-              status === "authenticated" && (
-                <button
-                  onClick={handleSignOut}
-                  className="px-4 py-2 text-white bg-simmpy-gray-800 hover:bg-simmpy-gray-600 rounded"
-                >
-                  Log out
-                </button>
-              )
-            )}
+            ) : null}
           </div>
         </div>
       </div>
