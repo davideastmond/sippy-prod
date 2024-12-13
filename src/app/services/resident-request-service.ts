@@ -50,14 +50,16 @@ export const ResidentRequestService = {
     return response.json();
   },
   adminGetAllRequests: async ({
+    date,
     take = 10,
     skip,
   }: {
+    date?: string;
     take: number;
     skip: number;
   }): Promise<AllResidentRequestsAdminGetResponseWithCount> => {
     const response = await fetch(
-      `/api/resident-request?take=${take}&skip=${skip}`
+      `/api/resident-request?take=${take}&skip=${skip}&date=${date}`
     );
     const data: AllResidentRequestsAdminGetResponseWithCount =
       await response.json();
@@ -77,32 +79,5 @@ export const ResidentRequestService = {
       };
     }
     return { residentRequests: [], count: 0 };
-  },
-  searchRequests: async ({
-    stringQuery,
-    requestStatus,
-  }: {
-    stringQuery: string;
-    requestStatus: string[];
-  }): Promise<AllResidentRequestsAdminGetResponseWithCount> => {
-    // For now we won't paginate the search results
-    let statusToQueryParams;
-
-    if (requestStatus.length > 0) {
-      statusToQueryParams = requestStatus.map((status) => `&status=${status}`);
-    } else {
-      statusToQueryParams = "&status=all";
-    }
-
-    const response = await fetch(
-      `/api/resident-request/search?query=${stringQuery}${statusToQueryParams}`
-    );
-
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error("Failed to search resident requests");
-    }
-
-    return data;
   },
 };
