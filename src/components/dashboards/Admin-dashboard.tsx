@@ -7,7 +7,6 @@ import { requestStatusColorMap } from "@/lib/utils/request-status/request-status
 import { AllUserRequestsAdminGetResponse } from "@/types/api-responses/admin-resident-requests-api-response";
 import { RequestStatus } from "@prisma/client";
 import { ResidentRequestService } from "app/services/resident-request-service";
-import dayjs from "dayjs";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -32,7 +31,7 @@ export default function AdminDashboard() {
 
   // This state will be updated when the user selects a date from the search calendar in the search panel
   // Defaults to current date
-  const [date, setDate] = useState<string>(dayjs().format("YYYY-MM-DD"));
+  const [date, setDate] = useState<string | null>(null);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -71,7 +70,7 @@ export default function AdminDashboard() {
   const handleSearch = async (
     query: string,
     filters: Record<string, boolean>,
-    date?: string
+    date: string | null
   ) => {
     setDate(date!);
     try {
