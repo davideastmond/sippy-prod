@@ -9,7 +9,6 @@ import { useEffect, useState } from "react";
 import RouteList from "./Route-list";
 import { googleMapsLoader } from "@/services/collateDailyRequests/loader";
 import { collateDailyRequests } from "@/services/collateDailyRequests/collateDailyRequests";
-// import { ResidentRequestCollation } from "@/types/resident-request-collation";
 
 export default function RouteManager() {
   const { data: session, status } = useSession();
@@ -32,14 +31,15 @@ export default function RouteManager() {
       console.log("Generated Routes:", result);
 
       if (result.length > 0 && googleMap) {
+        // Center map on the first request
         const firstRequest = result[0];
         const center = {
           lat: firstRequest.address.latitude,
           lng: firstRequest.address.longitude,
         };
-
         googleMap.setCenter(center);
 
+        // Place markers for all requests
         result.forEach((request) => {
           new google.maps.Marker({
             position: {
@@ -50,6 +50,41 @@ export default function RouteManager() {
             title: request.address.city,
           });
         });
+
+        // Generate and render route if there are multiple requests
+        if (result.length > 1) {
+          const directionsService = new google.maps.DirectionsService();
+          const directionsRenderer = new google.maps.DirectionsRenderer({ map: googleMap });
+
+          const waypoints = result.slice(1, -1).map((request) => ({
+            location: {
+              lat: request.address.latitude,
+              lng: request.address.longitude,
+            },
+            stopover: true,
+          }));
+
+          const routeRequest = {
+            origin: {
+              lat: result[0].address.latitude,
+              lng: result[0].address.longitude,
+            },
+            destination: {
+              lat: result[result.length - 1].address.latitude,
+              lng: result[result.length - 1].address.longitude,
+            },
+            waypoints,
+            travelMode: google.maps.TravelMode.DRIVING,
+          };
+
+          directionsService.route(routeRequest, (response, status) => {
+            if (status === google.maps.DirectionsStatus.OK) {
+              directionsRenderer.setDirections(response);
+            } else {
+              console.error("Failed to generate route:", status);
+            }
+          });
+        }
       } else {
         console.warn("No routes found for the selected date.");
       }
@@ -66,8 +101,8 @@ export default function RouteManager() {
       await googleMapsLoader.load();
 
       const map = new google.maps.Map(mapElement, {
-        center: { lat: 0, lng: 0 },
-        zoom: 8,
+        center: { lat: 34.0522, lng: -118.2437 }, // Default to Los Angeles
+        zoom: 10,
       });
 
       setGoogleMap(map);
@@ -77,7 +112,7 @@ export default function RouteManager() {
   }, []);
 
   return (
-    <>
+    <div>
       {session?.user?.isAdmin ? (
         <div className="p-2">
           <div>
@@ -111,6 +146,6 @@ export default function RouteManager() {
           <h1 className="text-simmpy-red">Not authorized</h1>
         </div>
       )}
-    </>
+    </div>
   );
 }
