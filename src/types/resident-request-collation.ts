@@ -1,9 +1,11 @@
 export interface ResidentRequestCollation {
   id: string; // Unique identifier for the request
-  requestedTimeSlot: { 
-    startTime: string; // Start Time
-    endTime: string;   // End Time
-  }; 
+  requestedTimeSlot: {
+    id: string;
+    startTime: string;
+    endTime: string;
+    description?: string;
+  }
   address: {
     latitude: number; // lat num
     longitude: number; // long num
@@ -26,4 +28,11 @@ export interface ResidentRequestCollation {
     startIndex: number; // Optional: Index of the starting point in the route
     endIndex: number;   // Optional: Index of the ending point in the route
   };
+  status: string; // Add this if it's part of the API response
+  route?: {
+    originIndex: number;
+    destinationIndex: number;
+    duration: string;
+    condition: string;
+  }; // Optional route property
 }
