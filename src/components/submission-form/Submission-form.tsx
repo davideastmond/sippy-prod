@@ -195,6 +195,7 @@ export function SubmissionForm() {
             color="Green"
             name="next"
             disabled={isBusy}
+            busy={isBusy}
           />
         </form>
         {submitError && (

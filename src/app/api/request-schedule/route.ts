@@ -1,12 +1,23 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { computeRouteMatrix } from "@/lib/utils/google-routes";
+import { TimeSlot } from "@/types/time-slot";
 
 interface Route {
   originIndex: number;
   destinationIndex: number;
   duration: string;
   condition: string;
+}
+
+function determineTimeSlot(accumulatedTime: number): TimeSlot {
+  const hour = Math.floor(accumulatedTime / 3600); // Convert seconds to hours
+
+  if (hour >= 8 && hour < 11) return TimeSlot.Morning;
+  if (hour >= 11 && hour < 14) return TimeSlot.Daytime;
+  if (hour >= 14 && hour < 17) return TimeSlot.Evening;
+
+  throw new Error("Unable to determine time slot for the given hour");
 }
 
 function optimizeRoute(routeMatrix: number[][]): number[] {
@@ -101,27 +112,28 @@ export async function GET() {
       // Optimize route
       const optimizedOrder = optimizeRoute(routeMatrix);
 
-      // Reorder requests
-      const optimizedRequests = optimizedOrder.map((index) => {
-        const nextIndex = (index + 1) % requests.length;
-        const routeKey = `${index}-${nextIndex}`;
-        const route = routeMap[routeKey];
+      // Initialize the starting time (8:00 AM in seconds)
+      let accumulatedTime = 8 * 60 * 60; // Start time in seconds (8:00 AM)
+      const stopDuration = 60 * 60; // Assume 1 hour per stop in seconds
+
+      // Reorder requests and assign time slots
+      const optimizedRequests = optimizedOrder.map((index, idx) => {
+        const currentRequest = requests[index];
+        const nextIndex = (idx + 1) % requests.length;
+
+        const travelTime = routeMatrix[index][nextIndex]; // Travel time in seconds
+
+        // Determine the time slot based on accumulated time
+        const timeSlot = determineTimeSlot(accumulatedTime);
+
+        // Increment accumulated time by the stop duration and travel time
+        accumulatedTime += stopDuration + travelTime;
 
         return {
-          ...requests[index],
-          route: route
-            ? {
-                originIndex: route.originIndex,
-                destinationIndex: route.destinationIndex,
-                duration: route.duration,
-                condition: route.condition,
-              }
-            : {
-                originIndex: index,
-                destinationIndex: nextIndex,
-                duration: "0s",
-                condition: "FAILED",
-              },
+          ...currentRequest,
+          timeSlot, // Assign the time slot
+          travelTime, // Add travel time to the response
+          route: routeMap[`${index}-${nextIndex}`], // Add route details
         };
       });
 
