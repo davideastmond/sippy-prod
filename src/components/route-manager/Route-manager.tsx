@@ -8,15 +8,13 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import RouteList from "./Route-list";
 import { googleMapsLoader } from "@/services/collateDailyRequests/loader";
-import { generateRoutes } from "@/services/collateDailyRequests/generateRoutes";
-import { ResidentRequestCollation } from "@/types/resident-request-collation";
+import { collateDailyRequests } from "@/services/collateDailyRequests/collateDailyRequests";
+// import { ResidentRequestCollation } from "@/types/resident-request-collation";
 
 export default function RouteManager() {
   const { data: session, status } = useSession();
   const webRouter = useRouter();
-  const [dateValue, setDateValue] = useState(
-    parseDate(dayjs().format("YYYY-MM-DD"))
-  );
+  const [dateValue, setDateValue] = useState(parseDate(dayjs().format("YYYY-MM-DD")));
   const [googleMap, setGoogleMap] = useState<google.maps.Map | null>(null);
 
   useEffect(() => {
@@ -25,30 +23,12 @@ export default function RouteManager() {
     }
   }, [status, webRouter]);
 
-  const handlegenerateRoutes = async () => {
-    const requests: Record<string, ResidentRequestCollation[]> = {
-      "2024-12-12": [
-        {
-          id: "1",
-          requestedTimeSlot: {
-            startTime: "2024-12-12T08:00:00Z",
-            endTime: "2024-12-12T09:00:00Z",
-          },
-          address: {
-            latitude: 37.7749,
-            longitude: -122.4194,
-            city: "San Francisco",
-            streetName: "Market Street",
-            streetNumber: "123",
-            zipCode: "94103",
-          },
-          user: { id: "101", name: "John Doe", email: "john@example.com" },
-        },
-      ],
-    };
-
+  const handleCollateDailyRequests = async () => {
     try {
-      const result = await generateRoutes(requests);
+      const formattedDate = dayjs(dateValue.toString()).format("YYYY-MM-DD");
+      console.log("Fetching requests for date:", formattedDate);
+
+      const result = await collateDailyRequests(formattedDate);
       console.log("Generated Routes:", result);
 
       if (result.length > 0 && googleMap) {
@@ -58,10 +38,8 @@ export default function RouteManager() {
           lng: firstRequest.address.longitude,
         };
 
-        // Set map center dynamically
         googleMap.setCenter(center);
 
-        // Add markers for each request
         result.forEach((request) => {
           new google.maps.Marker({
             position: {
@@ -72,6 +50,8 @@ export default function RouteManager() {
             title: request.address.city,
           });
         });
+      } else {
+        console.warn("No routes found for the selected date.");
       }
     } catch (error) {
       console.error("Error generating routes:", error);
@@ -86,7 +66,7 @@ export default function RouteManager() {
       await googleMapsLoader.load();
 
       const map = new google.maps.Map(mapElement, {
-        center: { lat: 0, lng: 0 }, // Default center
+        center: { lat: 0, lng: 0 },
         zoom: 8,
       });
 
@@ -113,7 +93,7 @@ export default function RouteManager() {
               />
               <div className="mt-6">
                 <button
-                  onClick={handlegenerateRoutes}
+                  onClick={handleCollateDailyRequests}
                   className="bg-simmpy-blue h-[28px] px-2 rounded-md"
                 >
                   <span className="text-white text-sm">Generate Route</span>
