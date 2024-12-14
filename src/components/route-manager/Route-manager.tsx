@@ -1,6 +1,5 @@
 "use client";
 
-import { Loader } from "@googlemaps/js-api-loader";
 import { parseDate } from "@internationalized/date";
 import { DatePicker } from "@nextui-org/react";
 import dayjs from "dayjs";
@@ -8,53 +7,90 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import RouteList from "./Route-list";
-
-const loader = new Loader({
-  apiKey: process.env.NEXT_PUBLIC_GOOGLEMAPS_API_KEY!,
-  version: "weekly",
-  libraries: ["places", "maps"],
-});
+import { googleMapsLoader } from "@/services/collateDailyRequests/loader";
+import { collateDailyRequests } from "@/services/collateDailyRequests/collateDailyRequests";
+import { ResidentRequestCollation } from "@/types/resident-request-collation";
 
 export default function RouteManager() {
   const { data: session, status } = useSession();
-  const router = useRouter();
-  const [dateValue, setDateValue] = useState(
-    parseDate(dayjs().format("YYYY-MM-DD"))
-  );
-
-  const [googleMap, setGoogleMap] = useState<any>(null);
+  const webRouter = useRouter();
+  const [dateValue, setDateValue] = useState(parseDate(dayjs().format("YYYY-MM-DD")));
+  const [googleMap, setGoogleMap] = useState<google.maps.Map | null>(null);
+  const [filteredRequests, setFilteredRequests] = useState<ResidentRequestCollation[]>([]);
 
   useEffect(() => {
     if (status === "unauthenticated") {
-      router.replace("/authenticate");
+      webRouter.replace("/authenticate");
     }
-  }, [status, router]);
+  }, [status, webRouter]);
+
+  const handleCollateDailyRequests = async () => {
+    try {
+      const formattedDate = dayjs(dateValue.toString()).format("YYYY-MM-DD");
+      console.log("Fetching requests for date:", formattedDate);
+
+      const result = await collateDailyRequests(formattedDate);
+      console.log("Generated Routes:", result);
+
+      setFilteredRequests(result); // Pass filtered data to RouteList
+
+      if (result.length > 0 && googleMap) {
+        const directionsService = new google.maps.DirectionsService();
+        const directionsRenderer = new google.maps.DirectionsRenderer({ map: googleMap });
+
+        // Set the starting point, ending point, and waypoints
+        const waypoints = result.slice(1, -1).map((request) => ({
+          location: {
+            lat: request.address.latitude,
+            lng: request.address.longitude,
+          },
+          stopover: true,
+        }));
+
+        const routeRequest: google.maps.DirectionsRequest = {
+          origin: {
+            lat: result[0].address.latitude,
+            lng: result[0].address.longitude,
+          },
+          destination: {
+            lat: result[result.length - 1].address.latitude,
+            lng: result[result.length - 1].address.longitude,
+          },
+          waypoints,
+          travelMode: google.maps.TravelMode.DRIVING,
+        };
+
+        directionsService.route(routeRequest, (result, status) => {
+          if (status === google.maps.DirectionsStatus.OK) {
+            directionsRenderer.setDirections(result);
+          } else {
+            console.error("Error generating directions:", status);
+          }
+        });
+      } else {
+        console.warn("No routes found for the selected date.");
+      }
+    } catch (error) {
+      console.error("Error generating routes:", error);
+    }
+  };
 
   useEffect(() => {
-    const loadMap = async () => {
-      const mapOptions: google.maps.MapOptions = {
-        center: { lat: 34.053715, lng: -118.242653 }, // Focus on LA city hall by default
-        zoom: 12,
-        mapId: "gmap",
-      };
-      const { Map } = await loader.importLibrary("maps");
-      const { AdvancedMarkerElement } = await loader.importLibrary("marker");
+    async function initMap() {
+      const mapElement = document.getElementById("gmap") as HTMLElement;
+      if (!mapElement) return;
 
-      const htmlElement = document.getElementById("gmap") as HTMLElement;
-      if (htmlElement === null) return;
-      const map = new Map(htmlElement, mapOptions);
-      setGoogleMap(map);
+      await googleMapsLoader.load();
 
-      new AdvancedMarkerElement({
-        position: mapOptions.center,
-        map: map,
+      const map = new google.maps.Map(mapElement, {
+        center: { lat: 34.0522, lng: -118.2437 }, // Default to Los Angeles
+        zoom: 10,
       });
 
-      return () => {
-        setGoogleMap(null);
-      };
-    };
-    loadMap();
+      setGoogleMap(map);
+    }
+
+    initMap();
   }, []);
 
   return (
@@ -73,15 +109,17 @@ export default function RouteManager() {
                 onChange={setDateValue}
               />
               <div className="mt-6">
-                <button className="bg-simmpy-blue h-[28px] px-2 rounded-md">
+                <button
+                  onClick={handleCollateDailyRequests}
+                  className="bg-simmpy-blue h-[28px] px-2 rounded-md"
+                >
                   <span className="text-white text-sm">Generate Route</span>
                 </button>
               </div>
             </div>
           </div>
           <div className="flex gap-20 flex-wrap">
-            {/* List of visits on the left, google map on the right */}
-            <RouteList />
+            <RouteList routes={filteredRequests} /> {/* Pass routes as props */}
             <div className="h-[300px] w-[500px]" id="gmap"></div>
           </div>
         </div>
