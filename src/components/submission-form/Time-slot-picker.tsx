@@ -17,7 +17,7 @@ export const TimeSlotPicker = ({
 }: TimeSlotPickerProps) => {
   const [selected, setSelected] = useState<TimeSlot | string | null>(
     getAvailableTimeslot(
-      availabilities?.availabilities!,
+      availabilities.availabilities!,
       value || TimeSlot.Morning
     )
   );

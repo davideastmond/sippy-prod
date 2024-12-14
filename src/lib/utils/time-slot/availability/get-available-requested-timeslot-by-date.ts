@@ -39,7 +39,7 @@ export async function getAvailableRequestedTimeSlotsByDate(
   };
 
   const requestPromises = Object.entries(timeslotStartTimes).map(
-    ([label, range]) => {
+    ([, range]) => {
       return isRequestedTimeSlotAvailable(range.startTime);
     }
   );

@@ -11,6 +11,7 @@ export async function adminGetResidentsRequests({
   take: number;
   skip: number;
 }) {
+  /* eslint-disable @typescript-eslint/no-explicit-any */
   let computedQuery = {
     select: {
       id: true,
