@@ -140,12 +140,16 @@ export function SubmissionForm() {
     }
   };
 
-  // Grab the user's email from the session user
+  // Grab the user's email and name from the session user
   useEffect(() => {
     if (session?.user?.email) {
-      setFormData({ email: session.user.email, name: session.user.name! });
+      setFormData({
+        ...formData,
+        email: session.user.email,
+        name: session.user.name!,
+      });
     }
-  }, [session?.user?.email]);
+  }, [session?.user?.email, session?.user?.name]);
 
   useEffect(() => {
     // Used to handle when user is closing the browser tab and their form is not submitted

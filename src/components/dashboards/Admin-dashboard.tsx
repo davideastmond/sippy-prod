@@ -30,6 +30,10 @@ export default function AdminDashboard() {
 
   const [isSearching, setIsSearch] = useState(false);
 
+  // This state will be updated when the user selects a date from the search calendar in the search panel
+  // Defaults to current date
+  const [date, setDate] = useState<string | null>(null);
+
   useEffect(() => {
     if (status === "unauthenticated") {
       router.replace("/authenticate");
@@ -50,6 +54,7 @@ export default function AdminDashboard() {
     try {
       setLoading(true);
       const requests = await ResidentRequestService.adminGetAllRequests({
+        date,
         take: MAX_TAKE,
         skip: pageNumber * MAX_TAKE,
       });
@@ -65,10 +70,13 @@ export default function AdminDashboard() {
 
   const handleSearch = async (
     query: string,
-    filters: Record<string, boolean>
+    filters: Record<string, boolean>,
+    date: string | null
   ) => {
+    setDate(date!);
     try {
       const allRequests = await ResidentRequestService.adminGetAllRequests({
+        date,
         take: MAX_TAKE,
         skip: pageNumber * MAX_TAKE,
       });
@@ -303,9 +311,9 @@ export default function AdminDashboard() {
           </div>
         </div>
       ) : (
-        <h1 className="text-red-500 text-center font-bold text-2xl">
+        <p className="text-red-500 text-center font-bold text-2xl">
           Access to this page is denied (admin)
-        </h1>
+        </p>
       )}
     </>
   );
