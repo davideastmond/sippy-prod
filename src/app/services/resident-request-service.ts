@@ -56,7 +56,7 @@ export const ResidentRequestService = {
     take = 10,
     skip,
   }: {
-    date?: string;
+    date: string | null;
     take: number;
     skip: number;
   }): Promise<AllResidentRequestsAdminGetResponseWithCount> => {
