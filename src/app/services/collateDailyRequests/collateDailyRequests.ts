@@ -1,37 +1,40 @@
 import { ResidentRequestCollation } from "@/types/resident-request-collation";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 export async function collateDailyRequests(
-  date: string
+  date: string,
 ): Promise<ResidentRequestCollation[]> {
   try {
-    const response = await fetch(`/api/request-schedule`);
+    console.log("Sending request to backend with date:", date); // Log before sending the request
+
+    // Send POST request to backend with the selected date
+    const response = await fetch(`/api/request-schedule`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ date }), // Send the date to the backend
+    });
+
     if (!response.ok) {
+      const errorText = await response.text(); // Read the error message from the response
+      console.error("Backend error response:", errorText); // Log the error response
       throw new Error(`Failed to fetch requests: ${response.statusText}`);
     }
 
-    const allRequests: ResidentRequestCollation[] = await response.json();
-    console.log("Fetched all requests from API:", allRequests);
+    const requestAtDate: ResidentRequestCollation[] = await response.json();
+    console.log("Fetched all requests from API:", requestAtDate);
 
-    // Filter requests by local timezone date
-    const filteredRequests = allRequests.filter((request) => {
-      const requestDate = new Date(request.requestedTimeSlot.startTime);
+    // Adjust UTC times to the client's local time zone
 
-      // Convert UTC to local date without time
-      const localDate = new Date(
-        requestDate.getUTCFullYear(),
-        requestDate.getUTCMonth(),
-        requestDate.getUTCDate()
-      );
-
-      // Compare with the selected date
-      return dayjs(localDate).format("YYYY-MM-DD") === date;
-    });
-
-    console.log(`Filtered requests for date ${date}:`, filteredRequests);
-    return filteredRequests;
+    return requestAtDate;
   } catch (error) {
-    console.error("Error fetching or filtering requests:", error);
+    console.error("Error fetching or adjusting requests:", error);
     throw error;
   }
 }

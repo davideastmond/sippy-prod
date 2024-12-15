@@ -37,22 +37,13 @@ export default function RouteManager() {
         return;
       }
 
-      setFilteredRequests(result); // Pass filtered data to RouteList
+      result.forEach((request) => {
+        if (request.address) {
+          console.log(`Coordinates in route manager: ${request.address.latitude}, ${request.address.longitude}`);
+        }
+      })
 
-      // POST to update time slots
-      await Promise.all(
-        result.map(async (request) => {
-          try {
-            await fetch(`/api/set-time-slot`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ id: request.id, timeSlot: request.timeSlot }),// set timeslot after optimize function
-            });
-          } catch (postError) {
-            console.error(`Failed to update time slot for request ${request.id}:`, postError);
-          }
-        })
-      );
+      setFilteredRequests(result); // Pass filtered data to RouteList
 
       if (googleMap) {
         const directionsService = new google.maps.DirectionsService();
