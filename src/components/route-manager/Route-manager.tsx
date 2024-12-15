@@ -32,9 +32,29 @@ export default function RouteManager() {
       const result = await collateDailyRequests(formattedDate);
       console.log("Generated Routes:", result);
 
+      if (result.length === 0) {
+        console.warn("No routes found for the selected date.");
+        return;
+      }
+
       setFilteredRequests(result); // Pass filtered data to RouteList
 
-      if (result.length > 0 && googleMap) {
+      // POST to update time slots
+      await Promise.all(
+        result.map(async (request) => {
+          try {
+            await fetch(`/api/set-time-slot`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ id: request.id, timeSlot: request.timeSlot }),// set timeslot after optimize function
+            });
+          } catch (postError) {
+            console.error(`Failed to update time slot for request ${request.id}:`, postError);
+          }
+        })
+      );
+
+      if (googleMap) {
         const directionsService = new google.maps.DirectionsService();
         const directionsRenderer = new google.maps.DirectionsRenderer({ map: googleMap });
 
@@ -67,11 +87,9 @@ export default function RouteManager() {
             console.error("Error generating directions:", status);
           }
         });
-      } else {
-        console.warn("No routes found for the selected date.");
       }
     } catch (error) {
-      console.error("Error generating routes:", error);
+      console.error("Error handling collate daily requests:", error);
     }
   };
 

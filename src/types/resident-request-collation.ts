@@ -6,6 +6,12 @@ export interface ResidentRequestCollation {
     endTime: string;
     description?: string;
   }
+  assignedTimeSlot?: {
+    id: string;
+    startTime: string;
+    endTime: string;
+    description?: string;
+  }
   address: {
     latitude: number; // lat num
     longitude: number; // long num
@@ -35,4 +41,5 @@ export interface ResidentRequestCollation {
     duration: string;
     condition: string;
   }; // Optional route property
+  timeSlot?: string; // Add this if `timeSlot` is part of the backend response
 }
