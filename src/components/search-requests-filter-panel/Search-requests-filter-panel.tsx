@@ -29,7 +29,7 @@ const SearchRequestsFilterPanel: React.FC<SearchRequestsProps> = ({
   const handleTextSearchChanged = (query: string) => {
     // Call the onSearch prop to filter data
     setSearchQuery(query);
-    onSearch(query, checkedOptions, dateFilter!);
+    onSearch(query, checkedOptions, dateFilter);
   };
 
   const handleCheckboxFilterSelectionChanged = (
@@ -138,7 +138,7 @@ const SearchRequestsFilterPanel: React.FC<SearchRequestsProps> = ({
               setDateFilter(e.target.value);
               onSearch(searchQuery, checkedOptions, e.target.value);
             }}
-            value={dateFilter!}
+            value={dateFilter ?? ""}
           />
         </div>
         <div className="ml-2 text-sm">
@@ -151,7 +151,7 @@ const SearchRequestsFilterPanel: React.FC<SearchRequestsProps> = ({
   );
 };
 
-const getDateString = (date: string): string => {
+const getDateString = (date: string | null): string => {
   if (dayjs(date).isValid()) {
     return dayjs(date).format("YYYY-MMM-DD");
   }
