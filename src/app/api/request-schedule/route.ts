@@ -1,7 +1,9 @@
 import { prisma } from "@/lib/prisma";
-import { NextResponse } from "next/server";
 import { computeRouteMatrix } from "@/lib/utils/google-routes";
+import { getTimeSlotHours } from "@/lib/utils/time-slot/time-slot";
 import { TimeSlot } from "@/types/time-slot";
+import dayjs from "dayjs";
+import { NextResponse } from "next/server";
 
 interface Route {
   originIndex: number;
@@ -10,12 +12,54 @@ interface Route {
   condition: string;
 }
 
-function determineTimeSlot(accumulatedTime: number): TimeSlot {
+function determineTimeSlot(
+  accumulatedTime: number,
+  dateContext: Date
+): { startTime: Date; endTime: Date } {
   const hour = Math.floor(accumulatedTime / 3600); // Convert seconds to hours
 
-  if (hour >= 8 && hour < 11) return TimeSlot.Morning;
-  if (hour >= 11 && hour < 14) return TimeSlot.Daytime;
-  if (hour >= 14 && hour < 17) return TimeSlot.Evening;
+  if (
+    hour >= getTimeSlotHours(TimeSlot.Morning)[0] &&
+    hour < getTimeSlotHours(TimeSlot.Morning)[1]
+  )
+    return {
+      startTime: dayjs(dateContext)
+        .add(1, "day")
+        .set("hours", getTimeSlotHours(TimeSlot.Morning)[0])
+        .toDate(),
+      endTime: dayjs(dateContext)
+        .add(1, "day")
+        .set("hours", getTimeSlotHours(TimeSlot.Morning)[1])
+        .toDate(),
+    };
+  if (
+    hour >= getTimeSlotHours(TimeSlot.Daytime)[0] &&
+    hour < getTimeSlotHours(TimeSlot.Daytime)[1]
+  )
+    return {
+      startTime: dayjs(dateContext)
+        .add(1, "day")
+        .set("hours", getTimeSlotHours(TimeSlot.Daytime)[0])
+        .toDate(),
+      endTime: dayjs(dateContext)
+        .add(1, "day")
+        .set("hours", getTimeSlotHours(TimeSlot.Daytime)[1])
+        .toDate(),
+    };
+  if (
+    hour >= getTimeSlotHours(TimeSlot.Evening)[0] &&
+    hour < getTimeSlotHours(TimeSlot.Evening)[1]
+  )
+    return {
+      startTime: dayjs(dateContext)
+        .add(1, "day")
+        .set("hours", getTimeSlotHours(TimeSlot.Evening)[0])
+        .toDate(),
+      endTime: dayjs(dateContext)
+        .add(1, "day")
+        .set("hours", getTimeSlotHours(TimeSlot.Evening)[1])
+        .toDate(),
+    };
 
   throw new Error("Unable to determine time slot for the given hour");
 }
@@ -33,7 +77,10 @@ function optimizeRoute(routeMatrix: number[][]): number[] {
     let nearestNeighbor = -1;
     let shortestDistance = Infinity;
     for (let i = 0; i < numLocations; i++) {
-      if (!visited.has(i) && routeMatrix[currentLocation][i] < shortestDistance) {
+      if (
+        !visited.has(i) &&
+        routeMatrix[currentLocation][i] < shortestDistance
+      ) {
         shortestDistance = routeMatrix[currentLocation][i];
         nearestNeighbor = i;
       }
@@ -46,10 +93,31 @@ function optimizeRoute(routeMatrix: number[][]): number[] {
   return order;
 }
 
-export async function GET() {
+export async function POST(req: Request) {
   try {
+    const requestBody = await req.json();
+    const { date } = requestBody;
+
+    if (!date) {
+      console.error("Missing 'date' in request body");
+      return NextResponse.json(
+        { error: "Missing required 'date' in request body" },
+        { status: 400 }
+      );
+    }
+    const requestStartTime = new Date(date);
+
+    // Fetch requests for the specific date and status PENDING
     const residentRequests = await prisma.residentRequest.findMany({
-      where: { status: "PENDING" },
+      where: {
+        status: "PENDING",
+        requestedTimeSlot: {
+          startTime: {
+            gte: requestStartTime,
+            lt: `${date}T23:59:59Z`,
+          },
+        },
+      },
       include: {
         user: { select: { id: true, name: true, email: true } },
         requestedTimeSlot: true,
@@ -57,92 +125,86 @@ export async function GET() {
       },
     });
 
-    // Group requests by day
-    const requestsByDay = residentRequests.reduce((acc, request) => {
-      if (!request.address) return acc; // Skip requests without addresses
-      const day = new Date(request.requestedTimeSlot.startTime).toISOString().split("T")[0];
-      acc[day] = acc[day] || [];
-      acc[day].push(request);
-      return acc;
-    }, {} as Record<string, typeof residentRequests>);
+    if (residentRequests.length === 0) {
+      return NextResponse.json({
+        message: "No requests found for the given date.",
+      });
+    }
 
     const optimizedResults = [];
 
-    for (const [day, requests] of Object.entries(requestsByDay)) {
-      if (requests.length < 2) {
-        optimizedResults.push(...requests);
-        continue;
-      }
+    // Process requests
+    const locations = residentRequests.map((req) => ({
+      latitude: req.address!.latitude,
+      longitude: req.address!.longitude,
+    }));
 
-      // Extract locations
-      const locations = requests.map((req) => ({
-        latitude: req.address!.latitude,
-        longitude: req.address!.longitude,
-      }));
+    const routes = await computeRouteMatrix({
+      origins: locations,
+      destinations: locations,
+      travelMode: "DRIVE",
+    });
 
-      // Compute route matrix
-      const routes = await computeRouteMatrix({
-        origins: locations,
-        destinations: locations,
-        travelMode: "DRIVE",
+    const routeMap: Record<string, Route> = routes.reduce((map, route) => {
+      map[`${route.originIndex}-${route.destinationIndex}`] = route;
+      return map;
+    }, {} as Record<string, Route>);
+    // Create a route matrix
+    const routeMatrix: number[][] = Array.from(
+      { length: locations.length },
+      () => Array(locations.length).fill(Infinity)
+    );
+
+    routes.forEach((route) => {
+      const durationInSeconds = parseInt(route.duration.replace("s", ""), 10);
+      routeMatrix[route.originIndex][route.destinationIndex] =
+        durationInSeconds;
+    });
+
+    // Optimize route
+    const optimizedOrder = optimizeRoute(routeMatrix);
+
+    // Start time: 8 AM
+    let accumulatedTime = 8 * 60 * 60;
+    const stopDuration = 60 * 60; // 1 hour per stop
+
+    // Reorder requests, assign time slots, and persist in the database
+    for (const index of optimizedOrder) {
+      const currentRequest = residentRequests[index];
+      const nextIndex = (index + 1) % residentRequests.length;
+
+      const travelTime = routeMatrix[index][nextIndex];
+      const timeSlot = determineTimeSlot(accumulatedTime, new Date(date));
+
+      // Increment accumulated time by the stop duration and travel time
+      accumulatedTime += stopDuration + travelTime;
+
+      // Update the assigned time slot in the database
+      const updatedRequest = await prisma.residentRequest.update({
+        where: { id: currentRequest.id },
+        data: {
+          assignedTimeSlot: {
+            create: {
+              startTime: timeSlot.startTime,
+              endTime: timeSlot.endTime,
+            },
+          },
+        },
       });
-
-      if (!routes || routes.length === 0) {
-        console.error(`Route optimization failed for day: ${day}`);
-        optimizedResults.push(...requests);
-        continue;
-      }
-
-      // Create a route map
-      const routeMap: Record<string, Route> = routes.reduce((map, route) => {
-        map[`${route.originIndex}-${route.destinationIndex}`] = route;
-        return map;
-      }, {} as Record<string, Route>);
-
-      // Initialize route matrix
-      const routeMatrix: number[][] = Array.from({ length: locations.length }, () =>
-        Array(locations.length).fill(Infinity)
-      );
-
-      routes.forEach((route) => {
-        const durationInSeconds = parseInt(route.duration.replace("s", ""), 10); // Convert "160s" to 160
-        routeMatrix[route.originIndex][route.destinationIndex] = durationInSeconds;
+      optimizedResults.push({
+        ...updatedRequest,
+        address: currentRequest.address,
+        user: currentRequest.user,
+        travelTime,
+        route: routeMap[`${index}-${nextIndex}`],
       });
-
-      // Optimize route
-      const optimizedOrder = optimizeRoute(routeMatrix);
-
-      // Initialize the starting time (8:00 AM in seconds)
-      let accumulatedTime = 8 * 60 * 60; // Start time in seconds (8:00 AM)
-      const stopDuration = 60 * 60; // Assume 1 hour per stop in seconds
-
-      // Reorder requests and assign time slots
-      const optimizedRequests = optimizedOrder.map((index, idx) => {
-        const currentRequest = requests[index];
-        const nextIndex = (idx + 1) % requests.length;
-
-        const travelTime = routeMatrix[index][nextIndex]; // Travel time in seconds
-
-        // Determine the time slot based on accumulated time
-        const timeSlot = determineTimeSlot(accumulatedTime);
-
-        // Increment accumulated time by the stop duration and travel time
-        accumulatedTime += stopDuration + travelTime;
-
-        return {
-          ...currentRequest,
-          timeSlot, // Assign the time slot
-          travelTime, // Add travel time to the response
-          route: routeMap[`${index}-${nextIndex}`], // Add route details
-        };
-      });
-
-      optimizedResults.push(...optimizedRequests);
     }
-
     return NextResponse.json(optimizedResults);
   } catch (error) {
-    console.error("Error optimizing routes:", error);
-    return NextResponse.error();
+    console.error("Error fetching or updating requests:", error);
+    return NextResponse.json(
+      { error: "request schedule failed" },
+      { status: 500 }
+    );
   }
 }
