@@ -62,9 +62,13 @@ Follow these steps to set up and run the application locally:
    Create a environment variable called `AUTH_SECRET` and assign some string (any string) to it.
    This is used by NextAuth to generate a token.
 
+   ### Google Maps
+
    To enable address autocomplete functionality, you need to set up a Google API key and assign it to an environment variable named `GOOGLEMAPS_API_KEY`. This key is required for using the Google Places API to fetch address suggestions. Click [here](https://developers.google.com/maps/documentation/places/web-service/get-api-key) for instructions on how to obtain the key.
 
-   In your Google console, ensure that the `Places` and `PlacesDetails` API functionality are switched on.
+   To render the map, you'll need an environment variable that is available on the client side. Create `NEXT_PUBLIC_GOOGLEMAPS_API_KEY` and use the same value as your Google Maps API key.
+
+   In your Google console, ensure that the `Places`, `PlacesDetails`, `Directions` APIs are switched on.
 
    ### For mock e-mail functionality using Ethereal:
 
@@ -102,13 +106,6 @@ Follow these steps to set up and run the application locally:
    ```
 
    The application should now be running locally. Visit [http://localhost:3000](http://localhost:3000) to view the project in your browser.
-
-| Meeting Agenda Templates                             | Link                                                                 |
-| ---------------------------------------------------- | -------------------------------------------------------------------- |
-| Meeting - Voyage Kickoff                             | [link](./docs/meeting-voyage_kickoff.docx)                           |
-| Meeting - App Vision & Feature Planning              | [link](./docs/meeting-vision_and_feature_planning.docx)              |
-| Meeting - Sprint Retrospective, Review, and Planning | [link](./docs/meeting-sprint_retrospective_review_and_planning.docx) |
-| Meeting - Sprint Open Topic Session                  | [link](./docs/meeting-sprint_open_topic_session.docx)                |
 
 ## oAuth
 
@@ -151,26 +148,6 @@ Review the FAQ https://ethereal.email/faq
 - All e-mails sent by our service are mocked and will be intercepted by Ethereal.
 - Log into your Ethereal mailbox to inspect the e-mails.
 
----
-
-## Team Documents
-
-To facilitate team collaboration, use these documents available in the `/docs` directory:
-
-- [Team Project Ideas](./docs/team_project_ideas.md): Brainstorming and idea documentation.
-- [Team Decision Log](./docs/team_decision_log.md): Log of team decisions for reference.
-
-### Meeting Agenda Templates
-
-| Meeting Agenda Templates                   | Link                                                                 |
-| ------------------------------------------ | -------------------------------------------------------------------- |
-| Voyage Kickoff                             | [Link](./docs/meeting-voyage_kickoff.docx)                           |
-| App Vision & Feature Planning              | [Link](./docs/meeting-vision_and_feature_planning.docx)              |
-| Sprint Retrospective, Review, and Planning | [Link](./docs/meeting-sprint_retrospective_review_and_planning.docx) |
-| Sprint Open Topic Session                  | [Link](./docs/meeting-sprint_open_topic_session.docx)                |
-
----
-
 ## Our Team
 
 Meet our awesome team! Everyone has added their GitHub and LinkedIn profiles for easy access.
@@ -189,8 +166,6 @@ Meet our awesome team! Everyone has added their GitHub and LinkedIn profiles for
 This project is built and maintained as part of the Chingu Community. We're constantly learning, adapting, and collaborating, so expect more updates and enhancements as we progress. We welcome feedback, contributions, and suggestions.
 
 ---
-
-<<<<<<< HEAD
 
 - Suruchi Patki: [GitHub](https://github.com/Supatki) / [LinkedIn](https://www.linkedin.com/in/suruchi-patki-b0710b195/)
 - David Eastmond: [GitHub](https://github.com/davideastmond) / [LinkedIn](https://www.linkedin.com/in/david-eastmond-2783ab18a/)
