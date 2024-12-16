@@ -1,11 +1,11 @@
 "use client";
 
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { useEffect, useState, useRef, useCallback } from "react";
-import { toast, ToastContainer } from "react-toastify";
 import Spinner from "@/components/spinner/Spinner";
 import { ResidentRequestService } from "app/services/resident-request-service";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 import { UserResidentRequestsApiResponse } from "@/types/api-responses/user-resident-requests-api-response";
@@ -34,6 +34,7 @@ const statusToColorMap: Record<
 };
 
 const formatTime = (time: string | Date) => {
+  if (!time) return "Unknown Time";
   const date = typeof time === "string" ? new Date(time) : time;
   return date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
 };
@@ -251,6 +252,11 @@ export default function ClientDashboard() {
                 <strong>Requested Time Slot:</strong>{" "}
                 {formatTime(selectedRequest.requestedTimeSlot.startTime)} -{" "}
                 {formatTime(selectedRequest.requestedTimeSlot.endTime)}
+              </p>
+              <p className="text-lg text-simmpy-green">
+                <strong>Assigned Time Slot:</strong>{" "}
+                {formatTime(selectedRequest.assignedTimeSlot!.startTime)} -{" "}
+                {formatTime(selectedRequest.assignedTimeSlot!.endTime)}
               </p>
             </div>
             <div className="flex justify-between gap-4 mt-6">
