@@ -32,6 +32,7 @@ export default function RouteManager({ dateValue }: RouteManagerProps) {
 
   const handleCollateDailyRequests = async () => {
     try {
+      setIsBusy(true);
       const formattedDate = dayjs(dateValue.toString()).format("YYYY-MM-DD");
       const result = await collateDailyRequests(formattedDate);
 
@@ -77,8 +78,10 @@ export default function RouteManager({ dateValue }: RouteManagerProps) {
             console.error("Error generating directions:", status);
           }
         });
+        setIsBusy(false);
       }
     } catch (error) {
+      setIsBusy(false);
       console.error("Error handling collate daily requests:", error);
     }
   };

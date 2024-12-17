@@ -228,9 +228,9 @@ export default function AdminDashboard() {
     );
   }
 
-  let morningRequests: AllUserRequestsAdminGetResponse[] = [];
-  let noonRequests: AllUserRequestsAdminGetResponse[] = [];
-  let eveningRequests: AllUserRequestsAdminGetResponse[] = [];
+  const morningRequests: AllUserRequestsAdminGetResponse[] = [];
+  const noonRequests: AllUserRequestsAdminGetResponse[] = [];
+  const eveningRequests: AllUserRequestsAdminGetResponse[] = [];
 
   if (date.current) {
     userRequests.forEach((req) => {
@@ -367,17 +367,14 @@ export default function AdminDashboard() {
           ) : (
             <>
               <DaySection
-                title="Morning"
                 requests={morningRequests}
                 onCardClick={(req) => setSelectedRequest(req)}
               />
               <DaySection
-                title="Noon"
                 requests={noonRequests}
                 onCardClick={(req) => setSelectedRequest(req)}
               />
               <DaySection
-                title="Evening"
                 requests={eveningRequests}
                 onCardClick={(req) => setSelectedRequest(req)}
               />

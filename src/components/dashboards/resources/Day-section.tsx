@@ -3,11 +3,9 @@ import { AllUserRequestsAdminGetResponse } from "@/types/api-responses/admin-res
 import { statusToColorMap } from "./status-color-map";
 
 export function DaySection({
-  title,
   requests,
   onCardClick,
 }: {
-  title: string;
   requests: AllUserRequestsAdminGetResponse[];
   onCardClick: (req: AllUserRequestsAdminGetResponse) => void;
 }) {
