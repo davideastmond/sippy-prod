@@ -1,22 +1,28 @@
 "use client";
 
-import { parseDate } from "@internationalized/date";
-import { DatePicker } from "@nextui-org/react";
+import Spinner from "@/components/spinner/Spinner";
+import { collateDailyRequests } from "@/services/collateDailyRequests/collateDailyRequests";
+import { googleMapsLoader } from "@/services/collateDailyRequests/loader";
+import { ResidentRequestCollation } from "@/types/resident-request-collation";
 import dayjs from "dayjs";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import RouteList from "./Route-list";
-import { googleMapsLoader } from "@/services/collateDailyRequests/loader";
-import { collateDailyRequests } from "@/services/collateDailyRequests/collateDailyRequests";
-import { ResidentRequestCollation } from "@/types/resident-request-collation";
 
-export default function RouteManager() {
+interface RouteManagerProps {
+  dateValue: string;
+}
+
+export default function RouteManager({ dateValue }: RouteManagerProps) {
   const { data: session, status } = useSession();
   const webRouter = useRouter();
-  const [dateValue, setDateValue] = useState(parseDate(dayjs().format("YYYY-MM-DD")));
   const [googleMap, setGoogleMap] = useState<google.maps.Map | null>(null);
-  const [filteredRequests, setFilteredRequests] = useState<ResidentRequestCollation[]>([]);
+  const [isBusy, setIsBusy] = useState(false);
+
+  const [filteredRequests, setFilteredRequests] = useState<
+    ResidentRequestCollation[]
+  >([]);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -26,28 +32,22 @@ export default function RouteManager() {
 
   const handleCollateDailyRequests = async () => {
     try {
+      setIsBusy(true);
       const formattedDate = dayjs(dateValue.toString()).format("YYYY-MM-DD");
-      console.log("Fetching requests for date:", formattedDate);
-
       const result = await collateDailyRequests(formattedDate);
-      console.log("Generated Routes:", result);
 
       if (result.length === 0) {
         console.warn("No routes found for the selected date.");
         return;
       }
 
-      result.forEach((request) => {
-        if (request.address) {
-          console.log(`Coordinates in route manager: ${request.address.latitude}, ${request.address.longitude}`);
-        }
-      })
-
       setFilteredRequests(result); // Pass filtered data to RouteList
 
       if (googleMap) {
         const directionsService = new google.maps.DirectionsService();
-        const directionsRenderer = new google.maps.DirectionsRenderer({ map: googleMap });
+        const directionsRenderer = new google.maps.DirectionsRenderer({
+          map: googleMap,
+        });
 
         // Set the starting point, ending point, and waypoints
         const waypoints = result.slice(1, -1).map((request) => ({
@@ -78,8 +78,10 @@ export default function RouteManager() {
             console.error("Error generating directions:", status);
           }
         });
+        setIsBusy(false);
       }
     } catch (error) {
+      setIsBusy(false);
       console.error("Error handling collate daily requests:", error);
     }
   };
@@ -107,22 +109,23 @@ export default function RouteManager() {
       {session?.user?.isAdmin ? (
         <div className="p-2">
           <div>
-            <h1 className="text-3xl font-bold text-center">Route Manager</h1>
+            <h1 className="text-3xl font-bold text-center">
+              Route Optimization for{" "}
+              {dayjs(dateValue.toString()).format("YYYY-MMM-DD")}
+            </h1>
           </div>
           <div className="my-4">
             <div>
-              <DatePicker
-                className="max-w-[284px]"
-                description={"Choose a date and click 'Generate Route'"}
-                value={dateValue}
-                onChange={setDateValue}
-              />
-              <div className="mt-6">
+              <div className="my-6">
                 <button
                   onClick={handleCollateDailyRequests}
-                  className="bg-simmpy-blue h-[28px] px-2 rounded-md"
+                  className="bg-simmpy-blue h-[28px] px-2 rounded-md w-full"
+                  disabled={isBusy}
                 >
-                  <span className="text-white text-sm">Generate Route</span>
+                  {isBusy && <Spinner />}
+                  <span className="text-white text-sm">
+                    Generate Optimized Route
+                  </span>
                 </button>
               </div>
             </div>
