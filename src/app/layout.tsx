@@ -4,6 +4,7 @@ import { Lato, Montserrat } from "next/font/google";
 import "./globals.css";
 
 import Navbar from "@/components/global/Navbar";
+import LoadingWidget from "@/components/loading-widget/Loading-widget";
 import { NextUIProvider } from "@nextui-org/system";
 import { NextAuthProvider } from "./providers/NextAuth";
 
@@ -40,6 +41,7 @@ export default function RootLayout({
         <NextAuthProvider>
           <NextUIProvider>
             <Navbar />
+            <LoadingWidget />
             {children}
           </NextUIProvider>
         </NextAuthProvider>

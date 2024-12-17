@@ -1,9 +1,14 @@
 "use client";
 
+import dayjs from "dayjs";
 import { ChangeEvent, useState } from "react";
 
 interface SearchRequestsProps {
-  onSearch: (query: string, filter: Record<string, boolean>) => void;
+  onSearch: (
+    query: string,
+    filter: Record<string, boolean>,
+    date: string | null
+  ) => void;
 }
 
 const SearchRequestsFilterPanel: React.FC<SearchRequestsProps> = ({
@@ -19,11 +24,12 @@ const SearchRequestsFilterPanel: React.FC<SearchRequestsProps> = ({
     }
   );
   const [searchQuery, setSearchQuery] = useState("");
+  const [dateFilter, setDateFilter] = useState<string | null>(null);
 
   const handleTextSearchChanged = (query: string) => {
     // Call the onSearch prop to filter data
     setSearchQuery(query);
-    onSearch(query, checkedOptions);
+    onSearch(query, checkedOptions, dateFilter);
   };
 
   const handleCheckboxFilterSelectionChanged = (
@@ -45,7 +51,7 @@ const SearchRequestsFilterPanel: React.FC<SearchRequestsProps> = ({
     }
 
     setCheckedOptions(newCheckedOptions);
-    onSearch(searchQuery, newCheckedOptions);
+    onSearch(searchQuery, newCheckedOptions, dateFilter!);
   };
 
   return (
@@ -119,8 +125,36 @@ const SearchRequestsFilterPanel: React.FC<SearchRequestsProps> = ({
           </ul>
         </div>
       </div>
+
+      {/* Date picker filter */}
+      <div className="flex rounded hover:bg-gray-100 self-center ml-4">
+        <div className="flex items-center h-5">
+          <input
+            id="date-picker"
+            name="dateFilter"
+            type="date"
+            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+            onChange={(e) => {
+              setDateFilter(e.target.value);
+              onSearch(searchQuery, checkedOptions, e.target.value);
+            }}
+            value={dateFilter ?? ""}
+          />
+        </div>
+        <div className="ml-2 text-sm">
+          <label htmlFor="date-picker" className="font-medium text-gray-900">
+            {getDateString(dateFilter!)}
+          </label>
+        </div>
+      </div>
     </div>
   );
 };
 
+const getDateString = (date: string | null): string => {
+  if (dayjs(date).isValid()) {
+    return dayjs(date).format("YYYY-MMM-DD");
+  }
+  return "No date selected";
+};
 export default SearchRequestsFilterPanel;

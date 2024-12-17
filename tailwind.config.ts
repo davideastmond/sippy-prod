@@ -14,6 +14,7 @@ export default {
         "simmpy-green": "#6AB04C",
         "simmpy-yellow": "#F9CA24",
         "simmpy-red": "#c13f0b",
+        "simmpy-blue": "#1e3a89",
         "simmpy-gray-100": "#E1E1E6",
         "simmpy-gray-200": "#5E5E5E",
         "simmpy-gray-600": "#444444",
@@ -24,6 +25,20 @@ export default {
         montserrat: ["var(--font-montserrant)"],
         lato: ["var(--font-lato)"],
       },
+    },
+    keyframes: {
+      grow: {
+        "0%": { transform: "scale(0)", opacity: "0" },
+        "100%": { transform: "scale(1)", opacity: "1" },
+      },
+      shrink: {
+        "0%": { transform: "scale(1)", opacity: "1" },
+        "100%": { transform: "scale(0)", opacity: "0" },
+      },
+    },
+    animation: {
+      grow: "grow 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards",
+      shrink: "shrink 0.5s ease-in-out forwards",
     },
   },
   darkMode: "class",

@@ -1,11 +1,13 @@
 import { TextLabel } from "@/components/textLabel";
+import { RequestedAvailabilityApiResponse } from "@/types/api-responses/requested-timeslot-availability-api-response.ts/requested-availability-api-response";
 import { TimeSlot } from "@/types/time-slot";
 import { CalendarDate, getLocalTimeZone, today } from "@internationalized/date";
 import { Calendar } from "@nextui-org/calendar";
 import { cn } from "@nextui-org/theme";
+import { ResidentRequestService } from "app/services/resident-request-service";
 import dayjs from "dayjs";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import InfoIcon from "../../../../public/assets/images/icons/info-circle.svg";
 import { TimeSlotPicker } from "../Time-slot-picker";
 import { FormSchemaUserFormData } from "../definitions/types";
@@ -25,8 +27,18 @@ export const FormStepThree = ({
   const [appointmentDate, setAppointmentDate] = useState(
     toCalendarDateFromJSDate(formData.appointmentDate!)
   );
+  const [slotAvailabilities, setSlotAvailabilities] =
+    useState<null | RequestedAvailabilityApiResponse>(null);
 
-  const handleAppointmentDateChange = (date: CalendarDate) => {
+  const handleAppointmentDateChange = async (date: CalendarDate) => {
+    // Attempt to fetch the available time slots for the selected date
+    const slotsAvailability =
+      await ResidentRequestService.getAvailableTimeSlotsByDate(
+        date.toDate(getLocalTimeZone())
+      );
+
+    setSlotAvailabilities(slotsAvailability);
+
     setAppointmentDate(date);
     setFormData({
       ...formData,
@@ -41,6 +53,21 @@ export const FormStepThree = ({
     });
   };
 
+  useEffect(() => {
+    // Get the initial slot availabilities for the default date
+    const getInitialSlotAvailabilities = async () => {
+      try {
+        const fetchedAvailabilities =
+          await ResidentRequestService.getAvailableTimeSlotsByDate(
+            formData.appointmentDate!
+          );
+        setSlotAvailabilities(fetchedAvailabilities);
+      } catch (error) {
+        console.error("Failed to get initial slot availabilities", error);
+      }
+    };
+    getInitialSlotAvailabilities();
+  }, []);
   return (
     <>
       <TextLabel
@@ -66,11 +93,13 @@ export const FormStepThree = ({
             ),
           }}
         />
-
-        <TimeSlotPicker
-          value={formData.timeSlot}
-          onChange={handleTimeSlotChange}
-        />
+        {slotAvailabilities && (
+          <TimeSlotPicker
+            value={formData.timeSlot}
+            onChange={handleTimeSlotChange}
+            availabilities={slotAvailabilities}
+          />
+        )}
       </div>
       <div className="flex">
         <Image alt="info" src={InfoIcon} width={16} />

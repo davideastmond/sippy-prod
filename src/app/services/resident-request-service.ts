@@ -1,7 +1,9 @@
 import { AllUserRequestsAdminGetResponse } from "@/types/api-responses/admin-resident-requests-api-response";
+import { RequestedAvailabilityApiResponse } from "@/types/api-responses/requested-timeslot-availability-api-response.ts/requested-availability-api-response";
 import { UserResidentRequestsApiResponse } from "@/types/api-responses/user-resident-requests-api-response";
 import { ResidentReqestApiRequest } from "@/types/resident-request-api-request";
 import { RequestStatus } from "@prisma/client";
+import dayjs from "dayjs";
 
 type AllResidentRequestsAdminGetResponseWithCount = {
   residentRequests: AllUserRequestsAdminGetResponse[];
@@ -50,14 +52,16 @@ export const ResidentRequestService = {
     return response.json();
   },
   adminGetAllRequests: async ({
+    date,
     take = 10,
     skip,
   }: {
+    date: string | null;
     take: number;
     skip: number;
   }): Promise<AllResidentRequestsAdminGetResponseWithCount> => {
     const response = await fetch(
-      `/api/resident-request?take=${take}&skip=${skip}`
+      `/api/resident-request?take=${take}&skip=${skip}&date=${date}`
     );
     const data: AllResidentRequestsAdminGetResponseWithCount =
       await response.json();
@@ -78,31 +82,17 @@ export const ResidentRequestService = {
     }
     return { residentRequests: [], count: 0 };
   },
-  searchRequests: async ({
-    stringQuery,
-    requestStatus,
-  }: {
-    stringQuery: string;
-    requestStatus: string[];
-  }): Promise<AllResidentRequestsAdminGetResponseWithCount> => {
-    // For now we won't paginate the search results
-    let statusToQueryParams;
-
-    if (requestStatus.length > 0) {
-      statusToQueryParams = requestStatus.map((status) => `&status=${status}`);
-    } else {
-      statusToQueryParams = "&status=all";
-    }
+  getAvailableTimeSlotsByDate: async (
+    date: Date
+  ): Promise<RequestedAvailabilityApiResponse> => {
+    const parsedDate = dayjs(date).format("YYYY-MM-DD").toString();
 
     const response = await fetch(
-      `/api/resident-request/search?query=${stringQuery}${statusToQueryParams}`
+      `/api/resident-request/schedule?date=${parsedDate}`
     );
-
-    const data = await response.json();
     if (!response.ok) {
-      throw new Error("Failed to search resident requests");
+      throw new Error("Failed to get available time slots");
     }
-
-    return data;
+    return response.json();
   },
 };
