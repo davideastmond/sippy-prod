@@ -33,7 +33,7 @@ const statusToColorMap: Record<
   },
 };
 
-const formatTime = (time: string | Date) => {
+const formatTime = (time?: string | Date) => {
   if (!time) return "Unknown Time";
   const date = typeof time === "string" ? new Date(time) : time;
   return date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
@@ -204,11 +204,11 @@ export default function ClientDashboard() {
             >
               <div className="flex justify-between w-full mb-4">
                 <p className="text-gray-600 font-medium">
-                  {formatDate(request.requestedTimeSlot.startTime)}
+                  {formatDate(request.requestedTimeSlot?.startTime)}
                 </p>
                 <p className="text-gray-600 font-medium">
-                  {formatTime(request.requestedTimeSlot.startTime)} -{" "}
-                  {formatTime(request.requestedTimeSlot.endTime)}
+                  {formatTime(request.requestedTimeSlot?.startTime)} -{" "}
+                  {formatTime(request.requestedTimeSlot?.endTime)}
                 </p>
               </div>
               <p className="text-gray-700 mb-2">
@@ -250,13 +250,13 @@ export default function ClientDashboard() {
               </p>
               <p className="text-lg">
                 <strong>Requested Time Slot:</strong>{" "}
-                {formatTime(selectedRequest.requestedTimeSlot.startTime)} -{" "}
-                {formatTime(selectedRequest.requestedTimeSlot.endTime)}
+                {formatTime(selectedRequest.requestedTimeSlot?.startTime)} -{" "}
+                {formatTime(selectedRequest.requestedTimeSlot?.endTime)}
               </p>
               <p className="text-lg text-simmpy-green">
                 <strong>Assigned Time Slot:</strong>{" "}
-                {formatTime(selectedRequest.assignedTimeSlot!.startTime)} -{" "}
-                {formatTime(selectedRequest.assignedTimeSlot!.endTime)}
+                {formatTime(selectedRequest.assignedTimeSlot?.startTime)} -{" "}
+                {formatTime(selectedRequest.assignedTimeSlot?.endTime)}
               </p>
             </div>
             <div className="flex justify-between gap-4 mt-6">
