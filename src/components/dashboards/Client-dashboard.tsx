@@ -253,11 +253,13 @@ export default function ClientDashboard() {
                 {formatTime(selectedRequest.requestedTimeSlot?.startTime)} -{" "}
                 {formatTime(selectedRequest.requestedTimeSlot?.endTime)}
               </p>
-              <p className="text-lg text-simmpy-green">
-                <strong>Assigned Time Slot:</strong>{" "}
-                {formatTime(selectedRequest.assignedTimeSlot?.startTime)} -{" "}
-                {formatTime(selectedRequest.assignedTimeSlot?.endTime)}
-              </p>
+              {selectedRequest.assignedTimeSlot?.startTime && (
+                <p className="text-lg text-simmpy-green">
+                  <strong>Assigned Time Slot:</strong>{" "}
+                  {formatTime(selectedRequest.assignedTimeSlot?.startTime)} -{" "}
+                  {formatTime(selectedRequest.assignedTimeSlot?.endTime)}
+                </p>
+              )}
             </div>
             <div className="flex justify-between gap-4 mt-6">
               {selectedRequest.status === "PENDING" && (
