@@ -132,9 +132,9 @@ export default function AdminDashboard() {
       if (!filters.all) {
         filteredRequests = filteredRequests.filter(
           (request) =>
-            (filters.completed && request.status === "COMPLETED") ||
-            (filters.pending && request.status === "PENDING") ||
-            (filters.canceled && request.status === "CANCELED")
+            (filters.completed && request.status === RequestStatus.COMPLETED) ||
+            (filters.pending && request.status === RequestStatus.PENDING) ||
+            (filters.canceled && request.status === RequestStatus.CANCELED)
         );
       }
 
@@ -142,7 +142,10 @@ export default function AdminDashboard() {
         filteredRequests = filteredRequests.filter(
           (request) =>
             request.user.name.toLowerCase().includes(query.toLowerCase()) ||
-            request.user.email.toLowerCase().includes(query.toLowerCase())
+            request.user.email.toLowerCase().includes(query.toLowerCase()) ||
+            request.address?.streetName
+              .toLowerCase()
+              .includes(query.toLowerCase())
         );
       }
 
