@@ -37,7 +37,7 @@ export default function AdminDashboard() {
     useState<AllUserRequestsAdminGetResponse | null>(null);
   const [isModalClosing, setIsModalClosing] = useState(false);
   const [isRouteOptimizedModalOpen, setIsRouteOptimizedModalOpen] =
-    useState(true);
+    useState(false);
 
   const date = useRef<string | null>(null);
 
