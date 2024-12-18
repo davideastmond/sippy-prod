@@ -202,11 +202,13 @@ export function SubmissionForm() {
           <p className="text-red-500 text-sm font-lato">{submitError}</p>
         )}
         {!isSubmitted && (
-          <ButtonText
-            text="Cancel"
-            color="Red"
-            onClick={() => setModalOpen(true)}
-          />
+          <div className="w-full p-6">
+            <ButtonText
+              text="Cancel"
+              color="Red"
+              onClick={() => setModalOpen(true)}
+            />
+          </div>
         )}
       </div>
       {modalOpen && (
