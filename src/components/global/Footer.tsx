@@ -1,5 +1,6 @@
+import getConfig from "next/config";
 import Image from "next/image";
-
+const { publicRuntimeConfig } = getConfig();
 const Footer = () => {
   return (
     <footer className="bg-simmpy-gray-600 text-simmpy-gray-100 font-montserrat">
@@ -54,7 +55,12 @@ const Footer = () => {
       </div>
 
       <div className="bg-white text-simmpy-gray-600 py-4 px-4 md:px-16 lg:px-32 flex flex-col md:flex-row justify-between items-center">
-        <p className="text-sm">&copy; Sippy 2024. All rights reserved.</p>
+        <p className="text-sm">
+          &copy; Sippy 2024. All rights reserved.{" "}
+          <span className="text-[#19a30d]">
+            v.{publicRuntimeConfig?.version}
+          </span>
+        </p>
         <div className="flex space-x-4 mt-4 md:mt-0">
           <a href="#">
             <Image
