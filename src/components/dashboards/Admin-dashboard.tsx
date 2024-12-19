@@ -298,7 +298,7 @@ export default function AdminDashboard() {
                 >
                   <div className="flex justify-between w-full mb-4">
                     <div className="text-gray-600 font-medium">
-                      {request.user.name}
+                      {request.applicantName || request.user.name}
                     </div>
                     <div className="text-gray-600 font-medium">
                       <FormattedTimeSlotDateTime
@@ -406,7 +406,8 @@ export default function AdminDashboard() {
             </h2>
             <div className="space-y-4 text-lg text-gray-700">
               <div>
-                <strong>Name:</strong> {selectedRequest.user.name}
+                <strong>Name:</strong>{" "}
+                {selectedRequest.applicantName || selectedRequest.user.name}
               </div>
               <div>
                 <strong>Email:</strong> {selectedRequest.user.email}
