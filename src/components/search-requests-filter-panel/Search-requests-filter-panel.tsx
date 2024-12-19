@@ -155,7 +155,7 @@ const SearchRequestsFilterPanel: React.FC<SearchRequestsProps> = ({
 
 const getDateString = (date: string | null): string => {
   if (dayjs(date).isValid()) {
-    return dayjs(date).format("YYYY-MMM-DD");
+    return dayjs(date).format("MMM-DD-YYYY");
   }
   return "No date selected";
 };
