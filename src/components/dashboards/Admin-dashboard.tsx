@@ -8,6 +8,7 @@ import { AllUserRequestsAdminGetResponse } from "@/types/api-responses/admin-res
 import { TimeSlot } from "@/types/time-slot";
 import { RequestStatus } from "@prisma/client";
 import { ResidentRequestService } from "app/services/resident-request-service";
+import dayjs from "dayjs";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -370,14 +371,17 @@ export default function AdminDashboard() {
           ) : (
             <>
               <DaySection
+                title="Morning"
                 requests={morningRequests}
                 onCardClick={(req) => setSelectedRequest(req)}
               />
               <DaySection
+                title="Daytime"
                 requests={noonRequests}
                 onCardClick={(req) => setSelectedRequest(req)}
               />
               <DaySection
+                title="Evening"
                 requests={eveningRequests}
                 onCardClick={(req) => setSelectedRequest(req)}
               />
@@ -462,13 +466,7 @@ export default function AdminDashboard() {
 
 const formatDate = (dateString: string | Date) => {
   if (!dateString) return "";
-  const date =
-    typeof dateString === "string" ? new Date(dateString) : dateString;
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+  return dayjs(dateString).format("DD-MMM-YYYY");
 };
 
 const RouteOptimizerModal = ({
