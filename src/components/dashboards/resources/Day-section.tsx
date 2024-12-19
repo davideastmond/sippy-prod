@@ -11,8 +11,17 @@ export function DaySection({
   requests: AllUserRequestsAdminGetResponse[];
   onCardClick: (req: AllUserRequestsAdminGetResponse) => void;
 }) {
+  if (requests.length === 0) {
+    return (
+      <div>
+        <h2 className="font-bold mb-2">{title}</h2>
+        <p>No requests for this time period.</p>
+      </div>
+    );
+  }
   return (
     <div>
+      <h2 className="font-bold mb-2">{title}</h2>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
         {requests.map((request) => (
           <div
