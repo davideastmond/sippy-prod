@@ -17,7 +17,7 @@ function determineTimeSlot(
   dateContext: Date
 ): { startTime: Date; endTime: Date } {
   const hour = Math.floor(accumulatedTime / 3600); // Convert seconds to hours
-
+  const EVENING_BUFFER_TIME = 5; // 5 hours buffer for evening time slot
   if (
     hour >= getTimeSlotHours(TimeSlot.Morning)[0] &&
     hour < getTimeSlotHours(TimeSlot.Morning)[1]
@@ -48,7 +48,7 @@ function determineTimeSlot(
     };
   if (
     hour >= getTimeSlotHours(TimeSlot.Evening)[0] &&
-    hour < getTimeSlotHours(TimeSlot.Evening)[1]
+    hour < getTimeSlotHours(TimeSlot.Evening)[1] + EVENING_BUFFER_TIME
   )
     return {
       startTime: dayjs(dateContext)
