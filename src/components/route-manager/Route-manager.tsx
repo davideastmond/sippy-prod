@@ -148,6 +148,3 @@ export default function RouteManager({ dateValue }: RouteManagerProps) {
     </>
   );
 }
-function fetchDailyOptimizedResidentRequests(formattedDate: string) {
-  throw new Error("Function not implemented.");
-}
