@@ -20,4 +20,8 @@ export type ResidentRequestDatabaseResponse = Prisma.ResidentRequestGetPayload<
 export type ResidentRequestDataBaseResponseWithDuration =
   ResidentRequestDatabaseResponse & {
     duration: number;
+    assignedTimeSlot?: {
+      startTime: Date | string | null | undefined;
+      endTime: Date | string | null | undefined;
+    };
   };
