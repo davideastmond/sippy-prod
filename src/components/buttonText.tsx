@@ -33,8 +33,10 @@ export function ButtonText({
       disabled={disabled}
       {...rest}
     >
-      {busy && <Spinner />}
-      {text}
+      <div className="flex justify-center items-center gap-2">
+        {busy && <Spinner />}
+        {text}
+      </div>
     </button>
   );
 }
