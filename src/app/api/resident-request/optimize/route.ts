@@ -52,12 +52,12 @@ export async function POST(req: Request) {
     }
 
     try {
-      const fetchedRequests = await computeRouteByGroupedRequests(
+      const optimizedGroupedRequests = await computeRouteByGroupedRequests(
         date,
         groupRequestsByTimeslot(residentRequests)
       );
 
-      return NextResponse.json(fetchedRequests);
+      return NextResponse.json(optimizedGroupedRequests);
     } catch (error) {
       console.error("Error fetching or updating requests:", error);
       return NextResponse.json(
