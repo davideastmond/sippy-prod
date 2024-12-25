@@ -101,7 +101,7 @@ export const ResidentRequestService = {
   ): Promise<OptimizedResidentRequestData> => {
     try {
       // Send POST request to backend with the selected date
-      const response = await fetch(`/api/request-schedule`, {
+      const response = await fetch(`/api/resident-request/optimize`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -117,7 +117,10 @@ export const ResidentRequestService = {
 
       return requestAtDate;
     } catch (error) {
-      console.error("Error fetching or adjusting requests:", error);
+      console.error(
+        "Error fetching or adjusting requests:",
+        (error as Error).message
+      );
       throw error;
     }
   },
