@@ -1,9 +1,19 @@
+import { authOptions } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import { computeRouteByGroupedRequests } from "./compute-route-by-grouped-requests";
 import { groupRequestsByTimeslot } from "./group-requests-by-slot";
 
 export async function POST(req: Request) {
+  const serverSession = await getServerSession(authOptions);
+
+  if (!serverSession || !serverSession.user) {
+    return NextResponse.json(
+      { message: "Unauthorized - no session" },
+      { status: 401 }
+    );
+  }
   try {
     const requestBody = await req.json();
     const { date } = requestBody;

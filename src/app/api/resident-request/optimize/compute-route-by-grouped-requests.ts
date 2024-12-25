@@ -6,13 +6,17 @@ import {
   ResidentRequestDatabaseResponse,
   ResidentRequestDataBaseResponseWithDuration,
 } from "@/types/database-query-results/resident-request-database-response";
+import { OptimizedResidentRequestData } from "@/types/optimized-resident-request-data";
 import { TimeSlot } from "@/types/time-slot";
+import dayjs from "dayjs";
 import { GroupedRequestsByRequestedTimeSlot } from "./group-requests-by-slot";
+
+const VISIT_DURATION_SECONDS = 60 * 40; // 40 minutes
 
 export async function computeRouteByGroupedRequests(
   forDate: string,
   requestGroup: GroupedRequestsByRequestedTimeSlot
-) {
+): Promise<OptimizedResidentRequestData> {
   let combinedRequests = {};
 
   if (requestGroup.MOR.length > 0) {
@@ -92,6 +96,7 @@ function getWaypointOrder(
   googleResponseData: RouteResponseData
 ) {
   const waypointOrder: ResidentRequestDataBaseResponseWithDuration[] = [];
+  let elapsedTime = 0;
   googleResponseData.legs.forEach((leg) => {
     // First waypoint endlocation should be the first request
     const request = residentRequests.find((r) => {
@@ -109,10 +114,25 @@ function getWaypointOrder(
       );
     });
     if (request) {
+      const parsedTravelTime_seconds = parseInt(leg.duration.slice(0, -1), 10);
+      elapsedTime += parsedTravelTime_seconds;
+
+      const timeStamp = dayjs(request.requestedTimeSlot.startTime);
+      const startTime = dayjs(request.requestedTimeSlot.startTime).add(
+        elapsedTime,
+        "second"
+      );
       waypointOrder.push({
         ...request,
-        duration: parseInt(leg.duration.slice(0, -1), 10),
+        duration: parsedTravelTime_seconds,
+        assignedTimeSlot: {
+          startTime: startTime.toDate(),
+          endTime: timeStamp
+            .add(elapsedTime + VISIT_DURATION_SECONDS, "second")
+            .toDate(),
+        },
       });
+      elapsedTime = elapsedTime + VISIT_DURATION_SECONDS;
     }
   });
 
