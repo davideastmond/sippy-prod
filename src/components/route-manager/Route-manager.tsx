@@ -22,6 +22,7 @@ export default function RouteManager({ dateValue }: RouteManagerProps) {
   const webRouter = useRouter();
   const [googleMap, setGoogleMap] = useState<google.maps.Map | null>(null);
   const [isBusy, setIsBusy] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   const [optimizedRequestData, setOptimizedRequestData] =
     useState<OptimizedResidentRequestData>({});
@@ -32,7 +33,7 @@ export default function RouteManager({ dateValue }: RouteManagerProps) {
     }
   }, [status, webRouter]);
 
-  const handleCollateDailyRequests = async () => {
+  const fetchOptimizedRoutes = async () => {
     try {
       setIsBusy(true);
       const formattedDate = dayjs(dateValue.toString()).format("YYYY-MM-DD");
@@ -85,6 +86,9 @@ export default function RouteManager({ dateValue }: RouteManagerProps) {
         "Error handling fetching daily optimized requests:",
         (error as Error).message
       );
+      setFetchError(
+        "Unable to complete optimization due to an error. Please check the date and try again."
+      );
     }
   };
 
@@ -120,7 +124,7 @@ export default function RouteManager({ dateValue }: RouteManagerProps) {
             <div>
               <div className="my-6 md:flex md:justify-center">
                 <button
-                  onClick={handleCollateDailyRequests}
+                  onClick={fetchOptimizedRoutes}
                   className="bg-simmpy-blue py-2 rounded-md w-full md:w-1/2"
                   disabled={isBusy}
                 >
@@ -133,6 +137,9 @@ export default function RouteManager({ dateValue }: RouteManagerProps) {
                 </button>
               </div>
             </div>
+            {fetchError && (
+              <p className="text-simmpy-red text-center">{fetchError}</p>
+            )}
           </div>
           <div className="flex flex-wrap w-full md:justify-around">
             <RouteList optimizedRouteData={optimizedRequestData} />
