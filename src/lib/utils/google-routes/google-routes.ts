@@ -42,11 +42,13 @@ export async function computeRoute({
     // The goal here is to get data based on LA times so we can take advantage of the traffic data
     const appointmentDateTime = dayjs(forDate);
 
-    return appointmentDateTime
-      .tz("America/Los_Angeles")
+    const laUTCAppointmentTime = appointmentDateTime
       .set("hour", getTimeSlotHours(timeSlot)[0])
+      .tz("America/Los_Angeles")
       .utc()
       .toISOString();
+    console.info("50", laUTCAppointmentTime);
+    return laUTCAppointmentTime;
   }
 
   const waypoints = groupedLatLongs.map((latLng) => ({
