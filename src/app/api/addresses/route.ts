@@ -1,10 +1,20 @@
+import { authOptions } from "@/auth";
 import { GoogleAddressComponentsExtractor } from "@/lib/utils/google-address-components-extractor";
+import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
 // Your Google API key is used here as an environment variable
 const GOOGLEMAPS_API_KEY = process.env.GOOGLEMAPS_API_KEY;
 
 export async function GET(req: Request) {
+  const serverSession = await getServerSession(authOptions);
+  if (!serverSession || !serverSession.user) {
+    return NextResponse.json(
+      { message: "Unauthorized - no session" },
+      { status: 401 }
+    );
+  }
+
   const url = new URL(req.url);
   const query = url.searchParams.get("query");
 

@@ -1,28 +1,33 @@
 "use client";
 
+import { googleMapsLoader } from "@/components/route-manager/utils/google-maps-loader";
 import Spinner from "@/components/spinner/Spinner";
-import { collateDailyRequests } from "@/services/collateDailyRequests/collateDailyRequests";
-import { googleMapsLoader } from "@/services/collateDailyRequests/loader";
-import { ResidentRequestCollation } from "@/types/resident-request-collation";
+
+import { ResidentRequestService } from "@/services/resident-request-service";
+import { OptimizedResidentRequestData } from "@/types/optimized-resident-request-data";
+import { TimeSlot } from "@/types/time-slot";
 import dayjs from "dayjs";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import RouteList from "./Route-list";
+import { renderDirectionsOnMap } from "./helpers/route-manager-helpers";
 
 interface RouteManagerProps {
   dateValue: string;
 }
+
+const BASE_LOS_ANGELES_COORDINATES = { lat: 34.0522, lng: -118.2437 };
 
 export default function RouteManager({ dateValue }: RouteManagerProps) {
   const { data: session, status } = useSession();
   const webRouter = useRouter();
   const [googleMap, setGoogleMap] = useState<google.maps.Map | null>(null);
   const [isBusy, setIsBusy] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
-  const [filteredRequests, setFilteredRequests] = useState<
-    ResidentRequestCollation[]
-  >([]);
+  const [optimizedRequestData, setOptimizedRequestData] =
+    useState<OptimizedResidentRequestData>({});
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -30,59 +35,48 @@ export default function RouteManager({ dateValue }: RouteManagerProps) {
     }
   }, [status, webRouter]);
 
-  const handleCollateDailyRequests = async () => {
+  const fetchOptimizedRoutes = async () => {
     try {
       setIsBusy(true);
       const formattedDate = dayjs(dateValue.toString()).format("YYYY-MM-DD");
-      const result = await collateDailyRequests(formattedDate);
+      const optimizedResults =
+        await ResidentRequestService.fetchOptimizedResidentRequestsByDate(
+          formattedDate
+        );
 
-      if (result.length === 0) {
+      if (Object.keys(optimizedResults).length === 0) {
         console.warn("No routes found for the selected date.");
         return;
       }
 
-      setFilteredRequests(result); // Pass filtered data to RouteList
+      setOptimizedRequestData(optimizedResults);
 
       if (googleMap) {
         const directionsService = new google.maps.DirectionsService();
-        const directionsRenderer = new google.maps.DirectionsRenderer({
-          map: googleMap,
-        });
 
-        // Set the starting point, ending point, and waypoints
-        const waypoints = result.slice(1, -1).map((request) => ({
-          location: {
-            lat: request.address.latitude,
-            lng: request.address.longitude,
-          },
-          stopover: true,
-        }));
-
-        const routeRequest: google.maps.DirectionsRequest = {
-          origin: {
-            lat: result[0].address.latitude,
-            lng: result[0].address.longitude,
-          },
-          destination: {
-            lat: result[result.length - 1].address.latitude,
-            lng: result[result.length - 1].address.longitude,
-          },
-          waypoints,
-          travelMode: google.maps.TravelMode.DRIVING,
-        };
-
-        directionsService.route(routeRequest, (result, status) => {
-          if (status === google.maps.DirectionsStatus.OK) {
-            directionsRenderer.setDirections(result);
-          } else {
-            console.error("Error generating directions:", status);
+        // Render the optimized routes as waypoints and directions on the map
+        for (const [timeslot, routeData] of Object.entries(optimizedResults)) {
+          if (routeData) {
+            renderDirectionsOnMap({
+              timeslot: timeslot as TimeSlot,
+              directionService: directionsService,
+              routeLegs: routeData.legs,
+              googleMap,
+            });
           }
-        });
+        }
+
         setIsBusy(false);
       }
     } catch (error) {
       setIsBusy(false);
-      console.error("Error handling collate daily requests:", error);
+      console.error(
+        "Error handling fetching daily optimized requests:",
+        (error as Error).message
+      );
+      setFetchError(
+        "Unable to complete optimization due to an error. Please check the date and try again."
+      );
     }
   };
 
@@ -94,7 +88,10 @@ export default function RouteManager({ dateValue }: RouteManagerProps) {
       await googleMapsLoader.load();
 
       const map = new google.maps.Map(mapElement, {
-        center: { lat: 34.0522, lng: -118.2437 }, // Default to Los Angeles
+        center: {
+          lat: BASE_LOS_ANGELES_COORDINATES.lat,
+          lng: BASE_LOS_ANGELES_COORDINATES.lng,
+        },
         zoom: 10,
       });
 
@@ -118,7 +115,7 @@ export default function RouteManager({ dateValue }: RouteManagerProps) {
             <div>
               <div className="my-6 md:flex md:justify-center">
                 <button
-                  onClick={handleCollateDailyRequests}
+                  onClick={fetchOptimizedRoutes}
                   className="bg-simmpy-blue py-2 rounded-md w-full md:w-1/2"
                   disabled={isBusy}
                 >
@@ -131,10 +128,14 @@ export default function RouteManager({ dateValue }: RouteManagerProps) {
                 </button>
               </div>
             </div>
+            {fetchError && (
+              <p className="text-simmpy-red text-center">{fetchError}</p>
+            )}
           </div>
-          <div className="flex gap-20 flex-wrap md:justify-center">
-            <RouteList routes={filteredRequests} /> {/* Pass routes as props */}
-            <div className="h-[300px] w-[500px] w-full" id="gmap"></div>
+          <div className="flex flex-wrap w-full md:justify-around">
+            <RouteList optimizedRouteData={optimizedRequestData} />
+            {/* Pass routes as props */}
+            <div className="h-[300px] w-[500px] md:w-[600px]" id="gmap"></div>
           </div>
         </div>
       ) : (

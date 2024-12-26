@@ -5,3 +5,8 @@ export interface GoogleAddressData {
   place_id: string;
   address: Address & { id?: never };
 }
+
+export interface LatLng {
+  latitude: number;
+  longitude: number;
+}

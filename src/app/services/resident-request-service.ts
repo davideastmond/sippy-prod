@@ -1,6 +1,7 @@
 import { AllUserRequestsAdminGetResponse } from "@/types/api-responses/admin-resident-requests-api-response";
 import { RequestedAvailabilityApiResponse } from "@/types/api-responses/requested-timeslot-availability-api-response.ts/requested-availability-api-response";
 import { UserResidentRequestsApiResponse } from "@/types/api-responses/user-resident-requests-api-response";
+import { OptimizedResidentRequestData } from "@/types/optimized-resident-request-data";
 import { ResidentReqestApiRequest } from "@/types/resident-request-api-request";
 import { RequestStatus } from "@prisma/client";
 import dayjs from "dayjs";
@@ -94,5 +95,33 @@ export const ResidentRequestService = {
       throw new Error("Failed to get available time slots");
     }
     return response.json();
+  },
+  fetchOptimizedResidentRequestsByDate: async (
+    date: string
+  ): Promise<OptimizedResidentRequestData> => {
+    try {
+      // Send POST request to backend with the selected date
+      const response = await fetch(`/api/resident-request/optimize`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ date }), // Send the date to the backend
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch requests: ${response.statusText}`);
+      }
+
+      const requestAtDate: OptimizedResidentRequestData = await response.json();
+
+      return requestAtDate;
+    } catch (error) {
+      console.error(
+        "Error fetching or adjusting requests:",
+        (error as Error).message
+      );
+      throw error;
+    }
   },
 };

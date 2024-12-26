@@ -262,9 +262,9 @@ export default function AdminDashboard() {
         {date.current && (
           <button
             className={`text-white bg-[#1e3a89] p-2 rounded-md self-center ${
-              userRequests.length < 2 && "bg-gray-300"
+              userRequests.length < 1 && "bg-gray-300"
             }`}
-            disabled={userRequests.length < 2}
+            disabled={userRequests.length < 1}
             onClick={() => setIsRouteOptimizedModalOpen(true)}
           >
             Optimize Route
@@ -479,7 +479,7 @@ const RouteOptimizerModal = ({
 }) => {
   return (
     <div className="absolute w-full top-[0] h-[100vh] bg-simmpy-gray-900/60">
-      <div className="modal-box w-full max-w-[800px] h-[100vh] p-4 rounded-md mt-[6vh] bg-simmpy-gray-100">
+      <div className="modal-box w-full h-[180vh] p-4 rounded-md mt-[6vh] bg-simmpy-gray-100">
         <div className="flex justify-end">
           <button onClick={onClose}>X</button>
         </div>
