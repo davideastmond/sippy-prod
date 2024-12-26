@@ -19,72 +19,31 @@ export async function computeRouteByGroupedRequests(
 ): Promise<OptimizedResidentRequestData> {
   let combinedRequests = {};
 
-  if (requestGroup.MOR.length > 0) {
-    try {
-      const res = await computeRoute({
-        timeSlot: TimeSlot.Morning,
-        forDate,
-        groupedLatLongs: requestGroup.MOR.map((r) => ({
-          latitude: r.address!.latitude,
-          longitude: r.address!.longitude,
-        })),
-      });
-      combinedRequests = {
-        ...combinedRequests,
-        [TimeSlot.Morning]: {
-          ...res,
-          waypoints: getWaypointOrder(requestGroup.MOR, res),
-        },
-      };
-    } catch (error) {
-      console.error("Error computing route for MOR:", (error as Error).message);
-      throw error;
-    }
-  }
-
-  if (requestGroup.DAY.length > 0) {
-    try {
-      const res = await computeRoute({
-        timeSlot: TimeSlot.Daytime,
-        forDate,
-        groupedLatLongs: requestGroup.DAY.map((r) => ({
-          latitude: r.address!.latitude,
-          longitude: r.address!.longitude,
-        })),
-      });
-      combinedRequests = {
-        ...combinedRequests,
-        [TimeSlot.Daytime]: {
-          ...res,
-          waypoints: getWaypointOrder(requestGroup.DAY, res),
-        },
-      };
-    } catch (error) {
-      console.error("Error computing route for DAY:", (error as Error).message);
-      throw error;
-    }
-  }
-
-  if (requestGroup.EVE.length > 0) {
-    try {
-      const res = await computeRoute({
-        timeSlot: TimeSlot.Evening,
-        forDate,
-        groupedLatLongs: requestGroup.EVE.map((r) => ({
-          latitude: r.address!.latitude,
-          longitude: r.address!.longitude,
-        })),
-      });
-      combinedRequests = {
-        ...combinedRequests,
-        [TimeSlot.Evening]: {
-          ...res,
-          waypoints: getWaypointOrder(requestGroup.EVE, res),
-        },
-      };
-    } catch (error) {
-      console.error("Error computing route for EVE:", (error as Error).message);
-      throw error;
+  for await (const [section, data] of Object.entries(requestGroup)) {
+    if (data.length > 0) {
+      try {
+        const res = await computeRoute({
+          timeSlot: section as TimeSlot,
+          forDate,
+          groupedLatLongs: data.map((r: ResidentRequestDatabaseResponse) => ({
+            latitude: r.address!.latitude,
+            longitude: r.address!.longitude,
+          })),
+        });
+        combinedRequests = {
+          ...combinedRequests,
+          [section]: {
+            ...res,
+            waypoints: getWaypointOrder(data, res),
+          },
+        };
+      } catch (error) {
+        console.error(
+          `Error computing route for ${section}:`,
+          (error as Error).message
+        );
+        throw error;
+      }
     }
   }
 
