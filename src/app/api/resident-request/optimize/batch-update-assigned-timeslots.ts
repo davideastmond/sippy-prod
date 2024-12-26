@@ -30,8 +30,8 @@ export async function batchUpdateAssignedTimeSlots(
         data: {
           assignedTimeSlot: {
             create: {
-              startTime: waypoint.assignedTimeSlot?.startTime!,
-              endTime: waypoint.assignedTimeSlot?.endTime!,
+              startTime: waypoint.assignedTimeSlot!.startTime!,
+              endTime: waypoint.assignedTimeSlot!.endTime!,
             },
           },
         },
