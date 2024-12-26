@@ -98,6 +98,13 @@ function getWaypointOrder(
   return waypointOrder;
 }
 
+/**
+ * Fallback compare function to handle floating point errors. Google API returns lat/lng with 15 decimal places and sometimes it
+ * doesn't match up. This is a hacky way of rounding and matching up lat/lngs so we can identify which request belongs to which waypoint.
+ * @param firstNumber
+ * @param secondNumber
+ * @returns
+ */
 function fallBackCompare(firstNumber: number, secondNumber: number): boolean {
   if (
     parseFloat(firstNumber.toFixed(3)) === parseFloat(secondNumber.toFixed(3))
