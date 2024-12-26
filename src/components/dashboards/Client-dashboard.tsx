@@ -8,6 +8,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+import { formatTime } from "@/lib/utils/date-time-formatters/format-time";
 import { UserResidentRequestsApiResponse } from "@/types/api-responses/user-resident-requests-api-response";
 
 type ResidentRequest = UserResidentRequestsApiResponse["requests"][number];
@@ -31,12 +32,6 @@ const statusToColorMap: Record<
     bg: "bg-red-50",
     text: "text-red-600",
   },
-};
-
-const formatTime = (time?: string | Date) => {
-  if (!time) return "Unknown Time";
-  const date = typeof time === "string" ? new Date(time) : time;
-  return date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
 };
 
 const formatDate = (dateString: string | Date) => {
