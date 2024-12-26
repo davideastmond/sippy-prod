@@ -1,3 +1,4 @@
+import { formatTime } from "@/lib/utils/date-time-formatters/format-time";
 import {
   OptimizedResidentRequestData,
   TimeSlotBodyData,
@@ -76,7 +77,9 @@ const OptmizedList = (optimizedData: TimeSlotBodyData) => {
                 }, ${residentRequest.address!.city}`}
               </p>
               <p className="text-sm text-gray-500 truncate">
-                ETA: {residentRequest.duration || "N/A"}
+                <b>Est. Appointment Time: </b>{" "}
+                {formatTime(residentRequest.assignedTimeSlot!.startTime!) ||
+                  "N/A"}
               </p>
               <p className="text-sm text-gray-500 truncate">
                 Status: {residentRequest.status}
