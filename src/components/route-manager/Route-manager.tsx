@@ -17,6 +17,8 @@ interface RouteManagerProps {
   dateValue: string;
 }
 
+const BASE_LOS_ANGELES_COORDINATES = { lat: 34.0522, lng: -118.2437 };
+
 export default function RouteManager({ dateValue }: RouteManagerProps) {
   const { data: session, status } = useSession();
   const webRouter = useRouter();
@@ -52,32 +54,18 @@ export default function RouteManager({ dateValue }: RouteManagerProps) {
       if (googleMap) {
         const directionsService = new google.maps.DirectionsService();
 
-        if (optimizedResults.MOR) {
-          renderDirectionsOnMap({
-            timeslot: TimeSlot.Morning,
-            directionService: directionsService,
-            routeLegs: optimizedResults.MOR.legs,
-            googleMap,
-          });
+        // Render the optimized routes as waypoints and directions on the map
+        for (const [timeslot, routeData] of Object.entries(optimizedResults)) {
+          if (routeData) {
+            renderDirectionsOnMap({
+              timeslot: timeslot as TimeSlot,
+              directionService: directionsService,
+              routeLegs: routeData.legs,
+              googleMap,
+            });
+          }
         }
 
-        if (optimizedResults.DAY) {
-          renderDirectionsOnMap({
-            timeslot: TimeSlot.Daytime,
-            directionService: directionsService,
-            routeLegs: optimizedResults.DAY.legs,
-            googleMap,
-          });
-        }
-
-        if (optimizedResults.EVE) {
-          renderDirectionsOnMap({
-            timeslot: TimeSlot.Evening,
-            directionService: directionsService,
-            routeLegs: optimizedResults.EVE.legs,
-            googleMap,
-          });
-        }
         setIsBusy(false);
       }
     } catch (error) {
@@ -100,7 +88,10 @@ export default function RouteManager({ dateValue }: RouteManagerProps) {
       await googleMapsLoader.load();
 
       const map = new google.maps.Map(mapElement, {
-        center: { lat: 34.0522, lng: -118.2437 }, // Default to Los Angeles
+        center: {
+          lat: BASE_LOS_ANGELES_COORDINATES.lat,
+          lng: BASE_LOS_ANGELES_COORDINATES.lng,
+        },
         zoom: 10,
       });
 
