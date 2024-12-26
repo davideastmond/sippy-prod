@@ -2,6 +2,7 @@ import { authOptions } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
+import { batchUpdateAssignedTimeSlots } from "./batch-update-assigned-timeslots";
 import { computeRouteByGroupedRequests } from "./compute-route-by-grouped-requests";
 import { groupRequestsByTimeslot } from "./group-requests-by-slot";
 
@@ -57,6 +58,7 @@ export async function POST(req: Request) {
         groupRequestsByTimeslot(residentRequests)
       );
 
+      await batchUpdateAssignedTimeSlots(optimizedGroupedRequests);
       return NextResponse.json(optimizedGroupedRequests);
     } catch (error) {
       console.error("Error fetching or updating requests:", error);
