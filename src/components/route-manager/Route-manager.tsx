@@ -38,7 +38,7 @@ export default function RouteManager({ dateValue }: RouteManagerProps) {
       setIsBusy(true);
       const formattedDate = dayjs(dateValue.toString()).format("YYYY-MM-DD");
       const optimizedResults =
-        await ResidentRequestService.fetchDailyOptimizedResidentRequests(
+        await ResidentRequestService.fetchOptimizedResidentRequestsByDate(
           formattedDate
         );
 

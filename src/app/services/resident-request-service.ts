@@ -96,7 +96,7 @@ export const ResidentRequestService = {
     }
     return response.json();
   },
-  fetchDailyOptimizedResidentRequests: async (
+  fetchOptimizedResidentRequestsByDate: async (
     date: string
   ): Promise<OptimizedResidentRequestData> => {
     try {
