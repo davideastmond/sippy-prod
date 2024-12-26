@@ -139,23 +139,14 @@ function getWaypointOrder(
   return waypointOrder;
 }
 
-function toFloatDecimalPlaces(
-  floatNumber: number,
-  decimalPlaces: number = 2
-): number {
-  return parseFloat(floatNumber.toFixed(decimalPlaces));
-}
-
 function fallBackCompare(firstNumber: number, secondNumber: number): boolean {
   if (
-    toFloatDecimalPlaces(firstNumber, 3) ===
-    toFloatDecimalPlaces(secondNumber, 3)
+    parseFloat(firstNumber.toFixed(3)) === parseFloat(secondNumber.toFixed(3))
   ) {
     return true;
   }
 
   return (
-    toFloatDecimalPlaces(firstNumber, 2) ===
-    toFloatDecimalPlaces(secondNumber, 2)
+    parseFloat(firstNumber.toFixed(2)) === parseFloat(secondNumber.toFixed(2))
   );
 }
