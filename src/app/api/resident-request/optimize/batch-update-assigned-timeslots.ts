@@ -7,7 +7,7 @@ import { TimeSlot } from "@/types/time-slot";
  * Takes the optimized resident requests and updates the assigned time slots in the database
  * @param requests
  */
-export async function batchUpdateAssignedTimeSlots(
+export async function batchUpdateAssignedTimeSlotsInDb(
   requests: OptimizedResidentRequestData
 ): Promise<void> {
   // Take the waypoints and update the assigned time slots
