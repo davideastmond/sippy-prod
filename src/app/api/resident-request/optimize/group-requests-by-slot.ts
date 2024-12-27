@@ -23,9 +23,11 @@ export function groupRequestsByTimeslot(
     [TimeSlot.Evening]: [],
   };
 
+  // const addHours = process.env.NODE_ENV === "production" ? 5 : 0;
   residentRequests.forEach((request) => {
     const startHour = dayjs(request.requestedTimeSlot.startTime).get("hour");
 
+    console.debug("startHour", startHour);
     switch (startHour) {
       case getTimeSlotHours(TimeSlot.Morning)[0]:
         groupedRequests[TimeSlot.Morning].push(request);
@@ -37,7 +39,7 @@ export function groupRequestsByTimeslot(
         groupedRequests[TimeSlot.Evening].push(request);
         break;
       default:
-        console.error("Invalid time slot");
+        console.error("Invalid time slot " + startHour);
         throw new Error("Invalid time slot");
     }
   });
