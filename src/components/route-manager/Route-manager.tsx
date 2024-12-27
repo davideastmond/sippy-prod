@@ -101,48 +101,47 @@ export default function RouteManager({ dateValue }: RouteManagerProps) {
     initMap();
   }, []);
 
+  if (!session?.user?.isAdmin)
+    return (
+      <div>
+        <p className="text-simmpy-red">Not authorized</p>
+      </div>
+    );
+
   return (
-    <>
-      {session?.user?.isAdmin ? (
-        <div className="p-2">
-          <div>
-            <h2 className="text-3xl font-bold text-center">
-              Route Optimization for{" "}
-              {dayjs(dateValue.toString()).format("MMM-DD-YYYY")}
-            </h2>
-          </div>
-          <div className="my-4">
-            <div>
-              <div className="my-6 md:flex md:justify-center">
-                <button
-                  onClick={fetchOptimizedRoutes}
-                  className="bg-simmpy-blue py-2 rounded-md w-full md:w-1/2"
-                  disabled={isBusy}
-                >
-                  <div className="flex justify-center">
-                    {isBusy && <Spinner size="sm" />}
-                    <p className="text-white text-sm ml-2">
-                      Generate Optimized Route
-                    </p>
-                  </div>
-                </button>
-              </div>
-            </div>
-            {fetchError && (
-              <p className="text-simmpy-red text-center">{fetchError}</p>
-            )}
-          </div>
-          <div className="flex flex-wrap w-full md:justify-around">
-            <RouteList optimizedRouteData={optimizedRequestData} />
-            {/* Pass routes as props */}
-            <div className="h-[300px] w-[500px] md:w-[600px]" id="gmap"></div>
-          </div>
-        </div>
-      ) : (
+    <div className="p-2">
+      <div>
+        <h2 className="text-3xl font-bold text-center">
+          Route Optimization for{" "}
+          {dayjs(dateValue.toString()).format("MMM-DD-YYYY")}
+        </h2>
+      </div>
+      <div className="my-4">
         <div>
-          <p className="text-simmpy-red">Not authorized</p>
+          <div className="my-6 md:flex md:justify-center">
+            <button
+              onClick={fetchOptimizedRoutes}
+              className="bg-simmpy-blue py-2 rounded-md w-full md:w-1/2"
+              disabled={isBusy}
+            >
+              <div className="flex justify-center">
+                {isBusy && <Spinner size="sm" />}
+                <p className="text-white text-sm ml-2">
+                  Generate Optimized Route
+                </p>
+              </div>
+            </button>
+          </div>
         </div>
-      )}
-    </>
+        {fetchError && (
+          <p className="text-simmpy-red text-center">{fetchError}</p>
+        )}
+      </div>
+      <div className="flex flex-wrap w-full md:justify-around">
+        <RouteList optimizedRouteData={optimizedRequestData} />
+        {/* Pass routes as props */}
+        <div className="h-[300px] w-[500px] md:w-[600px]" id="gmap"></div>
+      </div>
+    </div>
   );
 }
