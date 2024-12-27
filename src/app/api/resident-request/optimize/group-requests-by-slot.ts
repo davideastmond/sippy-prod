@@ -23,11 +23,12 @@ export function groupRequestsByTimeslot(
     [TimeSlot.Evening]: [],
   };
 
-  // const addHours = process.env.NODE_ENV === "production" ? 5 : 0;
+  const addHours = process.env.NODE_ENV === "production" ? 5 : 0;
   residentRequests.forEach((request) => {
-    const startHour = dayjs(request.requestedTimeSlot.startTime).get("hour");
+    const startHour = dayjs(request.requestedTimeSlot.startTime)
+      .add(addHours * -1, "hour")
+      .get("hour");
 
-    console.debug("startHour", startHour);
     switch (startHour) {
       case getTimeSlotHours(TimeSlot.Morning)[0]:
         groupedRequests[TimeSlot.Morning].push(request);
