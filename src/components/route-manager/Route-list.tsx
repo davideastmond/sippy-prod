@@ -3,13 +3,34 @@ import {
   OptimizedResidentRequestData,
   TimeSlotBodyData,
 } from "@/types/optimized-resident-request-data";
+import { TimeSlot } from "@/types/time-slot";
+import { useState } from "react";
 import { TIMESLOT_MAP_RENDER_DICT } from "./helpers/route-manager-helpers";
 
 interface RouteListProps {
   optimizedRouteData?: OptimizedResidentRequestData; // Mark as optional to allow default value
+  onTimeSlotToggle?: (timeSlot: TimeSlot, checked: boolean) => void;
 }
 
-export default function RouteList({ optimizedRouteData }: RouteListProps) {
+export default function RouteList({
+  optimizedRouteData,
+  onTimeSlotToggle,
+}: RouteListProps) {
+  const [checkedOptions, setCheckedOptions] = useState<
+    Record<TimeSlot, boolean>
+  >({
+    [TimeSlot.Morning]: true,
+    [TimeSlot.Daytime]: true,
+    [TimeSlot.Evening]: true,
+  });
+
+  const handleToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, checked } = e.target;
+    const timeSlot = name as TimeSlot;
+    setCheckedOptions((prev) => ({ ...prev, [timeSlot]: checked }));
+    onTimeSlotToggle?.(timeSlot, checked);
+  };
+
   return (
     <div className="mt-4 w-full md:w-1/2">
       <h2 className="text-lg font-medium text-gray-900">Routes</h2>
@@ -17,19 +38,34 @@ export default function RouteList({ optimizedRouteData }: RouteListProps) {
         {optimizedRouteData?.MOR && (
           <div className="mt-4">
             <h3
-              className={`text-sm font-medium text-gray-900 p-2 rounded-lg ${TIMESLOT_MAP_RENDER_DICT["MOR"].bgColor}`}
+              className={`text-sm font-medium text-gray-900 p-2 rounded-lg ${TIMESLOT_MAP_RENDER_DICT["MOR"].bgColor} flex justify-between`}
             >
               Morning
+              <input
+                type="checkbox"
+                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                name={TimeSlot.Morning}
+                onChange={handleToggle}
+                checked={checkedOptions[TimeSlot.Morning]}
+              />
             </h3>
+
             {OptmizedList(optimizedRouteData.MOR)}
           </div>
         )}
         {optimizedRouteData?.DAY && (
           <div className="mt-4">
             <h3
-              className={`text-sm font-medium text-gray-900 p-2 rounded-lg ${TIMESLOT_MAP_RENDER_DICT["DAY"].bgColor}`}
+              className={`text-sm font-medium text-gray-900 p-2 rounded-lg ${TIMESLOT_MAP_RENDER_DICT["DAY"].bgColor} flex justify-between`}
             >
               Daytime
+              <input
+                type="checkbox"
+                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                name={TimeSlot.Daytime}
+                onChange={handleToggle}
+                checked={checkedOptions[TimeSlot.Daytime]}
+              />
             </h3>
             {OptmizedList(optimizedRouteData.DAY)}
           </div>
@@ -37,9 +73,16 @@ export default function RouteList({ optimizedRouteData }: RouteListProps) {
         {optimizedRouteData?.EVE && (
           <div className="mt-4">
             <h3
-              className={`text-sm font-medium text-gray-900 p-2 rounded-lg ${TIMESLOT_MAP_RENDER_DICT["EVE"].bgColor}`}
+              className={`text-sm font-medium text-gray-900 p-2 rounded-lg ${TIMESLOT_MAP_RENDER_DICT["EVE"].bgColor} flex justify-between`}
             >
               Evening
+              <input
+                type="checkbox"
+                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                name={TimeSlot.Evening}
+                onChange={handleToggle}
+                checked={checkedOptions[TimeSlot.Evening]}
+              />
             </h3>
             {OptmizedList(optimizedRouteData.EVE)}
           </div>

@@ -9,7 +9,7 @@ import { TimeSlot } from "@/types/time-slot";
 import dayjs from "dayjs";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import RouteList from "./Route-list";
 import { renderDirectionsOnMap } from "./helpers/route-manager-helpers";
 
@@ -28,6 +28,10 @@ export default function RouteManager({ dateValue }: RouteManagerProps) {
 
   const [optimizedRequestData, setOptimizedRequestData] =
     useState<OptimizedResidentRequestData>({});
+
+  const renderers = useRef<
+    Record<TimeSlot, google.maps.DirectionsRenderer> | {}
+  >({});
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -57,12 +61,16 @@ export default function RouteManager({ dateValue }: RouteManagerProps) {
         // Render the optimized routes as waypoints and directions on the map
         for (const [timeslot, routeData] of Object.entries(optimizedResults)) {
           if (routeData) {
-            renderDirectionsOnMap({
+            const returnedRenderer = await renderDirectionsOnMap({
               timeslot: timeslot as TimeSlot,
               directionService: directionsService,
               routeLegs: routeData.legs,
               googleMap,
             });
+            renderers.current = {
+              ...renderers.current,
+              [timeslot]: returnedRenderer,
+            };
           }
         }
 
@@ -77,6 +85,18 @@ export default function RouteManager({ dateValue }: RouteManagerProps) {
       setFetchError(
         "Unable to complete optimization due to an error. Please check the date and try again."
       );
+    }
+  };
+
+  const handleTimeSlotToggle = (timeSlot: TimeSlot, isChecked: boolean) => {
+    if (isChecked) {
+      (renderers.current as Record<TimeSlot, google.maps.DirectionsRenderer>)[
+        timeSlot
+      ].setMap(googleMap);
+    } else {
+      (renderers.current as Record<TimeSlot, google.maps.DirectionsRenderer>)[
+        timeSlot
+      ].setMap(null);
     }
   };
 
@@ -138,7 +158,10 @@ export default function RouteManager({ dateValue }: RouteManagerProps) {
         )}
       </div>
       <div className="flex flex-wrap w-full md:justify-around">
-        <RouteList optimizedRouteData={optimizedRequestData} />
+        <RouteList
+          optimizedRouteData={optimizedRequestData}
+          onTimeSlotToggle={handleTimeSlotToggle}
+        />
         {/* Pass routes as props */}
         <div className="h-[300px] w-[500px] md:w-[600px]" id="gmap"></div>
       </div>
