@@ -142,6 +142,9 @@ export default function AdminDashboard() {
       if (query.trim()) {
         filteredRequests = filteredRequests.filter(
           (request) =>
+            request.applicantName
+              ?.toLowerCase()
+              .includes(query.toLowerCase()) ||
             request.user.name.toLowerCase().includes(query.toLowerCase()) ||
             request.user.email.toLowerCase().includes(query.toLowerCase()) ||
             request.address?.streetName
