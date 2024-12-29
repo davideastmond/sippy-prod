@@ -6,6 +6,7 @@ import Spinner from "@/components/spinner/Spinner";
 import { ResidentRequestService } from "@/services/resident-request-service";
 import { OptimizedResidentRequestData } from "@/types/optimized-resident-request-data";
 import { TimeSlot } from "@/types/time-slot";
+import { RequestStatus } from "@prisma/client";
 import dayjs from "dayjs";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -26,7 +27,8 @@ export default function RouteManager({ dateValue }: RouteManagerProps) {
   const [isBusy, setIsBusy] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
-  const [optimizedRequestData, setOptimizedRequestData] =
+  /* eslint-disable @typescript-eslint/no-empty-object-type */
+  const [optimizedRouteData, setOptimizedRouteData] =
     useState<OptimizedResidentRequestData>({});
 
   const renderers = useRef<
@@ -53,11 +55,12 @@ export default function RouteManager({ dateValue }: RouteManagerProps) {
         return;
       }
 
-      setOptimizedRequestData(optimizedResults);
+      setOptimizedRouteData(optimizedResults);
 
       if (googleMap) {
         const directionsService = new google.maps.DirectionsService();
 
+        deleteAllRenderers();
         // Render the optimized routes as waypoints and directions on the map
         for (const [timeslot, routeData] of Object.entries(optimizedResults)) {
           if (routeData) {
@@ -121,6 +124,50 @@ export default function RouteManager({ dateValue }: RouteManagerProps) {
     initMap();
   }, []);
 
+  const handleRequestActionTaken = async (
+    statusAction: RequestStatus,
+    requestId: string,
+    timeSlot: TimeSlot
+  ) => {
+    const timeSlotData = optimizedRouteData[timeSlot];
+    if (!timeSlotData) return;
+
+    // Complete a network request to update the status of the request
+    try {
+      setIsBusy(true);
+      await ResidentRequestService.patchRequestStatusById(
+        requestId,
+        statusAction
+      );
+    } catch (error) {
+      // If we are not able to we will abort everything
+      console.error(
+        "Error handling request action taken:",
+        (error as Error).message
+      );
+      setIsBusy(false);
+      return;
+    }
+
+    const updatedBlockOfData = timeSlotData.waypoints.map((waypoint) => {
+      if (waypoint.id === requestId) {
+        return {
+          ...waypoint,
+          status: statusAction,
+        };
+      }
+      return waypoint;
+    });
+    setOptimizedRouteData((prevData) => ({
+      ...prevData,
+      [timeSlot]: {
+        ...timeSlotData,
+        waypoints: updatedBlockOfData,
+      },
+    }));
+    setIsBusy(false);
+  };
+
   if (!session?.user?.isAdmin)
     return (
       <div>
@@ -128,8 +175,25 @@ export default function RouteManager({ dateValue }: RouteManagerProps) {
       </div>
     );
 
+  const deleteAllRenderers = () => {
+    for (let [, renderer] of Object.entries(renderers.current)) {
+      (renderer as google.maps.DirectionsRenderer).setMap(null);
+
+      /* eslint-disable @typescript-eslint/no-explicit-any */
+      renderer = null as any;
+    }
+
+    renderers.current = {};
+  };
+
   return (
     <div className="p-2">
+      {isBusy && (
+        <div className="flex justify-center w-full">
+          {" "}
+          <Spinner />
+        </div>
+      )}
       <div>
         <h2 className="text-3xl font-bold text-center">
           Route Optimization for{" "}
@@ -159,8 +223,10 @@ export default function RouteManager({ dateValue }: RouteManagerProps) {
       </div>
       <div className="flex flex-wrap w-full md:justify-around">
         <RouteList
-          optimizedRouteData={optimizedRequestData}
+          optimizedRouteData={optimizedRouteData}
           onTimeSlotToggle={handleTimeSlotToggle}
+          onActionClicked={handleRequestActionTaken}
+          isBusy={isBusy}
         />
         {/* Pass routes as props */}
         <div className="h-[300px] w-[500px] md:w-[600px]" id="gmap"></div>

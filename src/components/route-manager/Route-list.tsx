@@ -1,20 +1,27 @@
 import { formatTime } from "@/lib/utils/date-time-formatters/format-time";
-import {
-  OptimizedResidentRequestData,
-  TimeSlotBodyData,
-} from "@/types/optimized-resident-request-data";
+import { ResidentRequestDataBaseResponseWithDuration } from "@/types/database-query-results/resident-request-database-response";
+import { OptimizedResidentRequestData } from "@/types/optimized-resident-request-data";
 import { TimeSlot } from "@/types/time-slot";
+import { RequestStatus } from "@prisma/client";
 import { useState } from "react";
 import { TIMESLOT_MAP_RENDER_DICT } from "./helpers/route-manager-helpers";
 
 interface RouteListProps {
   optimizedRouteData?: OptimizedResidentRequestData; // Mark as optional to allow default value
   onTimeSlotToggle?: (timeSlot: TimeSlot, checked: boolean) => void;
+  onActionClicked?: (
+    statusAction: RequestStatus,
+    requestId: string,
+    timeSlot: TimeSlot
+  ) => void;
+  isBusy?: boolean;
 }
 
 export default function RouteList({
   optimizedRouteData,
   onTimeSlotToggle,
+  onActionClicked,
+  isBusy,
 }: RouteListProps) {
   const [checkedOptions, setCheckedOptions] = useState<
     Record<TimeSlot, boolean>
@@ -50,7 +57,12 @@ export default function RouteList({
               />
             </h3>
 
-            {OptmizedList(optimizedRouteData.MOR)}
+            <OptmizedList
+              waypoints={optimizedRouteData.MOR.waypoints}
+              onActionClicked={onActionClicked}
+              timeSlot={TimeSlot.Morning}
+              isBusy={isBusy}
+            />
           </div>
         )}
         {optimizedRouteData?.DAY && (
@@ -67,7 +79,12 @@ export default function RouteList({
                 checked={checkedOptions[TimeSlot.Daytime]}
               />
             </h3>
-            {OptmizedList(optimizedRouteData.DAY)}
+            <OptmizedList
+              waypoints={optimizedRouteData.DAY.waypoints}
+              onActionClicked={onActionClicked}
+              timeSlot={TimeSlot.Daytime}
+              isBusy={isBusy}
+            />
           </div>
         )}
         {optimizedRouteData?.EVE && (
@@ -84,7 +101,12 @@ export default function RouteList({
                 checked={checkedOptions[TimeSlot.Evening]}
               />
             </h3>
-            {OptmizedList(optimizedRouteData.EVE)}
+            <OptmizedList
+              waypoints={optimizedRouteData.EVE.waypoints}
+              onActionClicked={onActionClicked}
+              timeSlot={TimeSlot.Evening}
+              isBusy={isBusy}
+            />
           </div>
         )}
       </div>
@@ -92,8 +114,22 @@ export default function RouteList({
   );
 }
 
-const OptmizedList = (optimizedData: TimeSlotBodyData) => {
-  if (optimizedData.waypoints.length === 0) {
+const OptmizedList = ({
+  waypoints,
+  onActionClicked,
+  timeSlot,
+  isBusy,
+}: {
+  waypoints: ResidentRequestDataBaseResponseWithDuration[];
+  isBusy?: boolean;
+  onActionClicked?: (
+    statusAction: RequestStatus,
+    requestId: string,
+    timeSlot: TimeSlot
+  ) => void;
+  timeSlot: TimeSlot;
+}) => {
+  if (waypoints.length === 0) {
     return (
       <ul>
         <li className="pb-3 sm:pb-4 rounded-md p-4 text-center">
@@ -104,7 +140,7 @@ const OptmizedList = (optimizedData: TimeSlotBodyData) => {
   }
   return (
     <ul className="max-w-md divide-y divide-gray-200 mt-4">
-      {optimizedData.waypoints.map((residentRequest) => (
+      {waypoints.map((residentRequest) => (
         <li
           key={residentRequest.id}
           className="pb-3 sm:pb-4 p-4 shadow-lg shadow-slate-50/70"
@@ -129,8 +165,50 @@ const OptmizedList = (optimizedData: TimeSlotBodyData) => {
               </p>
             </div>
           </div>
+          <div>
+            {residentRequest.status === RequestStatus.PENDING && (
+              // Remember the status is what we want to change it TO
+              <RouteListActionButton
+                status={RequestStatus.COMPLETED}
+                requestId={residentRequest.id}
+                onActionClicked={onActionClicked}
+                timeSlot={timeSlot}
+                disabled={isBusy}
+              />
+            )}
+          </div>
         </li>
       ))}
     </ul>
+  );
+};
+
+const RouteListActionButton = ({
+  onActionClicked,
+  status,
+  requestId,
+  timeSlot,
+  disabled,
+}: {
+  onActionClicked?: (
+    statusAction: RequestStatus,
+    requestId: string,
+    timeSlot: TimeSlot
+  ) => void;
+  status: RequestStatus;
+  requestId: string;
+  timeSlot: TimeSlot;
+  disabled?: boolean;
+}) => {
+  return (
+    <button
+      className="text-sm bg-simmpy-green text-simmpy-gray-100 px-4 rounded-lg"
+      onClick={() => onActionClicked?.(status, requestId, timeSlot)}
+      disabled={disabled}
+    >
+      {`Mark ${status.slice(0, 1).toUpperCase()}${status
+        .slice(1)
+        .toLowerCase()}`}
+    </button>
   );
 };
