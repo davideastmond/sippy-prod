@@ -11,7 +11,6 @@ export function assignRequestedTimeSlot(
   // Requested timeslots are blocks
   const addHours = process.env.NODE_ENV === "production" ? 5 : 0;
 
-  console.log("added hours is", addHours);
   switch (timeSlot) {
     case TimeSlot.Morning:
       return {
