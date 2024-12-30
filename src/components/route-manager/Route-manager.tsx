@@ -96,11 +96,11 @@ export default function RouteManager({ dateValue }: RouteManagerProps) {
       (renderers.current as Record<TimeSlot, google.maps.DirectionsRenderer>)[
         timeSlot
       ].setMap(googleMap);
-    } else {
-      (renderers.current as Record<TimeSlot, google.maps.DirectionsRenderer>)[
-        timeSlot
-      ].setMap(null);
+      return;
     }
+    (renderers.current as Record<TimeSlot, google.maps.DirectionsRenderer>)[
+      timeSlot
+    ].setMap(null);
   };
 
   useEffect(() => {
@@ -168,13 +168,6 @@ export default function RouteManager({ dateValue }: RouteManagerProps) {
     setIsBusy(false);
   };
 
-  if (!session?.user?.isAdmin)
-    return (
-      <div>
-        <p className="text-simmpy-red">Not authorized</p>
-      </div>
-    );
-
   const deleteAllRenderers = () => {
     for (let [, renderer] of Object.entries(renderers.current)) {
       (renderer as google.maps.DirectionsRenderer).setMap(null);
@@ -185,6 +178,13 @@ export default function RouteManager({ dateValue }: RouteManagerProps) {
 
     renderers.current = {};
   };
+
+  if (!session?.user?.isAdmin)
+    return (
+      <div>
+        <p className="text-simmpy-red">Not authorized</p>
+      </div>
+    );
 
   return (
     <div className="p-2">
