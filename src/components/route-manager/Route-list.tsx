@@ -1,15 +1,43 @@
 import { formatTime } from "@/lib/utils/date-time-formatters/format-time";
-import {
-  OptimizedResidentRequestData,
-  TimeSlotBodyData,
-} from "@/types/optimized-resident-request-data";
+import { ResidentRequestDataBaseResponseWithDuration } from "@/types/database-query-results/resident-request-database-response";
+import { OptimizedResidentRequestData } from "@/types/optimized-resident-request-data";
+import { TimeSlot } from "@/types/time-slot";
+import { RequestStatus } from "@prisma/client";
+import { useState } from "react";
 import { TIMESLOT_MAP_RENDER_DICT } from "./helpers/route-manager-helpers";
 
 interface RouteListProps {
   optimizedRouteData?: OptimizedResidentRequestData; // Mark as optional to allow default value
+  onTimeSlotToggle?: (timeSlot: TimeSlot, checked: boolean) => void;
+  onActionClicked?: (
+    statusAction: RequestStatus,
+    requestId: string,
+    timeSlot: TimeSlot
+  ) => void;
+  isBusy?: boolean;
 }
 
-export default function RouteList({ optimizedRouteData }: RouteListProps) {
+export default function RouteList({
+  optimizedRouteData,
+  onTimeSlotToggle,
+  onActionClicked,
+  isBusy,
+}: RouteListProps) {
+  const [checkedOptions, setCheckedOptions] = useState<
+    Record<TimeSlot, boolean>
+  >({
+    [TimeSlot.Morning]: true,
+    [TimeSlot.Daytime]: true,
+    [TimeSlot.Evening]: true,
+  });
+
+  const handleToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, checked } = e.target;
+    const timeSlot = name as TimeSlot;
+    setCheckedOptions((prev) => ({ ...prev, [timeSlot]: checked }));
+    onTimeSlotToggle?.(timeSlot, checked);
+  };
+
   return (
     <div className="mt-4 w-full md:w-1/2">
       <h2 className="text-lg font-medium text-gray-900">Routes</h2>
@@ -17,31 +45,68 @@ export default function RouteList({ optimizedRouteData }: RouteListProps) {
         {optimizedRouteData?.MOR && (
           <div className="mt-4">
             <h3
-              className={`text-sm font-medium text-gray-900 p-2 rounded-lg ${TIMESLOT_MAP_RENDER_DICT["MOR"].bgColor}`}
+              className={`text-sm font-medium text-gray-900 p-2 rounded-lg ${TIMESLOT_MAP_RENDER_DICT["MOR"].bgColor} flex justify-between`}
             >
               Morning
+              <input
+                type="checkbox"
+                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                name={TimeSlot.Morning}
+                onChange={handleToggle}
+                checked={checkedOptions[TimeSlot.Morning]}
+              />
             </h3>
-            {OptmizedList(optimizedRouteData.MOR)}
+
+            <OptmizedList
+              waypoints={optimizedRouteData.MOR.waypoints}
+              onActionClicked={onActionClicked}
+              timeSlot={TimeSlot.Morning}
+              isBusy={isBusy}
+            />
           </div>
         )}
         {optimizedRouteData?.DAY && (
           <div className="mt-4">
             <h3
-              className={`text-sm font-medium text-gray-900 p-2 rounded-lg ${TIMESLOT_MAP_RENDER_DICT["DAY"].bgColor}`}
+              className={`text-sm font-medium text-gray-900 p-2 rounded-lg ${TIMESLOT_MAP_RENDER_DICT["DAY"].bgColor} flex justify-between`}
             >
               Daytime
+              <input
+                type="checkbox"
+                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                name={TimeSlot.Daytime}
+                onChange={handleToggle}
+                checked={checkedOptions[TimeSlot.Daytime]}
+              />
             </h3>
-            {OptmizedList(optimizedRouteData.DAY)}
+            <OptmizedList
+              waypoints={optimizedRouteData.DAY.waypoints}
+              onActionClicked={onActionClicked}
+              timeSlot={TimeSlot.Daytime}
+              isBusy={isBusy}
+            />
           </div>
         )}
         {optimizedRouteData?.EVE && (
           <div className="mt-4">
             <h3
-              className={`text-sm font-medium text-gray-900 p-2 rounded-lg ${TIMESLOT_MAP_RENDER_DICT["EVE"].bgColor}`}
+              className={`text-sm font-medium text-gray-900 p-2 rounded-lg ${TIMESLOT_MAP_RENDER_DICT["EVE"].bgColor} flex justify-between`}
             >
               Evening
+              <input
+                type="checkbox"
+                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                name={TimeSlot.Evening}
+                onChange={handleToggle}
+                checked={checkedOptions[TimeSlot.Evening]}
+              />
             </h3>
-            {OptmizedList(optimizedRouteData.EVE)}
+            <OptmizedList
+              waypoints={optimizedRouteData.EVE.waypoints}
+              onActionClicked={onActionClicked}
+              timeSlot={TimeSlot.Evening}
+              isBusy={isBusy}
+            />
           </div>
         )}
       </div>
@@ -49,8 +114,22 @@ export default function RouteList({ optimizedRouteData }: RouteListProps) {
   );
 }
 
-const OptmizedList = (optimizedData: TimeSlotBodyData) => {
-  if (optimizedData.waypoints.length === 0) {
+const OptmizedList = ({
+  waypoints,
+  onActionClicked,
+  timeSlot,
+  isBusy,
+}: {
+  waypoints: ResidentRequestDataBaseResponseWithDuration[];
+  isBusy?: boolean;
+  onActionClicked?: (
+    statusAction: RequestStatus,
+    requestId: string,
+    timeSlot: TimeSlot
+  ) => void;
+  timeSlot: TimeSlot;
+}) => {
+  if (waypoints.length === 0) {
     return (
       <ul>
         <li className="pb-3 sm:pb-4 rounded-md p-4 text-center">
@@ -61,7 +140,7 @@ const OptmizedList = (optimizedData: TimeSlotBodyData) => {
   }
   return (
     <ul className="max-w-md divide-y divide-gray-200 mt-4">
-      {optimizedData.waypoints.map((residentRequest) => (
+      {waypoints.map((residentRequest) => (
         <li
           key={residentRequest.id}
           className="pb-3 sm:pb-4 p-4 shadow-lg shadow-slate-50/70"
@@ -86,8 +165,50 @@ const OptmizedList = (optimizedData: TimeSlotBodyData) => {
               </p>
             </div>
           </div>
+          <div>
+            {residentRequest.status === RequestStatus.PENDING && (
+              // Remember the status is what we want to change it TO
+              <RouteListActionButton
+                status={RequestStatus.COMPLETED}
+                requestId={residentRequest.id}
+                onActionClicked={onActionClicked}
+                timeSlot={timeSlot}
+                disabled={isBusy}
+              />
+            )}
+          </div>
         </li>
       ))}
     </ul>
+  );
+};
+
+const RouteListActionButton = ({
+  onActionClicked,
+  status,
+  requestId,
+  timeSlot,
+  disabled,
+}: {
+  onActionClicked?: (
+    statusAction: RequestStatus,
+    requestId: string,
+    timeSlot: TimeSlot
+  ) => void;
+  status: RequestStatus;
+  requestId: string;
+  timeSlot: TimeSlot;
+  disabled?: boolean;
+}) => {
+  return (
+    <button
+      className="text-sm bg-simmpy-green text-simmpy-gray-100 px-4 rounded-lg"
+      onClick={() => onActionClicked?.(status, requestId, timeSlot)}
+      disabled={disabled}
+    >
+      {`Mark ${status.slice(0, 1).toUpperCase()}${status
+        .slice(1)
+        .toLowerCase()}`}
+    </button>
   );
 };
