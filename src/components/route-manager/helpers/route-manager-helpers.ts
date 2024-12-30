@@ -13,7 +13,7 @@ function getWaypointsForTimeslot(
   }));
 }
 
-export function renderDirectionsOnMap({
+export async function renderDirectionsOnMap({
   timeslot,
   directionService,
   routeLegs,
@@ -23,7 +23,7 @@ export function renderDirectionsOnMap({
   timeslot: TimeSlot;
   directionService: google.maps.DirectionsService;
   googleMap: google.maps.Map;
-}) {
+}): Promise<google.maps.DirectionsRenderer> {
   const directionsRequest: google.maps.DirectionsRequest = {
     origin: {
       lat:
@@ -45,22 +45,22 @@ export function renderDirectionsOnMap({
     travelMode: google.maps.TravelMode.DRIVING,
   };
 
-  directionService.route(directionsRequest, (result, status) => {
-    if (status === google.maps.DirectionsStatus.OK) {
-      const directionsRenderer = new google.maps.DirectionsRenderer({
-        map: googleMap,
-        polylineOptions: {
-          strokeColor: TIMESLOT_MAP_RENDER_DICT[timeslot].strokeColor,
-          strokeOpacity: 0.7,
-          strokeWeight: 5,
-        },
-      });
-
-      directionsRenderer.setDirections(result);
-    } else {
-      console.error("Error rendering directions for timeslot: ", timeslot);
-    }
-  });
+  try {
+    const result = await directionService.route(directionsRequest);
+    const directionsRenderer = new google.maps.DirectionsRenderer({
+      map: googleMap,
+      polylineOptions: {
+        strokeColor: TIMESLOT_MAP_RENDER_DICT[timeslot].strokeColor,
+        strokeOpacity: 0.7,
+        strokeWeight: 5,
+      },
+    });
+    directionsRenderer.setDirections(result);
+    return directionsRenderer;
+  } catch (error) {
+    console.error("Error rendering directions for timeslot: ", timeslot);
+    throw error;
+  }
 }
 
 export const TIMESLOT_MAP_RENDER_DICT: Record<

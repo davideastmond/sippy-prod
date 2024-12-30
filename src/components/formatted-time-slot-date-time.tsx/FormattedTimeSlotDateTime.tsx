@@ -15,8 +15,8 @@ export default function FormattedTimeSlotDateTime({
     <div>
       {dayjs(start).format("MMM DD YYYY")}{" "}
       <div className="flex">
-        <p className="font-bold">{dayjs(start).format("HH:mm")}-</p>
-        <p className="font-bold">{dayjs(end).format("HH:mm")}</p>
+        <p className="font-bold">{dayjs(start).format("H:mm")}-</p>
+        <p className="font-bold">{dayjs(end).format("H:mm")}</p>
       </div>
     </div>
   );
