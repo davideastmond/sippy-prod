@@ -1,4 +1,4 @@
-import { PDFGenerator } from "@/lib/pdf-generator/pdf-generator";
+import { generatePdf } from "@/lib/pdf-generator/pdf-generator";
 import { formatTime } from "@/lib/utils/date-time-formatters/format-time";
 import { ResidentRequestDataBaseResponseWithDuration } from "@/types/database-query-results/resident-request-database-response";
 import { OptimizedResidentRequestData } from "@/types/optimized-resident-request-data";
@@ -49,9 +49,8 @@ export default function RouteList({
   }
 
   const handleGeneratePdf = async () => {
-    const pdfGenerator = new PDFGenerator(optimizedRouteData!, date);
     setIsGeneratingPdf(true);
-    await pdfGenerator.generate();
+    await generatePdf(date, optimizedRouteData!);
     setIsGeneratingPdf(false);
   };
 
