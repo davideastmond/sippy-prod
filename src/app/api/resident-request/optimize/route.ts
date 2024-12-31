@@ -59,7 +59,10 @@ export async function POST(req: Request) {
       );
 
       await batchUpdateAssignedTimeSlotsInDb(optimizedGroupedRequests);
-      return NextResponse.json(optimizedGroupedRequests);
+      return NextResponse.json({
+        date,
+        optimizations: optimizedGroupedRequests,
+      });
     } catch (error) {
       console.error("Error fetching or updating requests:", error);
       return NextResponse.json(
