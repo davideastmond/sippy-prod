@@ -26,6 +26,9 @@ export default function RouteManager({ dateValue }: RouteManagerProps) {
   const [googleMap, setGoogleMap] = useState<google.maps.Map | null>(null);
   const [isBusy, setIsBusy] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const [optimizedRequestDate, setOptimizedRequestDate] = useState<
+    string | null
+  >(null);
 
   /* eslint-disable @typescript-eslint/no-empty-object-type */
   const [optimizedRouteData, setOptimizedRouteData] =
@@ -45,24 +48,27 @@ export default function RouteManager({ dateValue }: RouteManagerProps) {
     try {
       setIsBusy(true);
       const formattedDate = dayjs(dateValue.toString()).format("YYYY-MM-DD");
-      const optimizedResults =
+      const apiResponse =
         await ResidentRequestService.fetchOptimizedResidentRequestsByDate(
           formattedDate
         );
 
-      if (Object.keys(optimizedResults).length === 0) {
+      if (Object.keys(apiResponse).length === 0) {
         console.warn("No routes found for the selected date.");
         return;
       }
 
-      setOptimizedRouteData(optimizedResults);
+      setOptimizedRouteData(apiResponse.optimizations);
+      setOptimizedRequestDate(apiResponse.date);
 
       if (googleMap) {
         const directionsService = new google.maps.DirectionsService();
 
         deleteAllRenderers();
         // Render the optimized routes as waypoints and directions on the map
-        for (const [timeslot, routeData] of Object.entries(optimizedResults)) {
+        for (const [timeslot, routeData] of Object.entries(
+          apiResponse.optimizations
+        )) {
           if (routeData) {
             const returnedRenderer = await renderDirectionsOnMap({
               timeslot: timeslot as TimeSlot,
@@ -200,23 +206,18 @@ export default function RouteManager({ dateValue }: RouteManagerProps) {
           {dayjs(dateValue.toString()).format("MMM-DD-YYYY")}
         </h2>
       </div>
-      <div className="my-4">
-        <div>
-          <div className="my-6 md:flex md:justify-center">
-            <button
-              onClick={fetchOptimizedRoutes}
-              className="bg-simmpy-blue py-2 rounded-md w-full md:w-1/2"
-              disabled={isBusy}
-            >
-              <div className="flex justify-center">
-                {isBusy && <Spinner size="sm" />}
-                <p className="text-white text-sm ml-2">
-                  Generate Optimized Route
-                </p>
-              </div>
-            </button>
+      <div className="my-6 md:flex md:justify-center w-full">
+        <button
+          onClick={fetchOptimizedRoutes}
+          className="bg-simmpy-blue py-2 w-full rounded-md md:max-w-80 md:w-1/2"
+          disabled={isBusy}
+        >
+          <div className="flex justify-center">
+            {isBusy && <Spinner size="sm" />}
+            <p className="text-white text-sm ml-2">Generate Optimized Route</p>
           </div>
-        </div>
+        </button>
+
         {fetchError && (
           <p className="text-simmpy-red text-center">{fetchError}</p>
         )}
@@ -224,6 +225,7 @@ export default function RouteManager({ dateValue }: RouteManagerProps) {
       <div className="flex flex-wrap w-full md:justify-around">
         <RouteList
           optimizedRouteData={optimizedRouteData}
+          date={optimizedRequestDate!}
           onTimeSlotToggle={handleTimeSlotToggle}
           onActionClicked={handleRequestActionTaken}
           isBusy={isBusy}
