@@ -1,14 +1,17 @@
+import { PDFGenerator } from "@/lib/pdf-generator/pdf-generator";
 import { formatTime } from "@/lib/utils/date-time-formatters/format-time";
 import { ResidentRequestDataBaseResponseWithDuration } from "@/types/database-query-results/resident-request-database-response";
 import { OptimizedResidentRequestData } from "@/types/optimized-resident-request-data";
 import { TimeSlot } from "@/types/time-slot";
 import { RequestStatus } from "@prisma/client";
+import Image from "next/image";
 import { useState } from "react";
 import { TIMESLOT_MAP_RENDER_DICT } from "./helpers/route-manager-helpers";
 
 interface RouteListProps {
   optimizedRouteData?: OptimizedResidentRequestData; // Mark as optional to allow default value
   onTimeSlotToggle?: (timeSlot: TimeSlot, checked: boolean) => void;
+  date: string;
   onActionClicked?: (
     statusAction: RequestStatus,
     requestId: string,
@@ -22,6 +25,7 @@ export default function RouteList({
   onTimeSlotToggle,
   onActionClicked,
   isBusy,
+  date,
 }: RouteListProps) {
   const [checkedOptions, setCheckedOptions] = useState<
     Record<TimeSlot, boolean>
@@ -31,6 +35,8 @@ export default function RouteList({
     [TimeSlot.Evening]: true,
   });
 
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+
   const handleToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, checked } = e.target;
     const timeSlot = name as TimeSlot;
@@ -38,9 +44,33 @@ export default function RouteList({
     onTimeSlotToggle?.(timeSlot, checked);
   };
 
+  if (Object.keys(optimizedRouteData as object)?.length === 0) {
+    return null;
+  }
+
+  const handleGeneratePdf = async () => {
+    const pdfGenerator = new PDFGenerator(optimizedRouteData!, date);
+    setIsGeneratingPdf(true);
+    await pdfGenerator.generate();
+    setIsGeneratingPdf(false);
+  };
+
   return (
     <div className="mt-4 w-full md:w-1/2">
-      <h2 className="text-lg font-medium text-gray-900">Routes</h2>
+      <div className="flex items-center justify-between">
+        <header className="text-lg font-medium text-gray-900">Routes</header>
+        <button onClick={handleGeneratePdf} disabled={isGeneratingPdf}>
+          <div className="flex items-center space-x-2 hover:bg-gray-300 p-2 rounded-lg">
+            <Image
+              src="/assets/images/icons/pdf.svg"
+              alt="Generate"
+              width={16}
+              height={16}
+            />
+            <p className="text-sm">Generate PDF</p>
+          </div>
+        </button>
+      </div>
       <div className="mt-4">
         {optimizedRouteData?.MOR && (
           <div className="mt-4">
