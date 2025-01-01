@@ -26,9 +26,6 @@ export default function RouteManager({ dateValue }: RouteManagerProps) {
   const [googleMap, setGoogleMap] = useState<google.maps.Map | null>(null);
   const [isBusy, setIsBusy] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
-  const [optimizedRequestDate, setOptimizedRequestDate] = useState<
-    string | null
-  >(null);
 
   /* eslint-disable @typescript-eslint/no-empty-object-type */
   const [optimizedRouteData, setOptimizedRouteData] =
@@ -59,7 +56,6 @@ export default function RouteManager({ dateValue }: RouteManagerProps) {
       }
 
       setOptimizedRouteData(apiResponse.optimizations);
-      setOptimizedRequestDate(apiResponse.date);
 
       if (googleMap) {
         const directionsService = new google.maps.DirectionsService();
@@ -225,7 +221,7 @@ export default function RouteManager({ dateValue }: RouteManagerProps) {
       <div className="flex flex-wrap w-full md:justify-around">
         <RouteList
           optimizedRouteData={optimizedRouteData}
-          date={optimizedRequestDate!}
+          date={dateValue}
           onTimeSlotToggle={handleTimeSlotToggle}
           onActionClicked={handleRequestActionTaken}
           isBusy={isBusy}
