@@ -1,5 +1,4 @@
 import { prisma } from "@/lib/prisma";
-import dayjs from "dayjs";
 const MAX_REQUESTS_PER_SLOT = 3;
 /**
  * This returns if a requested time slot is available.
@@ -9,20 +8,11 @@ const MAX_REQUESTS_PER_SLOT = 3;
 export async function isRequestedTimeSlotAvailable(
   startTime: Date
 ): Promise<boolean> {
-  let modifiedStartTime = startTime;
-  // Again there are issues with production DB dates and dev env
-  if (process.env.NODE_ENV === "production") {
-    modifiedStartTime = dayjs(startTime)
-      .add(-1, "day")
-      .tz("America/Los_Angeles")
-      .utc()
-      .toDate();
-    console.warn("17 modifiedStartTime", modifiedStartTime);
-  }
+  console.info("12 startTime", startTime);
   const requestBookings = await prisma.residentRequest.count({
     where: {
       requestedTimeSlot: {
-        startTime: modifiedStartTime,
+        startTime: startTime,
       },
     },
   });
