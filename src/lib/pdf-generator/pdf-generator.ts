@@ -153,7 +153,7 @@ function generatePdfInput(
       pdfInput[
         `${timeSlot}_visit_${visitCount}_contactPhoneNumber`
       ] = `Phone: ${formatPhoneNumber(
-        waypoint.user.phoneNumber || waypoint.contactPhoneNumber!
+        waypoint.contactPhoneNumber! || waypoint.user.phoneNumber!
       )}`;
       visitCount++;
     });
