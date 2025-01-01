@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import dayjs from "dayjs";
 const MAX_REQUESTS_PER_SLOT = 3;
 
 /**
@@ -9,10 +10,15 @@ const MAX_REQUESTS_PER_SLOT = 3;
 export async function isRequestedTimeSlotAvailable(
   startTime: Date
 ): Promise<boolean> {
+  let formattedStartTime: Date | string = startTime;
+  if (process.env.NODE_ENV === "production") {
+    formattedStartTime = dayjs(startTime).format("YYYY-MM-DD HH:mm:ss:SSS");
+    console.log("17 ***** formattedStartTime", formattedStartTime);
+  }
   const requestBookings = await prisma.residentRequest.count({
     where: {
       requestedTimeSlot: {
-        startTime: startTime,
+        startTime: formattedStartTime,
       },
     },
   });
