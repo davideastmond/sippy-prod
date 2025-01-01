@@ -14,6 +14,7 @@ export async function isRequestedTimeSlotAvailable(
   // Again there are issues with production DB dates and dev env
   if (process.env.NODE_ENV === "production") {
     modifiedStartTime = dayjs(startTime).add(-1, "day").toDate();
+    console.warn("17 modifiedStartTime", modifiedStartTime);
   }
   const requestBookings = await prisma.residentRequest.count({
     where: {
