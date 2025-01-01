@@ -260,7 +260,7 @@ export default function AdminDashboard() {
       <h2 className="py-4 text-2xl font-bold">
         Welcome, {session.user.name} (Admin)
       </h2>
-      <div className="flex justify-between items-center flex-wrap gap-2 mb-8">
+      <div className="flex items-center flex-wrap gap-8 mb-8">
         <SearchRequestsFilterPanel onSearch={handleSearch} />
         {date.current && (
           <button
@@ -417,7 +417,10 @@ export default function AdminDashboard() {
               </div>
               <div>
                 <strong>Phone:</strong>{" "}
-                {formatPhoneNumber(selectedRequest.user.phoneNumber!)}
+                {formatPhoneNumber(
+                  selectedRequest.contactPhoneNumber ||
+                    selectedRequest.user.phoneNumber!
+                )}
               </div>
               <div>
                 <strong>Address:</strong>{" "}

@@ -28,3 +28,14 @@ export const getTimeSlotHours = (timeSlot: TimeSlot) => {
       return [14, 17];
   }
 };
+
+export const getTimeSlotReadableName = (timeSlot: TimeSlot) => {
+  switch (timeSlot) {
+    case TimeSlot.Morning:
+      return "Morning";
+    case TimeSlot.Daytime:
+      return "Daytime";
+    case TimeSlot.Evening:
+      return "Evening";
+  }
+};

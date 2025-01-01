@@ -103,13 +103,8 @@ export async function computeRoute({
         "Error computing route (Axios):",
         error.response?.data || error.message
       );
-    } else if (error instanceof Error) {
-      // Handle generic JavaScript errors
-      console.error("Error computing route:", error.message);
-    } else {
-      // Handle unknown error types
-      console.error("Unexpected error computing route:", error);
     }
-    throw error; // Re-throw the error after logging
+    console.error("Error computing route:", (error as Error).message);
+    throw error;
   }
 }

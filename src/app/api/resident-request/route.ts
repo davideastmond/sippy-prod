@@ -25,11 +25,10 @@ export async function POST(req: NextRequest) {
     requestBody = await req.json();
     residentRequestValidationSchema.parse(requestBody);
   } catch (error) {
-    if (error instanceof ZodError) {
+    if (error instanceof ZodError)
       return NextResponse.json({ errors: error.issues }, { status: 400 });
-    } else {
-      return NextResponse.json({ errors: error }, { status: 400 });
-    }
+
+    return NextResponse.json({ errors: error }, { status: 400 });
   }
 
   const {
@@ -55,10 +54,10 @@ export async function POST(req: NextRequest) {
     await prisma.user.update({
       where: { email: session.user!.email! },
       data: {
-        phoneNumber: `${areaCode}${phoneNumber}`,
         requests: {
           create: {
             applicantName: name,
+            contactPhoneNumber: `${areaCode}${phoneNumber}`,
             requestedTimeSlot: {
               create: {
                 startTime: startTime,

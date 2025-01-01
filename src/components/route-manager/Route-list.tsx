@@ -1,14 +1,18 @@
+import { generatePdf } from "@/lib/pdf-generator/pdf-generator";
 import { formatTime } from "@/lib/utils/date-time-formatters/format-time";
+import { getTimeSlotReadableName } from "@/lib/utils/time-slot/time-slot";
 import { ResidentRequestDataBaseResponseWithDuration } from "@/types/database-query-results/resident-request-database-response";
 import { OptimizedResidentRequestData } from "@/types/optimized-resident-request-data";
 import { TimeSlot } from "@/types/time-slot";
 import { RequestStatus } from "@prisma/client";
+import Image from "next/image";
 import { useState } from "react";
 import { TIMESLOT_MAP_RENDER_DICT } from "./helpers/route-manager-helpers";
 
 interface RouteListProps {
   optimizedRouteData?: OptimizedResidentRequestData; // Mark as optional to allow default value
   onTimeSlotToggle?: (timeSlot: TimeSlot, checked: boolean) => void;
+  date: string;
   onActionClicked?: (
     statusAction: RequestStatus,
     requestId: string,
@@ -22,6 +26,7 @@ export default function RouteList({
   onTimeSlotToggle,
   onActionClicked,
   isBusy,
+  date,
 }: RouteListProps) {
   const [checkedOptions, setCheckedOptions] = useState<
     Record<TimeSlot, boolean>
@@ -31,6 +36,8 @@ export default function RouteList({
     [TimeSlot.Evening]: true,
   });
 
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+
   const handleToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, checked } = e.target;
     const timeSlot = name as TimeSlot;
@@ -38,77 +45,67 @@ export default function RouteList({
     onTimeSlotToggle?.(timeSlot, checked);
   };
 
+  if (Object.keys(optimizedRouteData as object)?.length === 0) {
+    return null;
+  }
+
+  const handleGeneratePdf = async () => {
+    try {
+      setIsGeneratingPdf(true);
+      await generatePdf(date, optimizedRouteData!);
+    } catch (error) {
+      console.error("Failed to generate PDF", (error as Error).message);
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
+
   return (
     <div className="mt-4 w-full md:w-1/2">
-      <h2 className="text-lg font-medium text-gray-900">Routes</h2>
+      <div className="flex items-center justify-between">
+        <header className="text-lg font-medium text-gray-900">Routes</header>
+        <button onClick={handleGeneratePdf} disabled={isGeneratingPdf}>
+          <div className="flex items-center space-x-2 hover:bg-gray-300 p-2 rounded-lg">
+            <Image
+              src="/assets/images/icons/pdf.svg"
+              alt="Generate Pdf"
+              width={16}
+              height={16}
+            />
+            <p className="text-sm">Generate PDF</p>
+          </div>
+        </button>
+      </div>
       <div className="mt-4">
-        {optimizedRouteData?.MOR && (
-          <div className="mt-4">
-            <h3
-              className={`text-sm font-medium text-gray-900 p-2 rounded-lg ${TIMESLOT_MAP_RENDER_DICT["MOR"].bgColor} flex justify-between`}
-            >
-              Morning
-              <input
-                type="checkbox"
-                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                name={TimeSlot.Morning}
-                onChange={handleToggle}
-                checked={checkedOptions[TimeSlot.Morning]}
-              />
-            </h3>
-
-            <OptmizedList
-              waypoints={optimizedRouteData.MOR.waypoints}
-              onActionClicked={onActionClicked}
-              timeSlot={TimeSlot.Morning}
-              isBusy={isBusy}
-            />
-          </div>
-        )}
-        {optimizedRouteData?.DAY && (
-          <div className="mt-4">
-            <h3
-              className={`text-sm font-medium text-gray-900 p-2 rounded-lg ${TIMESLOT_MAP_RENDER_DICT["DAY"].bgColor} flex justify-between`}
-            >
-              Daytime
-              <input
-                type="checkbox"
-                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                name={TimeSlot.Daytime}
-                onChange={handleToggle}
-                checked={checkedOptions[TimeSlot.Daytime]}
-              />
-            </h3>
-            <OptmizedList
-              waypoints={optimizedRouteData.DAY.waypoints}
-              onActionClicked={onActionClicked}
-              timeSlot={TimeSlot.Daytime}
-              isBusy={isBusy}
-            />
-          </div>
-        )}
-        {optimizedRouteData?.EVE && (
-          <div className="mt-4">
-            <h3
-              className={`text-sm font-medium text-gray-900 p-2 rounded-lg ${TIMESLOT_MAP_RENDER_DICT["EVE"].bgColor} flex justify-between`}
-            >
-              Evening
-              <input
-                type="checkbox"
-                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                name={TimeSlot.Evening}
-                onChange={handleToggle}
-                checked={checkedOptions[TimeSlot.Evening]}
-              />
-            </h3>
-            <OptmizedList
-              waypoints={optimizedRouteData.EVE.waypoints}
-              onActionClicked={onActionClicked}
-              timeSlot={TimeSlot.Evening}
-              isBusy={isBusy}
-            />
-          </div>
-        )}
+        {optimizedRouteData &&
+          Object.keys(optimizedRouteData).map((timeSlot) => {
+            return (
+              <div className="mt-4" key={timeSlot}>
+                <h3
+                  className={`text-sm font-medium text-gray-900 p-2 rounded-lg ${
+                    TIMESLOT_MAP_RENDER_DICT[timeSlot as TimeSlot].bgColor
+                  } flex justify-between`}
+                >
+                  {getTimeSlotReadableName(timeSlot as TimeSlot)}
+                  <input
+                    type="checkbox"
+                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                    name={timeSlot}
+                    onChange={handleToggle}
+                    checked={checkedOptions[timeSlot as TimeSlot]}
+                  />
+                </h3>
+                <OptmizedList
+                  waypoints={
+                    optimizedRouteData[timeSlot as TimeSlot]!.waypoints
+                  }
+                  onActionClicked={onActionClicked}
+                  timeSlot={timeSlot as TimeSlot}
+                  isBusy={isBusy}
+                />
+              </div>
+            );
+          })}
       </div>
     </div>
   );

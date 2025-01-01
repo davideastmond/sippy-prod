@@ -1,7 +1,7 @@
 import { AllUserRequestsAdminGetResponse } from "@/types/api-responses/admin-resident-requests-api-response";
+import { OptimizedResidentRequestAPIResponse } from "@/types/api-responses/optimized-resident-request-data-api-response";
 import { RequestedAvailabilityApiResponse } from "@/types/api-responses/requested-timeslot-availability-api-response.ts/requested-availability-api-response";
 import { UserResidentRequestsApiResponse } from "@/types/api-responses/user-resident-requests-api-response";
-import { OptimizedResidentRequestData } from "@/types/optimized-resident-request-data";
 import { ResidentReqestApiRequest } from "@/types/resident-request-api-request";
 import { RequestStatus } from "@prisma/client";
 import dayjs from "dayjs";
@@ -10,6 +10,7 @@ type AllResidentRequestsAdminGetResponseWithCount = {
   residentRequests: AllUserRequestsAdminGetResponse[];
   count: number;
 };
+
 export const ResidentRequestService = {
   create: async (data: ResidentReqestApiRequest) => {
     const response = await fetch("/api/resident-request", {
@@ -98,7 +99,7 @@ export const ResidentRequestService = {
   },
   fetchOptimizedResidentRequestsByDate: async (
     date: string
-  ): Promise<OptimizedResidentRequestData> => {
+  ): Promise<OptimizedResidentRequestAPIResponse> => {
     try {
       // Send POST request to backend with the selected date
       const response = await fetch(`/api/resident-request/optimize`, {
@@ -113,7 +114,8 @@ export const ResidentRequestService = {
         throw new Error(`Failed to fetch requests: ${response.statusText}`);
       }
 
-      const requestAtDate: OptimizedResidentRequestData = await response.json();
+      const requestAtDate: OptimizedResidentRequestAPIResponse =
+        await response.json();
 
       return requestAtDate;
     } catch (error) {

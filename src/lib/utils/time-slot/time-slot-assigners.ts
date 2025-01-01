@@ -1,8 +1,10 @@
 import { getTimeSlotHours } from "@/lib/utils/time-slot/time-slot";
 import { TimeSlot } from "@/types/time-slot";
 import dayjs from "dayjs";
+import tz from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
 dayjs.extend(utc);
+dayjs.extend(tz);
 
 export function assignRequestedTimeSlot(
   appointmentDate: string,
@@ -18,12 +20,14 @@ export function assignRequestedTimeSlot(
           .set("hour", getTimeSlotHours(TimeSlot.Morning)[0] + addHours)
           .set("minute", 0)
           .set("second", 0)
+          .set("millisecond", 0)
           .utc()
           .toDate(),
         endTime: dayjs(appointmentDate)
           .set("hour", getTimeSlotHours(TimeSlot.Morning)[1] + addHours)
           .set("minute", 0)
           .set("second", 0)
+          .set("millisecond", 0)
           .utc()
           .toDate(),
       };
@@ -33,12 +37,14 @@ export function assignRequestedTimeSlot(
           .set("hour", getTimeSlotHours(TimeSlot.Daytime)[0] + addHours)
           .set("minute", 0)
           .set("second", 0)
+          .set("millisecond", 0)
           .utc()
           .toDate(),
         endTime: dayjs(appointmentDate)
           .set("hour", getTimeSlotHours(TimeSlot.Daytime)[1] + addHours)
           .set("minute", 0)
           .set("second", 0)
+          .set("millisecond", 0)
           .utc()
           .toDate(),
       };
@@ -48,12 +54,14 @@ export function assignRequestedTimeSlot(
           .set("hour", getTimeSlotHours(TimeSlot.Evening)[0] + addHours)
           .set("minute", 0)
           .set("second", 0)
+          .set("millisecond", 0)
           .utc()
           .toDate(),
         endTime: dayjs(appointmentDate)
           .set("hour", getTimeSlotHours(TimeSlot.Evening)[1] + addHours)
           .set("minute", 0)
           .set("second", 0)
+          .set("millisecond", 0)
           .utc()
           .toDate(),
       };
