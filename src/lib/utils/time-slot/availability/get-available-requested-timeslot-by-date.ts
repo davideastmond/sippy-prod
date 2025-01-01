@@ -1,7 +1,9 @@
 import { TimeSlot } from "@/types/time-slot";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 import { getTimeSlotHours } from "../time-slot";
 import { isRequestedTimeSlotAvailable } from "../time-slot-availability";
+dayjs.extend(utc);
 
 export async function getAvailableRequestedTimeSlotsByDate(
   date: Date
@@ -16,6 +18,7 @@ export async function getAvailableRequestedTimeSlotsByDate(
         .minute(0)
         .second(0)
         .millisecond(0)
+        .utc()
         .toDate(),
     },
     [TimeSlot.Daytime]: {
@@ -25,6 +28,7 @@ export async function getAvailableRequestedTimeSlotsByDate(
         .minute(0)
         .second(0)
         .millisecond(0)
+        .utc()
         .toDate(),
     },
     [TimeSlot.Evening]: {
@@ -34,6 +38,7 @@ export async function getAvailableRequestedTimeSlotsByDate(
         .minute(0)
         .second(0)
         .millisecond(0)
+        .utc()
         .toDate(),
     },
   };
