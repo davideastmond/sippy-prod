@@ -417,7 +417,10 @@ export default function AdminDashboard() {
               </div>
               <div>
                 <strong>Phone:</strong>{" "}
-                {formatPhoneNumber(selectedRequest.user.phoneNumber!)}
+                {formatPhoneNumber(
+                  selectedRequest.contactPhoneNumber ||
+                    selectedRequest.user.phoneNumber!
+                )}
               </div>
               <div>
                 <strong>Address:</strong>{" "}

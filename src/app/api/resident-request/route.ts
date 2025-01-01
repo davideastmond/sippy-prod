@@ -54,10 +54,10 @@ export async function POST(req: NextRequest) {
     await prisma.user.update({
       where: { email: session.user!.email! },
       data: {
-        phoneNumber: `${areaCode}${phoneNumber}`,
         requests: {
           create: {
             applicantName: name,
+            contactPhoneNumber: `${areaCode}${phoneNumber}`,
             requestedTimeSlot: {
               create: {
                 startTime: startTime,

@@ -40,7 +40,9 @@ export async function POST(req: Request) {
         },
       },
       include: {
-        user: { select: { id: true, name: true, email: true } },
+        user: {
+          select: { id: true, name: true, email: true, phoneNumber: true },
+        },
         requestedTimeSlot: true,
         address: true,
       },

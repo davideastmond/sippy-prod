@@ -6,10 +6,13 @@ const residentRequestDatabaseResponse =
     select: {
       id: true,
       applicantName: true,
+      contactPhoneNumber: true,
       status: true,
       address: true,
       requestedTimeSlot: { select: { startTime: true, endTime: true } },
-      user: { select: { id: true, name: true, email: true } },
+      user: {
+        select: { id: true, name: true, email: true, phoneNumber: true },
+      },
     },
   });
 

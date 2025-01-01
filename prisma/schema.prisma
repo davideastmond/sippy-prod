@@ -27,7 +27,8 @@ model ResidentRequest {
   user    User   @relation(fields: [user_id], references: [id])
   user_id String
 
-  applicantName String?
+  applicantName      String?
+  contactPhoneNumber String?
 
   status RequestStatus @default(PENDING)
 
