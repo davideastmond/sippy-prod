@@ -3,8 +3,10 @@ import { TimeSlot } from "@/types/time-slot";
 import { BLANK_PDF, Schema, Template } from "@pdfme/common";
 import { generate } from "@pdfme/generator";
 import dayjs from "dayjs";
+import { formatPhoneNumber } from "../utils/phone-number/format-phone-number";
 import { getTimeSlotReadableName } from "../utils/time-slot/time-slot";
 
+const ySpacing = 5;
 export async function generatePdf(
   date: string,
   optimizedData: OptimizedResidentRequestData
@@ -34,24 +36,26 @@ function createPdfContent(
     {
       name: "companyName",
       type: "text",
-      position: { x: 10, y: 10 },
+      position: { x: 10, y: ySpacing },
       width: 100,
       height: 20,
-      fontSize: 20,
+      fontSize: 12,
     },
     {
       name: "titleDate",
       type: "text",
-      position: { x: 10, y: 20 },
+      position: { x: 10, y: ySpacing + 5 },
       width: 100,
       height: 10,
+      fontSize: 10,
     },
     {
       name: "reportDate",
       type: "text",
-      position: { x: 10, y: 25 },
+      position: { x: 10, y: ySpacing + 10 },
       width: 100,
       height: 10,
+      fontSize: 10,
     },
   ];
 
@@ -68,15 +72,16 @@ function generateSchemaBody(
   optimizedData: OptimizedResidentRequestData
 ): Array<Schema> {
   const schemaBody: Schema[] = [];
-  let yIndex = 25;
+  let yIndex = 20;
 
   for (const [timeSlot, data] of Object.entries(optimizedData)) {
     schemaBody.push({
       name: `timeSlot_${timeSlot}`,
       type: "text",
-      position: { x: 10, y: (yIndex += 10) },
+      position: { x: 10, y: (yIndex += ySpacing) },
       width: 100,
       height: 10,
+      fontSize: 10,
     });
 
     let visitCount = 1;
@@ -86,25 +91,37 @@ function generateSchemaBody(
         {
           name: `${timeSlot}_visit_${visitCount}_applicantName`,
           type: "text",
-          position: { x: 20, y: (yIndex += 10) },
+          position: { x: 20, y: (yIndex += ySpacing) },
           width: 100,
           height: 10,
+          fontSize: 10,
         },
         {
           name: `${timeSlot}_visit_${visitCount}_address`,
           type: "text",
-          position: { x: 20, y: (yIndex += 10) },
+          position: { x: 20, y: (yIndex += ySpacing) },
           width: 100,
           height: 10,
+          fontSize: 10,
+        },
+        {
+          name: `${timeSlot}_visit_${visitCount}_contactPhoneNumber`,
+          type: "text",
+          position: { x: 20, y: (yIndex += ySpacing) },
+          width: 100,
+          height: 10,
+          fontSize: 10,
         },
         {
           name: `${timeSlot}_visit_${visitCount}_estimatedArrivalTime`,
           type: "text",
-          position: { x: 20, y: (yIndex += 10) },
+          position: { x: 20, y: (yIndex += ySpacing) },
           width: 100,
           height: 10,
+          fontSize: 10,
         }
       );
+      yIndex += 5;
       visitCount++;
     });
   }
@@ -133,6 +150,11 @@ function generatePdfInput(
       pdfInput[
         `${timeSlot}_visit_${visitCount}_estimatedArrivalTime`
       ] = `ETA: ${dayjs(waypoint.assignedTimeSlot?.startTime).format("H:mm")}`;
+      pdfInput[
+        `${timeSlot}_visit_${visitCount}_contactPhoneNumber`
+      ] = `Phone: ${formatPhoneNumber(
+        waypoint.user.phoneNumber || waypoint.contactPhoneNumber!
+      )}`;
       visitCount++;
     });
   }
