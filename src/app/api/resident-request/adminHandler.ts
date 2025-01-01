@@ -16,6 +16,7 @@ export async function adminGetResidentsRequests({
     select: {
       id: true,
       applicantName: true,
+      contactPhoneNumber: true,
       requestedTimeSlot: { select: { startTime: true, endTime: true } },
       assignedTimeSlot: { select: { startTime: true, endTime: true } },
       address: true,

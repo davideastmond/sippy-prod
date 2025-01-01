@@ -122,9 +122,9 @@ export function SubmissionForm() {
     if (isFinalStep) {
       await submitResidentRequest();
       setIsSubmitted(true);
-    } else {
-      setCurrentStep((prev) => prev + 1);
+      return;
     }
+    setCurrentStep((prev) => prev + 1);
   };
 
   const submitResidentRequest = async () => {

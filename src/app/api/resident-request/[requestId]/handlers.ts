@@ -20,9 +20,9 @@ export async function updateResidentRequestStatusFromUser(
       where: { id: requestId, status: RequestStatus.PENDING },
       data: { status: RequestStatus.CANCELED },
     });
-  } else {
-    throw new Error("Non admin user is requesting an invalid action");
+    return;
   }
+  throw new Error("Non admin user is requesting an invalid action");
 }
 
 export async function updateResidentRequestStatusFromAdmin(
