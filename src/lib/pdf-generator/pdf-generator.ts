@@ -7,6 +7,7 @@ import { formatPhoneNumber } from "../utils/phone-number/format-phone-number";
 import { getTimeSlotReadableName } from "../utils/time-slot/time-slot";
 
 const ySpacing = 5;
+
 export async function generatePdf(
   date: string,
   optimizedData: OptimizedResidentRequestData
@@ -18,7 +19,8 @@ export async function generatePdf(
     const blob = new Blob([pdfData], { type: "application/pdf" });
     window.open(URL.createObjectURL(blob));
   } catch (error) {
-    console.error("Failed to generate PDF", error);
+    console.error("Failed to generate PDF", (error as Error).message);
+    throw error;
   }
 }
 
@@ -44,7 +46,7 @@ function createPdfContent(
     {
       name: "titleDate",
       type: "text",
-      position: { x: 10, y: ySpacing + 5 },
+      position: { x: 10, y: ySpacing * 2 },
       width: 100,
       height: 10,
       fontSize: 10,
@@ -52,7 +54,7 @@ function createPdfContent(
     {
       name: "reportDate",
       type: "text",
-      position: { x: 10, y: ySpacing + 10 },
+      position: { x: 10, y: ySpacing * 3 },
       width: 100,
       height: 10,
       fontSize: 10,
@@ -121,7 +123,7 @@ function generateSchemaBody(
           fontSize: 10,
         }
       );
-      yIndex += 5;
+      yIndex += ySpacing;
       visitCount++;
     });
   }
