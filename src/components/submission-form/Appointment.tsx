@@ -9,7 +9,7 @@ export function Appointment() {
         Tell us your goals to save money and energy.
       </h2>
       <Link href="/resident-request/new">
-        <button className="mt-4 overflow-hidden py-3.5 px-6 bg-lime-600 rounded-xl shadow-sm text-2xl font-semibold text-white">
+        <button className="mt-4 overflow-hidden py-3.5 px-6 bg-lime-600 rounded-xl shadow-sm text-2xl font-semibold text-white hover:bg-[#228B22]">
           Make your appointment now
         </button>
       </Link>
