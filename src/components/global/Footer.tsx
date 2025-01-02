@@ -1,3 +1,4 @@
+import AdminToolLink from "@/components/admin-tool/Admin-tool-link";
 import getConfig from "next/config";
 import Image from "next/image";
 const { publicRuntimeConfig } = getConfig();
@@ -50,6 +51,7 @@ const Footer = () => {
                 BACK TO TOP
               </a>
             </li>
+            <AdminToolLink />
           </ul>
         </div>
       </div>
