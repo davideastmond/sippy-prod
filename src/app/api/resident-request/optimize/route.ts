@@ -2,6 +2,7 @@ import { authOptions } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
+import { sendAppointmentConfirmationEmails } from "./appointment-confirmation-emailer/send-appointment-confirmation-emails";
 import { batchUpdateAssignedTimeSlotsInDb } from "./batch-update-assigned-timeslots";
 import { computeRouteByGroupedRequests } from "./compute-route-by-grouped-requests";
 import { groupRequestsByTimeslot } from "./group-requests-by-slot";
@@ -61,6 +62,8 @@ export async function POST(req: Request) {
       );
 
       await batchUpdateAssignedTimeSlotsInDb(optimizedGroupedRequests);
+      await sendAppointmentConfirmationEmails(optimizedGroupedRequests);
+
       return NextResponse.json({
         date,
         optimizations: optimizedGroupedRequests,
