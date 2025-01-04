@@ -2,7 +2,7 @@ import { authOptions } from "@/auth";
 import { sendNewRequestConfirmationEmail } from "@/lib/mailer/email-senders/new-request-email-sender";
 import { prisma } from "@/lib/prisma";
 import { getTimeSlotSummaryCaption } from "@/lib/utils/time-slot/time-slot";
-import { assignRequestedTimeSlot } from "@/lib/utils/time-slot/time-slot-assigners";
+import { calculateRequestedTimeSlot } from "@/lib/utils/time-slot/time-slot-assigners";
 import { residentRequestValidationSchema } from "@/lib/validation-schemas/submission-request-validation-schemas";
 import { ResidentReqestApiRequest } from "@/types/resident-request-api-request";
 import { Address } from "@prisma/client";
@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
     timeSlot,
   } = requestBody;
 
-  const { startTime, endTime } = assignRequestedTimeSlot(
+  const { startTime, endTime } = calculateRequestedTimeSlot(
     appointmentDate,
     timeSlot
   );

@@ -6,7 +6,7 @@ import utc from "dayjs/plugin/utc";
 dayjs.extend(utc);
 dayjs.extend(tz);
 
-export function assignRequestedTimeSlot(
+export function calculateRequestedTimeSlot(
   appointmentDate: string,
   timeSlot: TimeSlot
 ): { startTime: Date; endTime: Date } {
