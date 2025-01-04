@@ -79,6 +79,10 @@ Follow these steps to set up and run the application locally:
      `SMTP_PASSWORD=<copy from ethereal>`
      `SMTP_FROM="'Admin' <admin@sippy.com>"`
 
+   ### Admin Access
+
+   - Supply your own custom values for the environment variables `ADMIN_USERNAME` `ADMIN_PASSWORD`.
+
 4. **Generate Prisma Client**
 
    To generate the Prisma client based on the defined schema, run:
@@ -147,6 +151,13 @@ Review the FAQ https://ethereal.email/faq
 
 - All e-mails sent by our service are mocked and will be intercepted by Ethereal.
 - Log into your Ethereal mailbox to inspect the e-mails.
+
+## Giving users admin access
+
+- You can upgrade users to admin status by having them enter the credentials in the `Admin Tool`.
+- Click on `ADMIN TOOL` on the home page (it is at the buttom in the footer, note: this is only visible for users who have a session and are NOT already admins).
+- A credentials page will be displayed, allowing them to enter the admin username and password.
+- If successful, their `isAdmin` flag will be set to `true`, and they will be directed to the dashboard.
 
 ## Our Team
 

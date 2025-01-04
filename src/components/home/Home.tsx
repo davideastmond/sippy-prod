@@ -1,10 +1,11 @@
+import Footer from "../global/Footer";
+import { Appointment } from "../submission-form/Appointment";
+import AboutSection from "./sections/AboutSection";
+import Analytics from "./sections/Analytics";
+import CompanyShowcase from "./sections/Companies";
+import Hero from "./sections/Hero";
 import HomeFeature from "./sections/HomeFeature";
 import Testimonials from "./sections/Testimonials";
-import Hero from "./sections/Hero";
-import Analytics from "./sections/Analytics";
-import AboutSection from "./sections/AboutSection";
-import CompanyShowcase from "./sections/Companies";
-import Footer from "../global/Footer";
 
 const features = [
   {
@@ -54,14 +55,7 @@ const Home = () => {
       {/* Analytics Section */}
       <section className="relative">
         <Analytics />
-        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-2/3 bg-white px-8 py-6 rounded-xl w-1/2 flex flex-col items-center max-md:relative max-md:translate-y-0 max-md:w-full max-md:px-6 max-md:py-4">
-          <h2 className="text-3xl font-bold leading-10 text-neutral-700 text-center mb-4">
-            Tell us your goals to save money and energy.
-          </h2>
-          <button className="mt-4 overflow-hidden py-3.5 px-6 bg-lime-600 rounded-xl shadow-sm text-2xl font-semibold text-white">
-            Make your appointment now
-          </button>
-        </div>
+        <Appointment />
       </section>
       {/* Features Section */}
       <section className="flex flex-col items-center py-24 w-full max-md:max-w-full">

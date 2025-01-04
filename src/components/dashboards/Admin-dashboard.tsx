@@ -199,7 +199,9 @@ export default function AdminDashboard() {
       setSelectedRequest(null);
     } catch (error) {
       console.log("Error updating request status:", error);
-      setError("Failed to update request status");
+      setError(
+        "Failed to update request status. Please try refreshing your browser."
+      );
       setLoading(false);
     }
   };

@@ -18,8 +18,8 @@ const AboutSection = () => {
         </section>
 
         <article className="flex flex-col grow shrink self-stretch my-auto text-base min-h-[342px] min-w-[240px] w-[427px] max-md:max-w-full">
-          <div className="flex items-start max-w-full font-semibold text-amber-400 rounded-lg w-[100px]">
-            <span className="overflow-hidden gap-2 self-stretch px-5 py-2.5 rounded-lg border border-amber-400 border-solid shadow-sm min-w-[140px] text-center">
+          <div className="flex items-start max-w-full font-semibold text-simmpy-green rounded-lg w-[100px]">
+            <span className="font-bold overflow-hidden gap-2 self-stretch px-5 py-2.5 rounded-lg border border-simmpy-green border-solid shadow-sm min-w-[140px] text-center">
               About Sippy
             </span>
           </div>
