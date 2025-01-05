@@ -116,11 +116,11 @@ export default function AdminDashboard() {
   const handleSearch = async (
     query: string,
     filters: Record<string, boolean>,
-    selectedDate: string | null
+    selectedDate: string | null,
+    sortoption: "createdDate" | "requestedDateAsc" | "requestedDateDesc"
   ) => {
     date.current = selectedDate;
     setIsSearch(true);
-
     try {
       const allRequests = await ResidentRequestService.adminGetAllRequests({
         date: selectedDate,
@@ -153,11 +153,30 @@ export default function AdminDashboard() {
         );
       }
 
-      filteredRequests.sort(
-        (a, b) =>
-          new Date(a.requestedTimeSlot.startTime).getTime() -
-          new Date(b.requestedTimeSlot.startTime).getTime()
-      );
+      // Handle sorting
+      switch (sortoption) {
+        case "createdDate":
+          filteredRequests.sort(
+            (a, b) =>
+              new Date(a.requestedTimeSlot.startTime).getTime() -
+              new Date(b.requestedTimeSlot.startTime).getTime()
+          );
+          break;
+        case "requestedDateAsc":
+          filteredRequests.sort(
+            (a, b) =>
+              new Date(a.requestedTimeSlot.startTime).getTime() -
+              new Date(b.requestedTimeSlot.startTime).getTime()
+          );
+          break;
+        case "requestedDateDesc":
+          filteredRequests.sort(
+            (a, b) =>
+              new Date(b.requestedTimeSlot.startTime).getTime() +
+              new Date(a.requestedTimeSlot.startTime).getTime()
+          );
+          break;
+      }
 
       setUserRequests(filteredRequests);
       setTotalCount(filteredRequests.length);
