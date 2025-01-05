@@ -1,3 +1,4 @@
+"use client";
 import { ButtonText } from "@/components/buttonText";
 import { TextLabel } from "@/components/textLabel";
 import { AdminService } from "@/services/admin-service";
