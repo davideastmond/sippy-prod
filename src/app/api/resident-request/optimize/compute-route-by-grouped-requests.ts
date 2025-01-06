@@ -108,9 +108,8 @@ function getWaypointOrder(
 function fallBackCompare(firstNumber: number, secondNumber: number): boolean {
   if (
     parseFloat(firstNumber.toFixed(3)) === parseFloat(secondNumber.toFixed(3))
-  ) {
+  )
     return true;
-  }
 
   return (
     parseFloat(firstNumber.toFixed(2)) === parseFloat(secondNumber.toFixed(2))

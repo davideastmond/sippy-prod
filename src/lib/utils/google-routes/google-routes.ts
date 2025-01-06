@@ -1,6 +1,5 @@
 import { LatLng } from "@/types/google-address-data";
 import { TimeSlot } from "@/types/time-slot";
-import axios from "axios";
 import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
@@ -47,7 +46,6 @@ export async function computeRoute({
       .tz("America/Los_Angeles")
       .utc()
       .toISOString();
-    console.info("50", laUTCAppointmentTime);
     return laUTCAppointmentTime;
   }
 
@@ -91,20 +89,17 @@ export async function computeRoute({
       "routes.legs.distanceMeters,routes.legs.duration,routes.legs.polyline,routes.legs.startLocation,routes.legs.endLocation",
   };
 
-  try {
-    const response = await axios.post(GOOGLE_ROUTES_API, body, { headers });
+  const response = await fetch(GOOGLE_ROUTES_API, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(body),
+  });
+
+  if (response.ok) {
+    const data = await response.json();
     return {
-      legs: [...response.data.routes[0].legs],
+      legs: [...data.routes[0].legs],
     };
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      // Handle Axios-specific errors
-      console.error(
-        "Error computing route (Axios):",
-        error.response?.data || error.message
-      );
-    }
-    console.error("Error computing route:", (error as Error).message);
-    throw error;
   }
+  throw new Error("Failed to fetch google route data");
 }
