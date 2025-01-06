@@ -1,5 +1,7 @@
 import { Mailer } from "../mailer";
 
+const mailer = new Mailer();
+
 export async function sendConfirmedTimeSlotEmail({
   email,
   requestId,
@@ -11,7 +13,6 @@ export async function sendConfirmedTimeSlotEmail({
   assignedTimeSlot: string;
   name: string;
 }) {
-  const mailer = new Mailer();
   try {
     await mailer.sendMail({
       to: email,
