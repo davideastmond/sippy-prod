@@ -8,7 +8,6 @@ const MAX_REQUESTS_PER_SLOT = 3;
 export async function isRequestedTimeSlotAvailable(
   startTime: Date
 ): Promise<boolean> {
-  console.info("12 startTime", startTime);
   const requestBookings = await prisma.residentRequest.count({
     where: {
       requestedTimeSlot: {

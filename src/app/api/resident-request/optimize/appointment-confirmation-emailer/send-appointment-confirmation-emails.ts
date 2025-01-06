@@ -1,4 +1,4 @@
-import { sendConfirmedTimeSlotEmail } from "@/lib/mailer/email-senders/confirmed-timeslot-emali-sender";
+import { sendConfirmedTimeSlotEmail } from "@/lib/mailer/email-senders/confirmed-timeslot-email-sender";
 import { OptimizedResidentRequestData } from "@/types/optimized-resident-request-data";
 import dayjs from "dayjs";
 

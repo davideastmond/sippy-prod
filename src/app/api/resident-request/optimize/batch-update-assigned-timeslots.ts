@@ -13,13 +13,13 @@ export async function batchUpdateAssignedTimeSlotsInDb(
   // Take the waypoints and update the assigned time slots
 
   // Should be all of the waypoints regardless of time slot
-  const waypoints: ResidentRequestDataBaseResponseWithDuration[] = [];
 
-  Object.keys(requests).map((request) => {
-    requests[request as TimeSlot]!.waypoints.forEach((waypoint) => {
-      waypoints.push(waypoint);
-    });
-  });
+  const waypoints = Object.keys(requests).reduce(
+    (acc: ResidentRequestDataBaseResponseWithDuration[], curr) => {
+      return (acc = acc.concat(requests[curr as TimeSlot]!.waypoints!));
+    },
+    []
+  );
 
   await prisma.$transaction(
     waypoints.map((waypoint) => {
