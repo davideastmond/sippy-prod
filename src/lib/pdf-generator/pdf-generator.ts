@@ -64,13 +64,13 @@ function createPdfContent(
   return {
     template: {
       basePdf: BLANK_PDF,
-      schemas: [[...headerSchema, ...generateSchemaBody(optimizedData)]],
+      schemas: [[...headerSchema, ...generateSchema(optimizedData)]],
     },
-    inputs: [{ ...headerInput, ...generatePdfInput(optimizedData) }],
+    inputs: [{ ...headerInput, ...generateInput(optimizedData) }],
   };
 }
 
-function generateSchemaBody(
+function generateSchema(
   optimizedData: OptimizedResidentRequestData
 ): Array<Schema> {
   const schemaBody: Schema[] = [];
@@ -130,7 +130,7 @@ function generateSchemaBody(
   return schemaBody;
 }
 
-function generatePdfInput(
+function generateInput(
   optimizedData: OptimizedResidentRequestData
 ): Record<string, string> {
   const pdfInput: Record<string, string> = {};
