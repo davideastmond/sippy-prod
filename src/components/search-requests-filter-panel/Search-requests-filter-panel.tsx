@@ -160,7 +160,10 @@ const SearchRequestsFilterPanel: React.FC<SearchRequestsProps> = ({
           data-dropdown-toggle="sortDropdownHelper"
           className="text-simmpy-gray-200 focus:ring-2 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center border border-gray-300"
           type="button"
-          onClick={() => setSortDropdownHidden(!sortDropdownHidden)}
+          onClick={() => {
+            setSortDropdownHidden(!sortDropdownHidden);
+            setDropdownHidden(true);
+          }}
         >
           Sorted by {SortedDict[selectedSortOption]}
           <svg
@@ -225,6 +228,10 @@ const SearchRequestsFilterPanel: React.FC<SearchRequestsProps> = ({
             name="dateFilter"
             type="date"
             className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2 w-[20px]"
+            onClick={() => {
+              setSortDropdownHidden(true);
+              setDropdownHidden(true);
+            }}
             onChange={(e) => {
               setDateFilter(e.target.value);
               onSearch(
